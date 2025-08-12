@@ -394,24 +394,32 @@
 
         // Initialize Firebase on window load
         window.onload = async () => {
+            let firebaseConfig;
             try {
-                // CORRECTED: Use the global firebaseConfig variable
-                const firebaseConfig = JSON.parse(__firebase_config);
+                // Attempt to parse the firebase config. This is the most likely failure point.
+                firebaseConfig = JSON.parse(__firebase_config);
+                if (!firebaseConfig || !firebaseConfig.apiKey) {
+                    throw new Error("Invalid or missing Firebase configuration.");
+                }
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+            } catch (e) {
+                console.error("Firebase configuration or initialization failed:", e);
+                document.getElementById('forum-status').textContent = 'Error: Firebase configuration issue. Cannot connect to the forum.';
+                return; // Exit early if initialization fails
+            }
 
-                // Authentication
+            // Now handle authentication
+            try {
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         userId = user.uid;
                         document.getElementById('userId-display').textContent = userId;
                         console.log("Authenticated with user ID:", userId);
-                        // Initialize forum listeners and functionality after auth is ready
-                        setupForum();
+                        setupForum(); // Call the setup function after a user is confirmed
                     } else {
-                        console.log("No user signed in yet. Waiting for authentication...");
-                        // Optionally, display a message that auth is pending
+                        console.log("No user signed in yet. Attempting anonymous sign-in...");
                         document.getElementById('userId-display').textContent = "Authenticating...";
                     }
                 });
@@ -422,9 +430,9 @@
                 } else {
                     await signInAnonymously(auth);
                 }
-            } catch (error) {
-                console.error("Firebase authentication or initialization failed:", error);
-                document.getElementById('forum-status').textContent = 'Error: Could not connect to the forum.';
+            } catch (e) {
+                console.error("Firebase authentication failed:", e);
+                document.getElementById('forum-status').textContent = 'Error: Authentication failed. Cannot connect to the forum.';
             }
         };
 
@@ -441,7 +449,7 @@
 
             // Listen for new posts in real-time
             const q = query(forumCollectionRef);
-            onSnapshot(q, (snapshot) => {
+            const unsubscribe = onSnapshot(q, (snapshot) => {
                 postsContainer.innerHTML = ''; // Clear existing posts
                 const posts = [];
                 snapshot.forEach(doc => {
