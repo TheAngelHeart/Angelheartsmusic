@@ -383,19 +383,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Your web app's Firebase configuration for the forum
-        const firebaseConfig = {
-            apiKey: "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
-            authDomain: "theangelheart-8c3d4.firebaseapp.com",
-            projectId: "theangelheart-8c3d4",
-            storageBucket: "theangelheart-8c3d4.firebasestorage.app",
-            messagingSenderId: "1037239430431",
-            appId: "1:1037239430431:web:9e8ae59a2ca61ef17bd42a",
-            measurementId: "G-Z2YJXCBN09"
-        };
         
-        // Global variables provided by the Canvas environment
+        // Use global variables provided by the Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
@@ -406,6 +395,8 @@
         // Initialize Firebase on window load
         window.onload = async () => {
             try {
+                // CORRECTED: Use the global firebaseConfig variable
+                const firebaseConfig = JSON.parse(__firebase_config);
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
