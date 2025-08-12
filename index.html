@@ -384,7 +384,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
+        // Your web app's Firebase configuration for the forum
         const firebaseConfig = {
             apiKey: "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
             authDomain: "theangelheart-8c3d4.firebaseapp.com",
@@ -534,8 +534,8 @@
             const generateButton = document.getElementById('generate-button');
             const poemOutput = document.getElementById('poem-output');
             
-            // This API key is now taken from your Firebase config.
-            const apiKey = "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24";
+            // This is the correct API key for the Gemini poem generator.
+            const geminiApiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
 
             const generatePoem = async () => {
                 const prompt = promptInput.value;
@@ -550,7 +550,7 @@
                 chatHistory.push({ role: "user", parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] });
                 
                 const payload = { contents: chatHistory };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
 
                 let retries = 0;
                 const maxRetries = 5;
@@ -610,5 +610,6 @@
     </script>
 </body>
 </html>
+
 
 
