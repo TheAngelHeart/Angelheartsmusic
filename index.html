@@ -412,302 +412,229 @@
         });
     </script>
 
-<!-- Forum Section -->
-<section id="forum" class="py-20 bg-gray-800 font-sans text-white">
-    <div class="container mx-auto px-4 max-w-2xl">
-        <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
-            Angel Hearts Forum
-        </h2>
-        <p class="text-center text-gray-400 mb-8">
-            Share your thoughts and connect with others. Your user ID is shown below for community interaction.
-        </p>
+import { useState, useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInWithCustomToken, signInAnonymously } from 'firebase/auth';
+import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, orderBy, getDocs, doc, setDoc, where } from 'firebase/firestore';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPaperPlane, faTimesCircle, faCheckCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { v4 as uuidv4 } from 'uuid';
 
-        <!-- Display current user ID -->
-        <div class="text-center mb-6 p-4 bg-gray-900 rounded-xl shadow-inner border border-gray-700">
-            <span class="text-sm text-gray-400">Your User ID:</span>
-            <span id="userId-display" class="block font-mono text-pink-400 break-all">Connecting...</span>
-        </div>
-        
-        <!-- Manual Configuration Input Section -->
-        <!-- This new section uses individual fields instead of a JSON blob -->
-        <div id="manual-config-section" class="bg-gray-900 rounded-2xl p-8 shadow-xl mb-8 hidden">
-            <h3 class="text-2xl font-bold text-white mb-4">Manual Firebase Configuration</h3>
-            <p class="text-gray-400 mb-4">
-                The automatic connection failed. Please enter your Firebase configuration details below.
-            </p>
-            <div class="space-y-4">
-                <input id="config-apiKey" type="text" placeholder="apiKey" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
-                <input id="config-authDomain" type="text" placeholder="authDomain" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
-                <input id="config-projectId" type="text" placeholder="projectId" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
-                <input id="config-storageBucket" type="text" placeholder="storageBucket" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
-                <input id="config-messagingSenderId" type="text" placeholder="messagingSenderId" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
-                <input id="config-appId" type="text" placeholder="appId" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
-            </div>
-            <button
-                id="connect-button"
-                class="mt-6 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg transform hover:scale-105"
-            >
-                Connect to Forum
-            </button>
-        </div>
+// Use this variable if provided by the environment, otherwise use a placeholder
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        <!-- New Post Form -->
-        <div id="post-form-section" class="bg-gray-900 rounded-2xl p-8 shadow-xl mb-8 hidden">
-            <h3 class="text-2xl font-bold text-white mb-4">Post a Message</h3>
-            <input
-                id="post-name"
-                type="text"
-                class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
-                placeholder="Your Name (optional)"
-            >
-            <textarea
-                id="post-message"
-                class="w-full h-24 p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                placeholder="Write your message here..."
-            ></textarea>
-            <button
-                id="post-button"
-                class="mt-4 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg transform hover:scale-105"
-            >
-                Post Message
-            </button>
-        </div>
+// Use this variable if provided by the environment, otherwise use an empty object
+const firebaseConfigEnv = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
 
-        <!-- Forum Status and Error Messages -->
-        <div id="forum-status" class="mt-4 text-center text-sm text-red-400"></div>
+const App = () => {
+  const [firebaseConfig, setFirebaseConfig] = useState(firebaseConfigEnv);
+  const [isConfigManual, setIsConfigManual] = useState(Object.keys(firebaseConfigEnv).length === 0);
+  const [db, setDb] = useState(null);
+  const [auth, setAuth] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState('initial'); // 'initial', 'connecting', 'connected', 'error'
+  const [errorMessage, setErrorMessage] = useState('');
 
-        <!-- Posts Display Area -->
-        <div id="posts-container" class="space-y-6">
-            <!-- Posts will be dynamically inserted here by JavaScript -->
-        </div>
-    </div>
-</section>
+  // Manual configuration state
+  const [manualApiKey, setManualApiKey] = useState('');
+  const [manualAuthDomain, setManualAuthDomain] = useState('');
+  const [manualProjectId, setManualProjectId] = useState('');
+  const [manualStorageBucket, setManualStorageBucket] = useState('');
+  const [manualMessagingSenderId, setManualMessagingSenderId] = useState('');
+  const [manualAppId, setManualAppId] = useState('');
 
-<!-- Dedicated JavaScript for the forum functionality -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    
-    let db;
-    let auth;
-    let userId = null;
-    let appId = null;
-    
-    // Personalize the name field with a user name from the persona.
-    const userName = 'Angel Heart';
+  // Handle manual config form submission
+  const handleManualConfigSubmit = (e) => {
+    e.preventDefault();
+    const newConfig = {
+      apiKey: manualApiKey,
+      authDomain: manualAuthDomain,
+      projectId: manualProjectId,
+      storageBucket: manualStorageBucket,
+      messagingSenderId: manualMessagingSenderId,
+      appId: manualAppId,
+    };
+    setFirebaseConfig(newConfig);
+    setIsConfigManual(false); // Hide the manual form after submission
+  };
 
-    // This function handles all the Firebase initialization and forum setup
-    const initializeFirebaseAndForum = async (manualConfig = null) => {
-        const forumStatus = document.getElementById('forum-status');
-        const userIdDisplay = document.getElementById('userId-display');
-        const postFormSection = document.getElementById('post-form-section');
-        const manualConfigSection = document.getElementById('manual-config-section');
-        const connectButton = document.getElementById('connect-button');
-        
-        userIdDisplay.textContent = 'Connecting...';
-        forumStatus.textContent = 'Connecting to the forum...';
+  // Effect to initialize Firebase when the config changes
+  useEffect(() => {
+    const initializeFirebase = async () => {
+      if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.apiKey) {
+        setErrorMessage('Firebase configuration is missing. Please provide it.');
+        setConnectionStatus('error');
+        return;
+      }
 
-        let firebaseConfig = {};
+      setConnectionStatus('connecting');
+      setErrorMessage('');
+
+      try {
+        const app = initializeApp(firebaseConfig);
+        const authInstance = getAuth(app);
+        const dbInstance = getFirestore(app);
+
+        // Sign in with the provided custom token or anonymously
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // Check for the Canvas environment variables first
-        if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
-            const errorMsg = "Error: Firebase configuration or app ID is unavailable.";
-            console.error(errorMsg);
-            forumStatus.textContent = `${errorMsg} Please use the manual configuration input below.`;
-            manualConfigSection.classList.remove('hidden');
-            userIdDisplay.textContent = 'Unavailable';
-            
-            // Set up event listener for the manual connect button
-            connectButton.addEventListener('click', () => {
-                // Read values from the individual input fields
-                const apiKey = document.getElementById('config-apiKey').value.trim();
-                const authDomain = document.getElementById('config-authDomain').value.trim();
-                const projectId = document.getElementById('config-projectId').value.trim();
-                const storageBucket = document.getElementById('config-storageBucket').value.trim();
-                const messagingSenderId = document.getElementById('config-messagingSenderId').value.trim();
-                const appIdInput = document.getElementById('config-appId').value.trim();
-
-                // Build the configuration object
-                const config = {
-                    apiKey: apiKey,
-                    authDomain: authDomain,
-                    projectId: projectId,
-                    storageBucket: storageBucket,
-                    messagingSenderId: messagingSenderId,
-                    appId: appIdInput
-                };
-
-                // Validate that at least the most critical parts are provided
-                if (config.apiKey && config.projectId) {
-                    initializeFirebaseAndForum(config);
-                } else {
-                    forumStatus.textContent = 'Error: Please provide at least the apiKey and projectId to connect.';
-                }
-            });
-            return;
+        let userCredential;
+        if (initialAuthToken) {
+          userCredential = await signInWithCustomToken(authInstance, initialAuthToken);
         } else {
-            // Use environment variables if they are present
-            try {
-                firebaseConfig = JSON.parse(__firebase_config);
-                appId = __app_id;
-            } catch (e) {
-                console.error("Failed to parse Firebase config from environment variable:", e);
-                forumStatus.textContent = "Error parsing Firebase configuration. Please use the manual configuration input.";
-                manualConfigSection.classList.remove('hidden');
-                userIdDisplay.textContent = 'Unavailable';
-                return;
-            }
+          userCredential = await signInAnonymously(authInstance);
         }
+
+        const currentUserId = userCredential.user.uid;
+
+        setDb(dbInstance);
+        setAuth(authInstance);
+        setUserId(currentUserId);
+        setConnectionStatus('connected');
+      } catch (error) {
+        console.error("Firebase connection error:", error);
+        setErrorMessage(`Failed to connect to Firebase. Please check your configuration. Error: ${error.message}`);
+        setConnectionStatus('error');
+      }
+    };
+
+    if (!isConfigManual && Object.keys(firebaseConfig).length > 0) {
+      initializeFirebase();
+    }
+  }, [firebaseConfig, isConfigManual]);
+
+  const ConnectionStatus = () => {
+    if (connectionStatus === 'initial' || connectionStatus === 'connecting') {
+      return (
+        <div className="flex items-center space-x-2 text-gray-500">
+          <FontAwesomeIcon icon={faSpinner} spin className="text-xl" />
+          <span>Connecting...</span>
+        </div>
+      );
+    }
+    if (connectionStatus === 'connected') {
+      return (
+        <div className="flex items-center space-x-2 text-green-500">
+          <FontAwesomeIcon icon={faCheckCircle} className="text-xl" />
+          <span>Connected successfully!</span>
+        </div>
+      );
+    }
+    if (connectionStatus === 'error') {
+      return (
+        <div className="flex flex-col items-center space-y-2 text-red-500">
+          <FontAwesomeIcon icon={faTimesCircle} className="text-xl" />
+          <span className="font-semibold">Connection failed.</span>
+          <p className="text-sm text-center">{errorMessage}</p>
+          <p className="text-sm text-center">Please verify your Firebase configuration details.</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 font-sans">
+      <div className="max-w-xl w-full bg-white rounded-xl shadow-2xl p-8 space-y-6">
+        <h1 className="text-3xl font-bold text-center text-gray-800">Angel Hearts Forum</h1>
+        <p className="text-center text-gray-600">
+          Connect to your Firebase project to start sharing your music and poems.
+        </p>
         
-        // If a manual config was provided, use that instead
-        if (manualConfig) {
-            firebaseConfig = manualConfig;
-            // The appId is critical for the Firestore path.
-            appId = firebaseConfig.projectId || "manual-app-id"; 
-        }
+        {isConfigManual && (
+          <form onSubmit={handleManualConfigSubmit} className="space-y-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <h2 className="text-xl font-semibold text-center text-gray-700">Manual Firebase Configuration</h2>
+            <p className="text-sm text-gray-500 text-center">
+              Please paste your Firebase configuration details from your project settings.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input 
+                type="text" 
+                placeholder="apiKey" 
+                value={manualApiKey} 
+                onChange={(e) => setManualApiKey(e.target.value)} 
+                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                required
+              />
+              <input 
+                type="text" 
+                placeholder="authDomain" 
+                value={manualAuthDomain} 
+                onChange={(e) => setManualAuthDomain(e.target.value)} 
+                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                required
+              />
+              <input 
+                type="text" 
+                placeholder="projectId" 
+                value={manualProjectId} 
+                onChange={(e) => setManualProjectId(e.target.value)} 
+                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                required
+              />
+              <input 
+                type="text" 
+                placeholder="storageBucket" 
+                value={manualStorageBucket} 
+                onChange={(e) => setManualStorageBucket(e.target.value)} 
+                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                required
+              />
+              <input 
+                type="text" 
+                placeholder="messagingSenderId" 
+                value={manualMessagingSenderId} 
+                onChange={(e) => setManualMessagingSenderId(e.target.value)} 
+                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                required
+              />
+              <input 
+                type="text" 
+                placeholder="appId" 
+                value={manualAppId} 
+                onChange={(e) => setManualAppId(e.target.value)} 
+                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                required
+              />
+            </div>
+            <button 
+              type="submit" 
+              className="w-full p-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-lg shadow-md hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 ease-in-out transform hover:scale-105"
+            >
+              Connect to Forum
+            </button>
+          </form>
+        )}
 
-        try {
-            // Initialize Firebase services
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            console.log("Firebase initialized successfully.");
-            
-            // Hide the manual config and show the post form
-            manualConfigSection.classList.add('hidden');
-            postFormSection.classList.remove('hidden');
+        {/* Display connection status and user ID */}
+        {!isConfigManual && (
+          <div className="flex flex-col items-center space-y-4">
+            <ConnectionStatus />
+            {connectionStatus === 'connected' && (
+              <div className="bg-gray-100 p-4 rounded-lg w-full text-center text-sm break-all">
+                <p className="text-gray-700 font-medium">Your User ID:</p>
+                <code className="text-gray-500 select-all">{userId}</code>
+              </div>
+            )}
+          </div>
+        )}
 
-            // Set up an authentication listener to get the user ID
-            const unsubscribe = onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userId = user.uid;
-                    userIdDisplay.textContent = userId;
-                    console.log("Authenticated with user ID:", userId);
-                    forumStatus.textContent = 'Successfully connected!';
-                    setupForum();
-                    unsubscribe(); // Stop listening once authenticated
-                } else {
-                    console.log("Authentication state changed: No user signed in.");
-                }
-            });
+        {/* Placeholder for future functionality */}
+        {connectionStatus === 'connected' && (
+          <div className="mt-8 p-6 bg-green-50 rounded-lg text-center border-2 border-green-200">
+            <p className="text-lg font-semibold text-green-800">
+              Connection successful! The forum is ready.
+            </p>
+            <p className="text-green-700 mt-2">
+              We can now add the ability to post and view messages.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
-            // Attempt to sign in with the provided token or anonymously
-            if (initialAuthToken) {
-                await signInWithCustomToken(auth, initialAuthToken);
-            } else {
-                await signInAnonymously(auth);
-            }
+export default App;
 
-        } catch (e) {
-            console.error("Firebase initialization or authentication failed:", e);
-            // Provide a more specific error message to help with debugging
-            forumStatus.textContent = `Error: Cannot connect to the forum. Details: ${e.message}. Please use the manual configuration input.`;
-            manualConfigSection.classList.remove('hidden');
-            userIdDisplay.textContent = 'Unavailable';
-        }
-    };
-    
-    const setupForum = () => {
-        const postButton = document.getElementById('post-button');
-        const postNameInput = document.getElementById('post-name');
-        const postMessageInput = document.getElementById('post-message');
-        const postsContainer = document.getElementById('posts-container');
-        const forumStatus = document.getElementById('forum-status');
-
-        forumStatus.textContent = ''; // Clear status on successful connection
-
-        // Pre-fill the name field with the user's preferred name
-        postNameInput.value = userName;
-
-        // Reference to the Firestore collection where posts are stored.
-        const forumCollectionRef = collection(db, `artifacts/${appId}/public/data/forum-posts`);
-
-        // Listen for new posts in real-time
-        const q = query(forumCollectionRef);
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            postsContainer.innerHTML = '';
-            const posts = [];
-            snapshot.forEach(doc => {
-                posts.push({ id: doc.id, ...doc.data() });
-            });
-
-            // Sort posts by timestamp, with the newest first
-            posts.sort((a, b) => {
-                const timeA = a.timestamp ? a.timestamp.seconds : 0;
-                const timeB = b.timestamp ? b.timestamp.seconds : 0;
-                return timeB - timeA;
-            });
-
-            posts.forEach(post => {
-                const postElement = document.createElement('div');
-                postElement.className = 'bg-gray-900 rounded-2xl p-6 shadow-md border border-gray-700';
-
-                // Display name or 'Anonymous' if not provided
-                const name = post.name && post.name.trim() !== '' ? post.name : 'Anonymous';
-                const postUserId = post.userId || 'Unknown';
-                const timestamp = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleString() : 'Just now';
-                
-                postElement.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h4 class="font-bold text-lg text-pink-400">${name}</h4>
-                            <span class="text-xs text-gray-500">User ID: <span class="font-mono break-all">${postUserId}</span></span>
-                        </div>
-                        <span class="text-sm text-gray-500">${timestamp}</span>
-                    </div>
-                    <p class="text-gray-300 whitespace-pre-line">${post.message}</p>
-                `;
-                postsContainer.appendChild(postElement);
-            });
-        }, (error) => {
-            console.error("Error fetching forum posts:", error);
-            forumStatus.textContent = 'Error: Could not load forum posts.';
-        });
-
-        // Handle new post creation
-        postButton.addEventListener('click', async () => {
-            const name = postNameInput.value.trim();
-            const message = postMessageInput.value.trim();
-
-            if (!message) {
-                forumStatus.textContent = 'Please write a message to post.';
-                return;
-            }
-            
-            if (!userId) {
-                forumStatus.textContent = 'User not authenticated. Please wait a moment.';
-                return;
-            }
-
-            forumStatus.textContent = 'Posting...';
-
-            try {
-                // Add a new document to the collection with user ID, name, message, and a timestamp.
-                await addDoc(forumCollectionRef, {
-                    name: name,
-                    message: message,
-                    timestamp: serverTimestamp(),
-                    userId: userId,
-                });
-                
-                // Clear the form on successful post.
-                postNameInput.value = userName; // Reset to the default name
-                postMessageInput.value = '';
-                forumStatus.textContent = '';
-
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                forumStatus.textContent = `Failed to post message: ${e.message}`;
-            }
-        });
-    };
-
-    // Start Firebase and the forum setup when the page loads.
-    document.addEventListener('DOMContentLoaded', () => {
-        initializeFirebaseAndForum();
-    });
-</script>
 </body>
 </html>
