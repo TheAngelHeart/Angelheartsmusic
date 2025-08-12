@@ -395,18 +395,25 @@
         // Initialize Firebase on window load
         window.onload = async () => {
             let firebaseConfig;
+            const forumStatus = document.getElementById('forum-status');
+
             try {
-                // Attempt to parse the firebase config. This is the most likely failure point.
-                firebaseConfig = JSON.parse(__firebase_config);
-                if (!firebaseConfig || !firebaseConfig.apiKey) {
-                    throw new Error("Invalid or missing Firebase configuration.");
+                // Safely check if the configuration exists and is a non-empty string before parsing
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                    if (!firebaseConfig || !firebaseConfig.apiKey) {
+                        throw new Error("Invalid or missing Firebase configuration.");
+                    }
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    console.log("Firebase initialized successfully.");
+                } else {
+                    throw new Error("Firebase configuration is not available.");
                 }
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
             } catch (e) {
                 console.error("Firebase configuration or initialization failed:", e);
-                document.getElementById('forum-status').textContent = 'Error: Firebase configuration issue. Cannot connect to the forum.';
+                forumStatus.textContent = 'Error: Firebase configuration issue. Cannot connect to the forum.';
                 return; // Exit early if initialization fails
             }
 
@@ -432,7 +439,7 @@
                 }
             } catch (e) {
                 console.error("Firebase authentication failed:", e);
-                document.getElementById('forum-status').textContent = 'Error: Authentication failed. Cannot connect to the forum.';
+                forumStatus.textContent = 'Error: Authentication failed. Cannot connect to the forum.';
             }
         };
 
@@ -609,5 +616,6 @@
     </script>
 </body>
 </html>
+
 
 
