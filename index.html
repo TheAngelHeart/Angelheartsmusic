@@ -35,7 +35,6 @@
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
                 <a href="#poem-creator" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Create</a>
-                <a href="#forum" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Forum</a>
             </div>
         </nav>
     </header>
@@ -314,43 +313,6 @@
             </div>
         </div>
     </section>
-    
-    <!-- NEW: Forum Section -->
-    <section id="forum" class="py-20 bg-gray-800">
-        <div class="container mx-auto px-4 max-w-2xl">
-            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
-                Community Forum
-            </h2>
-            <p class="text-center text-gray-400 mb-8">
-                Share your thoughts and connect with others.
-            </p>
-            
-            <div class="bg-gray-900 rounded-2xl p-8 shadow-xl">
-                <!-- Display user ID for multi-user collaboration -->
-                <p class="text-sm text-gray-500 mb-4 text-center">Your User ID: <span id="user-id" class="font-mono text-pink-400">Loading...</span></p>
-
-                <!-- Input for new forum topics -->
-                <input 
-                    type="text" 
-                    id="new-topic-input" 
-                    class="w-full p-4 mb-4 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Enter a new forum topic..."
-                >
-                <button 
-                    id="add-topic-button" 
-                    class="w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105"
-                >
-                    Add Topic
-                </button>
-
-                <!-- Container for displaying forum topics -->
-                <div id="forum-topics-container" class="mt-8 space-y-4">
-                    <!-- Topics will be dynamically added here -->
-                    <p class="text-center text-gray-500 italic">No topics yet. Be the first to start a conversation!</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Footer -->
     <footer class="bg-gray-950 text-center py-8">
@@ -370,29 +332,13 @@
     </footer>
 
     <script type="module">
-        // Import Firebase libraries
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // IMPORTANT: The Firebase configuration will now be pulled from the environment.
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        
-        // This variable is provided by the canvas environment for unique app identification
-        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        // Initialize the Firebase app
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
         document.addEventListener('DOMContentLoaded', async () => {
             // --- POEM CREATOR SCRIPT ---
             const promptInput = document.getElementById('poem-prompt');
             const generateButton = document.getElementById('generate-button');
             const poemOutput = document.getElementById('poem-output');
 
+            // This function handles the poem generation process
             const generatePoem = async () => {
                 const prompt = promptInput.value;
                 if (!prompt) {
@@ -400,47 +346,66 @@
                     return;
                 }
                 
+                // Show a loading message while the poem is being created
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                // The API key is set to an empty string, which the environment will automatically populate.
-                const apiKey = ""; 
+                // The API key for Gemini's poem generation has been updated here.
+                const apiKey = 'AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24';
+                
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] });
+                
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
-                try {
-                    const payload = { 
-                        contents: [{ 
-                            role: "user", 
-                            parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] 
-                        }] 
-                    };
-                    
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                let retries = 0;
+                const maxRetries = 5;
+                const baseDelay = 1000; // 1 second
 
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+                while (retries < maxRetries) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
 
-                    if (!response.ok) {
-                        throw new Error(`API request failed with status: ${response.status}`);
+                        if (!response.ok) {
+                            if (response.status === 429) {
+                                const delay = baseDelay * Math.pow(2, retries);
+                                await new Promise(resolve => setTimeout(resolve, delay));
+                                retries++;
+                                continue;
+                            }
+                            
+                            const errorText = response.statusText || 'An unexpected error occurred.';
+                            console.error(`API call failed with status ${response.status}: ${errorText}`);
+                            poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please check your API key and try again.</span>`;
+                            return;
+                        }
+
+                        const result = await response.json();
+                        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                        if (text) {
+                            poemOutput.innerHTML = `<p class="whitespace-pre-line">${text}</p>`;
+                            return;
+                        } else {
+                            console.error("API response was not in the expected format:", result);
+                            throw new Error("Invalid response format from API.");
+                        }
+
+                    } catch (error) {
+                        console.error("API call failed:", error);
+                        poemOutput.innerHTML = `<span class="text-red-400">Error: ${error.message}. Please try again.</span>`;
+                        return;
                     }
-
-                    const result = await response.json();
-
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        const text = result.candidates[0].content.parts[0].text;
-                        poemOutput.innerHTML = `<p class="text-left whitespace-pre-line">${text}</p>`;
-                    } else {
-                        poemOutput.innerHTML = '<span class="text-red-400">Error: Could not generate a poem. Please try a different topic.</span>';
-                    }
-                } catch (error) {
-                    console.error('Poem generation failed:', error);
-                    poemOutput.innerHTML = '<span class="text-red-400">Error: An unexpected error occurred. Please check your network and try again.</span>';
                 }
+                
+                poemOutput.innerHTML = '<span class="text-red-400">Failed to generate poem after multiple attempts. Please try again later.</span>';
             };
             
+            // Add event listeners for the button and the 'Enter' key
             generateButton.addEventListener('click', generatePoem);
             promptInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
@@ -448,109 +413,6 @@
                     generatePoem();
                 }
             });
-
-            // --- FORUM SCRIPT (Firebase) ---
-            let userId = null;
-            const userIdDisplay = document.getElementById('user-id');
-            const newTopicInput = document.getElementById('new-topic-input');
-            const addTopicButton = document.getElementById('add-topic-button');
-            const forumTopicsContainer = document.getElementById('forum-topics-container');
-
-            const signInAndListen = async () => {
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                        console.log("Signed in with custom token.");
-                    } else {
-                        await signInAnonymously(auth);
-                        console.log("Signed in anonymously.");
-                    }
-                } catch (error) {
-                    console.error("Firebase Auth error:", error);
-                    return;
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        userIdDisplay.textContent = userId;
-                        console.log("User ID:", userId);
-                        
-                        // Set up real-time listener for forum topics
-                        const publicForumCollection = collection(db, `artifacts/${appId}/public/data/forumTopics`);
-                        onSnapshot(publicForumCollection, (snapshot) => {
-                            forumTopicsContainer.innerHTML = '';
-                            const topics = [];
-                            snapshot.forEach(doc => {
-                                topics.push({ id: doc.id, ...doc.data() });
-                            });
-
-                            // Sort topics by timestamp in descending order
-                            topics.sort((a, b) => b.timestamp - a.timestamp);
-
-                            if (topics.length === 0) {
-                                forumTopicsContainer.innerHTML = '<p class="text-center text-gray-500 italic">No topics yet. Be the first to start a conversation!</p>';
-                            } else {
-                                topics.forEach(topic => {
-                                    const topicElement = document.createElement('div');
-                                    topicElement.className = 'bg-gray-800 rounded-xl p-4 shadow-md';
-                                    topicElement.innerHTML = `
-                                        <p class="text-gray-200 font-semibold text-lg">${topic.content}</p>
-                                        <p class="text-sm text-gray-500 mt-2">Posted by: <span class="font-mono text-purple-300">${topic.authorId}</span></p>
-                                    `;
-                                    forumTopicsContainer.appendChild(topicElement);
-                                });
-                            }
-                        });
-                    } else {
-                        console.log("No user signed in.");
-                    }
-                });
-            };
-
-            addTopicButton.addEventListener('click', async () => {
-                if (!userId) {
-                    // Display a modal-like message since alert() is not allowed
-                    const tempMessage = document.createElement('div');
-                    tempMessage.className = 'fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm';
-                    tempMessage.innerHTML = `
-                        <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center">
-                            <p class="text-white">Authentication not complete. Please wait a moment.</p>
-                        </div>
-                    `;
-                    document.body.appendChild(tempMessage);
-                    setTimeout(() => tempMessage.remove(), 2000);
-                    console.log("User ID is not available yet.");
-                    return;
-                }
-
-                const topicContent = newTopicInput.value.trim();
-                if (topicContent) {
-                    try {
-                        const publicForumCollection = collection(db, `artifacts/${appId}/public/data/forumTopics`);
-                        await addDoc(publicForumCollection, {
-                            content: topicContent,
-                            authorId: userId,
-                            timestamp: serverTimestamp()
-                        });
-                        newTopicInput.value = '';
-                    } catch (e) {
-                        console.error("Error adding document: ", e);
-                        // Display a modal-like error message
-                        const tempMessage = document.createElement('div');
-                        tempMessage.className = 'fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm';
-                        tempMessage.innerHTML = `
-                            <div class="bg-red-900 p-8 rounded-lg shadow-xl text-center">
-                                <p class="text-white">Error posting topic. Please try again.</p>
-                            </div>
-                        `;
-                        document.body.appendChild(tempMessage);
-                        setTimeout(() => tempMessage.remove(), 2000);
-                    }
-                }
-            });
-
-            signInAndListen();
         });
     </script>
 </body>
