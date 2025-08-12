@@ -412,301 +412,309 @@
         });
     </script>
 
-import { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from 'firebase/firestore';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faTimesCircle, faCheckCircle, faSpinner, faCopy } from '@fortawesome/free-solid-svg-icons';
-import { v4 as uuidv4 } from 'uuid';
-
-// This application uses Tailwind CSS for styling.
-// If Tailwind isn't already configured, you can add this script to your HTML file:
-// <script src="https://cdn.tailwindcss.com"></script>
-
-const App = () => {
-  const [db, setDb] = useState(null);
-  const [auth, setAuth] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [isAuthReady, setIsAuthReady] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState('initial'); // 'initial', 'connecting', 'connected', 'error'
-  const [errorMessage, setErrorMessage] = useState('');
-  const [configJson, setConfigJson] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-
-  // 1. Handle form submission for the Firebase configuration JSON
-  const handleConfigSubmit = async (e) => {
-    e.preventDefault();
-    setConnectionStatus('connecting');
-    setErrorMessage('');
-    let firebaseConfig;
-
-    try {
-      firebaseConfig = JSON.parse(configJson);
-      if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-        throw new Error('Invalid Firebase config. Missing apiKey or projectId.');
-      }
-    } catch (error) {
-      console.error("JSON parse error:", error);
-      setErrorMessage(`Invalid JSON format. Please ensure your configuration is a valid JSON object. Error: ${error.message}`);
-      setConnectionStatus('error');
-      return;
-    }
-
-    // 2. Initialize Firebase and sign in the user
-    try {
-      const app = initializeApp(firebaseConfig);
-      const authInstance = getAuth(app);
-      const dbInstance = getFirestore(app);
-
-      setDb(dbInstance);
-      setAuth(authInstance);
-
-      // We use onAuthStateChanged to handle authentication state properly
-      onAuthStateChanged(authInstance, async (user) => {
-        if (user) {
-          setUserId(user.uid);
-          setConnectionStatus('connected');
-          setIsAuthReady(true);
-        } else {
-          // If not signed in, try to sign in with a custom token or anonymously
-          const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-          if (initialAuthToken) {
-            await signInWithCustomToken(authInstance, initialAuthToken);
-          } else {
-            await signInAnonymously(authInstance);
-          }
-        }
-      });
-
-    } catch (error) {
-      console.error("Firebase connection error:", error);
-      setErrorMessage(`Failed to connect to Firebase. Please check your configuration. Error: ${error.message}`);
-      setConnectionStatus('error');
-    }
-  };
-
-  // 3. Listen for new messages once the user is authenticated
-  useEffect(() => {
-    if (db && userId && isAuthReady) {
-      // Use the provided app ID to build the Firestore path
-      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
-      
-      // Use onSnapshot to listen for real-time updates
-      // IMPORTANT: We will sort the messages on the client side to avoid Firestore index issues.
-      const q = query(messagesCollectionRef);
-
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const fetchedMessages = [];
-        querySnapshot.forEach((doc) => {
-          fetchedMessages.push({ id: doc.id, ...doc.data() });
-        });
-        
-        // Sort messages by timestamp on the client side for reliable ordering
-        fetchedMessages.sort((a, b) => {
-          // Ensure both timestamps exist before comparing
-          const timestampA = a.timestamp ? a.timestamp.toDate() : 0;
-          const timestampB = b.timestamp ? b.timestamp.toDate() : 0;
-          return timestampA - timestampB;
-        });
-        setMessages(fetchedMessages);
-      }, (error) => {
-        console.error("Error fetching messages: ", error);
-      });
-
-      // Cleanup listener on component unmount
-      return () => unsubscribe();
-    }
-  }, [db, userId, isAuthReady]);
-
-  // 4. Handle sending new messages
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (newMessage.trim() === '' || !db || !userId) return;
-
-    try {
-      // Use the provided app ID to build the Firestore path
-      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
-      
-      await addDoc(messagesCollectionRef, {
-        text: newMessage,
-        userId: userId,
-        timestamp: serverTimestamp(),
-      });
-      setNewMessage('');
-    } catch (error) {
-      console.error("Error adding document: ", error);
-    }
-  };
-  
-  // Utility function to copy user ID to clipboard
-  const handleCopyUserId = () => {
-    try {
-      // Modern way to copy text
-      navigator.clipboard.writeText(userId);
-    } catch (error) {
-      // Fallback for environments where clipboard API is not available
-      const el = document.createElement('textarea');
-      el.value = userId;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-    }
-  };
-
-  // UI component to display connection status
-  const ConnectionStatus = () => {
-    if (connectionStatus === 'initial' || connectionStatus === 'connecting') {
-      return (
-        <div className="flex items-center space-x-2 text-gray-500">
-          <FontAwesomeIcon icon={faSpinner} spin className="text-xl" />
-          <span>Connecting...</span>
-        </div>
-      );
-    }
-    if (connectionStatus === 'connected') {
-      return (
-        <div className="flex items-center space-x-2 text-green-500">
-          <FontAwesomeIcon icon={faCheckCircle} className="text-xl" />
-          <span>Connected successfully!</span>
-        </div>
-      );
-    }
-    if (connectionStatus === 'error') {
-      return (
-        <div className="flex flex-col items-center space-y-2 text-red-500">
-          <FontAwesomeIcon icon={faTimesCircle} className="text-xl" />
-          <span className="font-semibold">Connection failed.</span>
-          <p className="text-sm text-center">{errorMessage}</p>
-          <p className="text-sm text-center">Please verify your Firebase configuration details.</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // Main application UI
-  return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 font-sans">
-      <style>
-        {`
-        /* This CSS ensures the component is centered and takes up a good amount of space */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angel Hearts Music Forum</title>
+    <!-- We will use a custom style block to ensure the layout works without relying on external frameworks. -->
+    <style>
         body {
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-          background-color: #f3f4f6; /* Tailwind gray-100 equivalent */
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f3f4f6; /* A light gray background */
         }
         #root {
-          width: 100%;
-          min-height: 100vh;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 1rem;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
         }
         .container-card {
-          max-width: 48rem; /* Equivalent to max-w-2xl */
-          width: 100%;
-          background-color: white;
-          border-radius: 1rem; /* Equivalent to rounded-xl */
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Equivalent to shadow-2xl */
-          padding: 2rem; /* Equivalent to p-8 */
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem; /* Equivalent to space-y-6 */
+            max-width: 48rem; /* A fixed maximum width for readability on larger screens */
+            width: 100%;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
-        `}
-      </style>
-      <div className="container-card">
-        <h1 className="text-3xl font-bold text-center text-gray-800">Angel Hearts Forum</h1>
-        <p className="text-center text-gray-600">
-          Connect to your Firebase project to start sharing your music and poems.
-        </p>
+        /* Style for the text area and button to ensure they look good */
+        .input-area {
+            width: 100%;
+            height: 10rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-area:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        .connect-button {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(to right, #8b5cf6, #4f46e5);
+            color: white;
+            font-weight: bold;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+        }
+        .connect-button:hover {
+            transform: scale(1.05);
+            background: linear-gradient(to right, #7c3aed, #4338ca);
+        }
+    </style>
+
+    <!-- Load React and Babel to run JSX in the browser -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Load Firebase libraries from CDN -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { initializeApp } = firebase.app;
+        const { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } = firebase.auth;
+        const { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } = firebase.firestore;
         
-        {/* This conditional renders the configuration form or the chat interface */}
-        {connectionStatus !== 'connected' ? (
-          <form onSubmit={handleConfigSubmit} className="space-y-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h2 className="text-xl font-semibold text-center text-gray-700">Paste Firebase Configuration</h2>
-            <p className="text-sm text-gray-500 text-center">
-              Go to your Firebase project settings, find the "Firebase SDK snippet," and copy the full JSON configuration object. Paste it below.
-            </p>
-            <textarea
-              className="w-full h-40 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors font-mono text-xs"
-              placeholder={`Example:\n{\n  "apiKey": "AIzaSy...",\n  "authDomain": "my-project-123.firebaseapp.com",\n  "projectId": "my-project-123",\n  "storageBucket": "my-project-123.appspot.com",\n  "messagingSenderId": "1234567890",\n  "appId": "1:1234567890:web:abcdef"\n}`}
-              value={configJson}
-              onChange={(e) => setConfigJson(e.target.value)}
-              required
-            />
-            <button 
-              type="submit" 
-              className="w-full p-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-lg shadow-md hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 ease-in-out transform hover:scale-105"
-            >
-              Connect to Forum
-            </button>
-            <div className="flex justify-center mt-4">
-              <ConnectionStatus />
-            </div>
-          </form>
-        ) : (
-          <div className="flex flex-col items-center space-y-4">
-            <ConnectionStatus />
-            <div className="bg-gray-100 p-4 rounded-lg w-full text-center text-sm break-all flex flex-col items-center">
-              <p className="text-gray-700 font-medium mb-2">Your User ID:</p>
-              <div className="flex items-center space-x-2">
-                <code className="text-gray-500 select-all">{userId}</code>
-                <button 
-                  onClick={handleCopyUserId} 
-                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-                  title="Copy User ID"
-                >
-                  <FontAwesomeIcon icon={faCopy} />
-                </button>
-              </div>
-            </div>
+        // Use a simple spinner and status text for the UI
+        const ConnectionStatus = ({ status, message }) => {
+            if (status === 'initial' || status === 'connecting') {
+                return <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6b7280'}}>
+                    <span style={{animation: 'spin 1s linear infinite'}}>&#x231B;</span>
+                    <span>Connecting...</span>
+                </div>;
+            }
+            if (status === 'connected') {
+                return <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981'}}>
+                    <span>&#x2714;</span>
+                    <span>Connected successfully!</span>
+                </div>;
+            }
+            if (status === 'error') {
+                return <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: '#ef4444'}}>
+                    <span>&#x2716;</span>
+                    <span>Connection failed.</span>
+                    <p style={{fontSize: '0.875rem', textAlign: 'center'}}>{message}</p>
+                </div>;
+            }
+            return null;
+        };
 
-            {/* Simple Chat Interface */}
-            <div className="w-full bg-gray-50 rounded-lg p-4 space-y-4 border border-gray-200">
-              <h3 className="text-lg font-semibold text-center text-gray-700">Messages</h3>
-              <div className="h-64 overflow-y-auto p-2 border border-gray-300 rounded-lg bg-white">
-                {messages.length > 0 ? (
-                  messages.map((message) => (
-                    <div key={message.id} className={`p-2 my-2 rounded-lg ${message.userId === userId ? 'bg-purple-100 text-right ml-auto max-w-[80%]' : 'bg-gray-200 text-left mr-auto max-w-[80%]'}`}>
-                      <p className="font-medium text-xs text-gray-500 mb-1">{message.userId === userId ? 'You' : `User: ${message.userId.substring(0, 8)}...`}</p>
-                      <p className="text-gray-800">{message.text}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-400 mt-10">No messages yet. Be the first to share!</p>
-                )}
-              </div>
-              <form onSubmit={handleSendMessage} className="flex space-x-2">
-                <input
-                  type="text"
-                  className="flex-grow p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                  placeholder="Write your message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  required
-                />
-                <button
-                  type="submit"
-                  className="p-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow-md hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 ease-in-out transform hover:scale-105"
-                >
-                  <FontAwesomeIcon icon={faPaperPlane} />
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+        // Main application component
+        const App = () => {
+            const [db, setDb] = useState(null);
+            const [auth, setAuth] = useState(null);
+            const [userId, setUserId] = useState(null);
+            const [isAuthReady, setIsAuthReady] = useState(false);
+            const [connectionStatus, setConnectionStatus] = useState('initial');
+            const [errorMessage, setErrorMessage] = useState('');
+            const [configJson, setConfigJson] = useState('');
+            const [messages, setMessages] = useState([]);
+            const [newMessage, setNewMessage] = useState('');
 
-export default App;
+            // Handles form submission for the Firebase configuration JSON
+            const handleConfigSubmit = async (e) => {
+                e.preventDefault();
+                setConnectionStatus('connecting');
+                setErrorMessage('');
+                let firebaseConfig;
+
+                try {
+                    firebaseConfig = JSON.parse(configJson);
+                    if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+                        throw new Error('Invalid Firebase config. Missing apiKey or projectId.');
+                    }
+                } catch (error) {
+                    setErrorMessage(`Invalid JSON format. Please ensure your configuration is a valid JSON object. Error: ${error.message}`);
+                    setConnectionStatus('error');
+                    return;
+                }
+
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    const authInstance = getAuth(app);
+                    const dbInstance = getFirestore(app);
+
+                    setDb(dbInstance);
+                    setAuth(authInstance);
+
+                    onAuthStateChanged(authInstance, async (user) => {
+                        if (user) {
+                            setUserId(user.uid);
+                            setConnectionStatus('connected');
+                            setIsAuthReady(true);
+                        } else {
+                            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(authInstance, initialAuthToken);
+                            } else {
+                                await signInAnonymously(authInstance);
+                            }
+                        }
+                    });
+
+                } catch (error) {
+                    setErrorMessage(`Failed to connect to Firebase. Please check your configuration. Error: ${error.message}`);
+                    setConnectionStatus('error');
+                }
+            };
+
+            // Listen for new messages once the user is authenticated
+            useEffect(() => {
+                if (db && userId && isAuthReady) {
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
+                    
+                    const q = query(messagesCollectionRef);
+
+                    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                        const fetchedMessages = [];
+                        querySnapshot.forEach((doc) => {
+                            fetchedMessages.push({ id: doc.id, ...doc.data() });
+                        });
+                        
+                        fetchedMessages.sort((a, b) => {
+                            const timestampA = a.timestamp ? a.timestamp.toDate() : 0;
+                            const timestampB = b.timestamp ? b.timestamp.toDate() : 0;
+                            return timestampA - timestampB;
+                        });
+                        setMessages(fetchedMessages);
+                    }, (error) => {
+                        console.error("Error fetching messages: ", error);
+                    });
+
+                    return () => unsubscribe();
+                }
+            }, [db, userId, isAuthReady]);
+
+            // Handle sending new messages
+            const handleSendMessage = async (e) => {
+                e.preventDefault();
+                if (newMessage.trim() === '' || !db || !userId) return;
+
+                try {
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
+                    
+                    await addDoc(messagesCollectionRef, {
+                        text: newMessage,
+                        userId: userId,
+                        timestamp: serverTimestamp(),
+                    });
+                    setNewMessage('');
+                } catch (error) {
+                    console.error("Error adding document: ", error);
+                }
+            };
+            
+            // Utility to copy user ID
+            const handleCopyUserId = () => {
+                try {
+                    navigator.clipboard.writeText(userId);
+                } catch (error) {
+                    const el = document.createElement('textarea');
+                    el.value = userId;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                }
+            };
+
+            return (
+                <div className="container-card">
+                    <h1 style={{fontSize: '1.875rem', fontWeight: 'bold', textAlign: 'center', color: '#1f2937'}}>Angel Hearts Forum</h1>
+                    <p style={{textAlign: 'center', color: '#4b5563'}}>
+                        Connect to your Firebase project to start sharing your music and poems.
+                    </p>
+                    
+                    {connectionStatus !== 'connected' ? (
+                        <form onSubmit={handleConfigSubmit} style={{display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.5rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb'}}>
+                            <h2 style={{fontSize: '1.25rem', fontWeight: 'semibold', textAlign: 'center', color: '#374151'}}>Paste Firebase Configuration</h2>
+                            <p style={{fontSize: '0.875rem', color: '#6b7280', textAlign: 'center'}}>
+                                Go to your Firebase project settings, find the "Firebase SDK snippet," and copy the full JSON configuration object. Paste it below.
+                            </p>
+                            <textarea
+                                className="input-area"
+                                placeholder={`Example:\n{\n  "apiKey": "AIzaSy...",\n  "authDomain": "my-project-123.firebaseapp.com",\n  "projectId": "my-project-123",\n  "storageBucket": "my-project-123.appspot.com",\n  "messagingSenderId": "1234567890",\n  "appId": "1:1234567890:web:abcdef"\n}`}
+                                value={configJson}
+                                onChange={(e) => setConfigJson(e.target.value)}
+                                required
+                            />
+                            <button type="submit" className="connect-button">
+                                Connect to Forum
+                            </button>
+                            <div style={{display: 'flex', justifyContent: 'center', marginTop: '1rem'}}>
+                                <ConnectionStatus status={connectionStatus} message={errorMessage} />
+                            </div>
+                        </form>
+                    ) : (
+                        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem'}}>
+                            <ConnectionStatus status={connectionStatus} message={errorMessage} />
+                            <div style={{backgroundColor: '#f3f4f6', padding: '1rem', borderRadius: '0.5rem', width: '100%', textAlign: 'center', fontSize: '0.875rem', wordBreak: 'break-all', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                                <p style={{color: '#374151', fontWeight: '500', marginBottom: '0.5rem'}}>Your User ID:</p>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                                    <code style={{color: '#6b7280'}}>{userId}</code>
+                                    <button onClick={handleCopyUserId} style={{color: '#9ca3af', border: 'none', background: 'none', cursor: 'pointer', padding: '0.25rem'}}>
+                                        &#x2398;
+                                    </button>
+                                </div>
+                            </div>
+                            <div style={{width: '100%', backgroundColor: '#f9fafb', borderRadius: '0.5rem', padding: '1rem', gap: '1rem', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column'}}>
+                                <h3 style={{fontSize: '1.125rem', fontWeight: 'semibold', textAlign: 'center', color: '#374151'}}>Messages</h3>
+                                <div style={{height: '16rem', overflowY: 'auto', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.5rem', backgroundColor: 'white'}}>
+                                    {messages.length > 0 ? (
+                                        messages.map((message) => (
+                                            <div key={message.id} style={{padding: '0.5rem', margin: '0.5rem 0', borderRadius: '0.5rem', backgroundColor: message.userId === userId ? '#f3e8ff' : '#e5e7eb', textAlign: message.userId === userId ? 'right' : 'left', marginLeft: message.userId === userId ? 'auto' : 'unset', marginRight: message.userId === userId ? 'unset' : 'auto', maxWidth: '80%'}}>
+                                                <p style={{fontWeight: '500', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem'}}>{message.userId === userId ? 'You' : `User: ${message.userId.substring(0, 8)}...`}</p>
+                                                <p style={{color: '#1f2937'}}>{message.text}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p style={{textAlign: 'center', color: '#9ca3af', marginTop: '2.5rem'}}>No messages yet. Be the first to share!</p>
+                                    )}
+                                </div>
+                                <form onSubmit={handleSendMessage} style={{display: 'flex', gap: '0.5rem'}}>
+                                    <input
+                                        type="text"
+                                        style={{flexGrow: 1, padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #d1d5db', outline: 'none'}}
+                                        placeholder="Write your message..."
+                                        value={newMessage}
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        required
+                                    />
+                                    <button type="submit" style={{padding: '0.75rem', background: 'linear-gradient(to right, #8b5cf6, #4f46e5)', color: 'white', borderRadius: '0.5rem', border: 'none', cursor: 'pointer'}}>
+                                        &#x27a4;
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
 </body>
 </html>
