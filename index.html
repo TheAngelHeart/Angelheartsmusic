@@ -35,7 +35,6 @@
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
                 <a href="#poem-creator" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Create</a>
-                <!-- NEW: Forum link -->
                 <a href="#forum" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Forum</a>
             </div>
         </nav>
@@ -376,9 +375,17 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global variables for Firebase configuration
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        // IMPORTANT: The Firebase configuration below has been updated with the values you provided.
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
+            authDomain: "theangelheart-8c3d4.firebaseapp.com",
+            projectId: "theangelheart-8c3d4",
+            storageBucket: "theangelheart-8c3d4.firebasestorage.app",
+            messagingSenderId: "1037239430431",
+            appId: "1:1037239430431:web:9e8ae59a2ca61ef17bd42a"
+        };
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.appId;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -397,11 +404,6 @@
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
                 const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
-                
-                if (!apiKey) {
-                    poemOutput.innerHTML = '<span class="text-red-400">Error: API key is not available. Please insert your API key into the code.</span>';
-                    return;
-                }
 
                 let chatHistory = [];
                 // Use a more specific prompt for better results, referencing your persona.
@@ -468,95 +470,84 @@
             });
             
             // --- FORUM SCRIPT ---
-
-            // Initialize Firebase
-            if (Object.keys(firebaseConfig).length) {
-                const app = initializeApp(firebaseConfig);
-                const auth = getAuth(app);
-                const db = getFirestore(app);
-                const userIdDisplay = document.getElementById('user-id');
-                const newTopicInput = document.getElementById('new-topic-input');
-                const addTopicButton = document.getElementById('add-topic-button');
-                const forumTopicsContainer = document.getElementById('forum-topics-container');
-                
-                // Sign in anonymously using the provided token if available
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        const userId = user.uid;
-                        userIdDisplay.textContent = userId;
-                        console.log("User signed in with ID:", userId);
-
-                        const forumCollectionPath = `artifacts/${appId}/public/data/forumTopics`;
-                        const topicsRef = collection(db, forumCollectionPath);
-
-                        // Real-time listener for forum topics
-                        onSnapshot(topicsRef, (snapshot) => {
-                            forumTopicsContainer.innerHTML = '';
-                            if (snapshot.empty) {
-                                forumTopicsContainer.innerHTML = `<p class="text-center text-gray-500 italic">No topics yet. Be the first to start a conversation!</p>`;
-                            } else {
-                                snapshot.forEach((doc) => {
-                                    const topic = doc.data();
-                                    const topicCard = document.createElement('div');
-                                    topicCard.className = 'bg-gray-800 rounded-lg p-4 shadow-md transition-transform transform hover:scale-[1.01] duration-300';
-                                    
-                                    const topicTitle = document.createElement('h4');
-                                    topicTitle.className = 'text-lg font-semibold text-purple-400';
-                                    topicTitle.textContent = topic.title;
-
-                                    const topicAuthor = document.createElement('p');
-                                    topicAuthor.className = 'text-sm text-gray-400 mt-1';
-                                    topicAuthor.textContent = `Posted by: ${topic.authorId}`;
-
-                                    topicCard.appendChild(topicTitle);
-                                    topicCard.appendChild(topicAuthor);
-                                    forumTopicsContainer.appendChild(topicCard);
-                                });
-                            }
-                        });
-
-                        // Add new topic functionality
-                        addTopicButton.addEventListener('click', async () => {
-                            const topicTitle = newTopicInput.value.trim();
-                            if (topicTitle) {
-                                try {
-                                    await addDoc(topicsRef, {
-                                        title: topicTitle,
-                                        authorId: userId,
-                                        createdAt: serverTimestamp()
-                                    });
-                                    newTopicInput.value = ''; // Clear the input after adding
-                                } catch (e) {
-                                    console.error("Error adding document: ", e);
-                                    // In a real app, you would show a user-friendly error message here
-                                }
-                            }
-                        });
-
-                    } else {
-                        console.log("User is not signed in.");
-                        userIdDisplay.textContent = 'Not signed in';
-                    }
-                });
-
+            
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            const userIdDisplay = document.getElementById('user-id');
+            const newTopicInput = document.getElementById('new-topic-input');
+            const addTopicButton = document.getElementById('add-topic-button');
+            const forumTopicsContainer = document.getElementById('forum-topics-container');
+            
+            // Sign in anonymously using the provided token if available
+            if (initialAuthToken) {
+                await signInWithCustomToken(auth, initialAuthToken);
             } else {
-                console.error("Firebase config is missing.");
-                const forumSection = document.getElementById('forum');
-                if (forumSection) {
-                    forumSection.innerHTML = `<div class="container mx-auto px-4 max-w-2xl"><p class="text-center text-red-400">Error: Firebase configuration is not available. The forum feature cannot be loaded.</p></div>`;
-                }
+                await signInAnonymously(auth);
             }
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const userId = user.uid;
+                    userIdDisplay.textContent = userId;
+                    console.log("User signed in with ID:", userId);
+
+                    const forumCollectionPath = `artifacts/${appId}/public/data/forumTopics`;
+                    const topicsRef = collection(db, forumCollectionPath);
+
+                    // Real-time listener for forum topics
+                    onSnapshot(topicsRef, (snapshot) => {
+                        forumTopicsContainer.innerHTML = '';
+                        if (snapshot.empty) {
+                            forumTopicsContainer.innerHTML = `<p class="text-center text-gray-500 italic">No topics yet. Be the first to start a conversation!</p>`;
+                        } else {
+                            snapshot.forEach((doc) => {
+                                const topic = doc.data();
+                                const topicCard = document.createElement('div');
+                                topicCard.className = 'bg-gray-800 rounded-lg p-4 shadow-md transition-transform transform hover:scale-[1.01] duration-300';
+                                
+                                const topicTitle = document.createElement('h4');
+                                topicTitle.className = 'text-lg font-semibold text-purple-400';
+                                topicTitle.textContent = topic.title;
+
+                                const topicAuthor = document.createElement('p');
+                                topicAuthor.className = 'text-sm text-gray-400 mt-1';
+                                topicAuthor.textContent = `Posted by: ${topic.authorId}`;
+
+                                topicCard.appendChild(topicTitle);
+                                topicCard.appendChild(topicAuthor);
+                                forumTopicsContainer.appendChild(topicCard);
+                            });
+                        }
+                    });
+
+                    // Add new topic functionality
+                    addTopicButton.addEventListener('click', async () => {
+                        const topicTitle = newTopicInput.value.trim();
+                        if (topicTitle) {
+                            try {
+                                await addDoc(topicsRef, {
+                                    title: topicTitle,
+                                    authorId: userId,
+                                    createdAt: serverTimestamp()
+                                });
+                                newTopicInput.value = ''; // Clear the input after adding
+                            } catch (e) {
+                                console.error("Error adding document: ", e);
+                                // In a real app, you would show a user-friendly error message here
+                            }
+                        }
+                    });
+
+                } else {
+                    console.log("User is not signed in.");
+                    userIdDisplay.textContent = 'Not signed in';
+                }
+            });
         });
     </script>
 </body>
 </html>
-
 
 
 
