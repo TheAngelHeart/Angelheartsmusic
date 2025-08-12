@@ -379,7 +379,13 @@
                             
                             const errorText = response.statusText || 'An unexpected error occurred.';
                             console.error(`API call failed with status ${response.status}: ${errorText}`);
-                            poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please try again.</span>`;
+
+                            // Added a more specific error message for 403 Forbidden errors
+                            if (response.status === 403) {
+                                poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (403 - Forbidden). This may be due to an invalid API key. Please try again.</span>`;
+                            } else {
+                                poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please try again.</span>`;
+                            }
                             return;
                         }
 
