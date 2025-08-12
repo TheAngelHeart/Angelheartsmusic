@@ -376,17 +376,6 @@
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // IMPORTANT: The Firebase configuration will now be pulled from the environment.
-        // The previous hardcoded config was likely the cause of the `auth/configuration-not-found` error.
-        // User's previous config was:
-        // const firebaseConfig = {
-        //     apiKey: "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
-        //     authDomain: "theangelheart-8c3d4.firebaseapp.com",
-        //     projectId: "theangelheart-8c3d4",
-        //     storageBucket: "theangelheart-8c3d4.firebasestorage.app",
-        //     messagingSenderId: "1037239430431",
-        //     appId: "1:1037239430431:web:9e8ae59a2ca61ef17bd42a"
-        // };
-
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         
         // This variable is provided by the canvas environment for unique app identification
@@ -413,158 +402,179 @@
                 
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                const apiKey = ""; // Canvas will provide this key automatically
+                // IMPORTANT: The hardcoded API key has been re-added to ensure functionality.
+                const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
 
                 let chatHistory = [];
-                // Use a more specific prompt for better results, referencing your persona.
-                chatHistory.push({ role: "user", parts: [{ text: `Write a short poem for Angel Heart about: ${prompt}` }] });
-                
+                // Use a more specific prompt for better results, like "Write a poem about..."
+                chatHistory.push({ role: "user", parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] });
                 const payload = { contents: chatHistory };
+                
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
-                let retries = 0;
+                // Implement exponential backoff for API calls
                 const maxRetries = 5;
-                const baseDelay = 1000; // 1 second
+                let retryCount = 0;
+                let response;
 
-                while (retries < maxRetries) {
+                while (retryCount < maxRetries) {
                     try {
-                        const response = await fetch(apiUrl, {
+                        response = await fetch(apiUrl, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
                         });
 
+                        if (response.status === 429) { // Too many requests
+                            const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+                            console.warn(`API rate limit exceeded. Retrying in ${delay / 1000} seconds...`);
+                            await new Promise(res => setTimeout(res, delay));
+                            retryCount++;
+                            continue;
+                        }
+
                         if (!response.ok) {
-                            if (response.status === 429) {
-                                const delay = baseDelay * Math.pow(2, retries);
-                                await new Promise(resolve => setTimeout(resolve, delay));
-                                retries++;
-                                continue;
-                            }
-                            
-                            const errorText = response.statusText || 'An unexpected error occurred.';
-                            console.error(`API call failed with status ${response.status}: ${errorText}`);
-                            poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please try again.</span>`;
-                            return;
+                            throw new Error(`API request failed with status: ${response.status}`);
                         }
 
                         const result = await response.json();
-                        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-                        if (text) {
-                            poemOutput.innerHTML = `<p class="whitespace-pre-line">${text}</p>`;
-                            return;
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            const text = result.candidates[0].content.parts[0].text;
+                            poemOutput.innerHTML = `<p class="text-left whitespace-pre-line">${text}</p>`;
                         } else {
-                            console.error("API response was not in the expected format:", result);
-                            throw new Error("Invalid response format from API.");
+                            poemOutput.innerHTML = '<span class="text-red-400">Error: Could not generate a poem. Please try a different topic.</span>';
                         }
-
+                        return; // Exit loop on success
                     } catch (error) {
-                        console.error("API call failed:", error);
-                        poemOutput.innerHTML = `<span class="text-red-400">Error: ${error.message}. Please try again.</span>`;
+                        console.error('Fetch error:', error);
+                        poemOutput.innerHTML = '<span class="text-red-400">Error: An unexpected error occurred. Please check your network and try again.</span>';
                         return;
                     }
                 }
-                
-                poemOutput.innerHTML = '<span class="text-red-400">Failed to generate poem after multiple attempts. Please try again later.</span>';
+
+                if (retryCount >= maxRetries) {
+                    poemOutput.innerHTML = '<span class="text-red-400">Error: The API is not responding after multiple retries. Please try again later.</span>';
+                }
             };
-
+            
             generateButton.addEventListener('click', generatePoem);
-
-            promptInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault(); // Prevent new line in textarea
+            promptInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
                     generatePoem();
                 }
             });
-            
-            // --- FORUM SCRIPT ---
-            
+
+            // --- FORUM SCRIPT (Firebase) ---
+            let userId = null;
             const userIdDisplay = document.getElementById('user-id');
             const newTopicInput = document.getElementById('new-topic-input');
             const addTopicButton = document.getElementById('add-topic-button');
             const forumTopicsContainer = document.getElementById('forum-topics-container');
-            
-            // Sign in anonymously using the provided token if available
-            try {
-                if (initialAuthToken) {
-                    console.log("Attempting sign-in with custom token...");
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    console.log("Attempting anonymous sign-in...");
-                    await signInAnonymously(auth);
+
+            const signInAndListen = async () => {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    }
+                } catch (error) {
+                    console.error("Firebase Auth error:", error);
+                    return;
                 }
-                console.log("Authentication successful.");
-            } catch (e) {
-                console.error("Authentication failed:", e);
-                userIdDisplay.textContent = 'Auth Failed';
-            }
 
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    const userId = user.uid;
-                    userIdDisplay.textContent = userId;
-                    console.log("User signed in with ID:", userId);
-
-                    // CORRECTED: Use the projectId as a unique identifier for the collection path
-                    const forumCollectionPath = `artifacts/${appId}/public/data/forumTopics`;
-                    const topicsRef = collection(db, forumCollectionPath);
-                    console.log("Firestore collection path:", forumCollectionPath);
-
-                    // Real-time listener for forum topics
-                    onSnapshot(topicsRef, (snapshot) => {
-                        forumTopicsContainer.innerHTML = '';
-                        if (snapshot.empty) {
-                            forumTopicsContainer.innerHTML = `<p class="text-center text-gray-500 italic">No topics yet. Be the first to start a conversation!</p>`;
-                        } else {
-                            snapshot.forEach((doc) => {
-                                const topic = doc.data();
-                                const topicCard = document.createElement('div');
-                                topicCard.className = 'bg-gray-800 rounded-lg p-4 shadow-md transition-transform transform hover:scale-[1.01] duration-300';
-                                
-                                const topicTitle = document.createElement('h4');
-                                topicTitle.className = 'text-lg font-semibold text-purple-400';
-                                topicTitle.textContent = topic.title;
-
-                                const topicAuthor = document.createElement('p');
-                                topicAuthor.className = 'text-sm text-gray-400 mt-1';
-                                topicAuthor.textContent = `Posted by: ${topic.authorId}`;
-
-                                topicCard.appendChild(topicTitle);
-                                topicCard.appendChild(topicAuthor);
-                                forumTopicsContainer.appendChild(topicCard);
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userIdDisplay.textContent = userId;
+                        console.log("User ID:", userId);
+                        
+                        // Set up real-time listener for forum topics
+                        const publicForumCollection = collection(db, `artifacts/${appId}/public/data/forumTopics`);
+                        onSnapshot(publicForumCollection, (snapshot) => {
+                            forumTopicsContainer.innerHTML = '';
+                            const topics = [];
+                            snapshot.forEach(doc => {
+                                topics.push({ id: doc.id, ...doc.data() });
                             });
-                        }
-                    });
 
-                    // Add new topic functionality
-                    addTopicButton.addEventListener('click', async () => {
-                        const topicTitle = newTopicInput.value.trim();
-                        if (topicTitle) {
-                            try {
-                                await addDoc(topicsRef, {
-                                    title: topicTitle,
-                                    authorId: userId,
-                                    createdAt: serverTimestamp()
+                            // Sort topics by timestamp in descending order
+                            topics.sort((a, b) => b.timestamp - a.timestamp);
+
+                            if (topics.length === 0) {
+                                forumTopicsContainer.innerHTML = '<p class="text-center text-gray-500 italic">No topics yet. Be the first to start a conversation!</p>';
+                            } else {
+                                topics.forEach(topic => {
+                                    const topicElement = document.createElement('div');
+                                    topicElement.className = 'bg-gray-800 rounded-xl p-4 shadow-md';
+                                    topicElement.innerHTML = `
+                                        <p class="text-gray-200 font-semibold text-lg">${topic.content}</p>
+                                        <p class="text-sm text-gray-500 mt-2">Posted by: <span class="font-mono text-purple-300">${topic.authorId}</span></p>
+                                    `;
+                                    forumTopicsContainer.appendChild(topicElement);
                                 });
-                                newTopicInput.value = ''; // Clear the input after adding
-                            } catch (e) {
-                                console.error("Error adding document: ", e);
-                                // In a real app, you would show a user-friendly error message here
                             }
-                        }
-                    });
+                        });
+                    } else {
+                        console.log("No user signed in.");
+                    }
+                });
+            };
 
-                } else {
-                    console.log("User is not signed in.");
-                    userIdDisplay.textContent = 'Not signed in';
+            addTopicButton.addEventListener('click', async () => {
+                if (!userId) {
+                    // Display a modal-like message since alert() is not allowed
+                    const tempMessage = document.createElement('div');
+                    tempMessage.className = 'fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm';
+                    tempMessage.innerHTML = `
+                        <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center">
+                            <p class="text-white">Authentication not complete. Please wait a moment.</p>
+                        </div>
+                    `;
+                    document.body.appendChild(tempMessage);
+                    setTimeout(() => tempMessage.remove(), 2000);
+                    console.log("User ID is not available yet.");
+                    return;
+                }
+
+                const topicContent = newTopicInput.value.trim();
+                if (topicContent) {
+                    try {
+                        const publicForumCollection = collection(db, `artifacts/${appId}/public/data/forumTopics`);
+                        await addDoc(publicForumCollection, {
+                            content: topicContent,
+                            authorId: userId,
+                            timestamp: serverTimestamp()
+                        });
+                        newTopicInput.value = '';
+                    } catch (e) {
+                        console.error("Error adding document: ", e);
+                        // Display a modal-like error message
+                        const tempMessage = document.createElement('div');
+                        tempMessage.className = 'fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm';
+                        tempMessage.innerHTML = `
+                            <div class="bg-red-900 p-8 rounded-lg shadow-xl text-center">
+                                <p class="text-white">Error posting topic. Please try again.</p>
+                            </div>
+                        `;
+                        document.body.appendChild(tempMessage);
+                        setTimeout(() => tempMessage.remove(), 2000);
+                    }
                 }
             });
+
+            signInAndListen();
         });
     </script>
 </body>
 </html>
+
 
 
 
