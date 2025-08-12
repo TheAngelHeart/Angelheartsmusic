@@ -402,11 +402,10 @@
                 
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                // IMPORTANT: The hardcoded API key has been re-added to ensure functionality.
-                const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
+                // IMPORTANT: The API key is now set to an empty string, allowing the environment to provide it.
+                const apiKey = ""; 
 
                 let chatHistory = [];
-                // Use a more specific prompt for better results, like "Write a poem about..."
                 chatHistory.push({ role: "user", parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] });
                 const payload = { contents: chatHistory };
                 
@@ -574,6 +573,7 @@
     </script>
 </body>
 </html>
+
 
 
 
