@@ -427,9 +427,27 @@
             <span class="text-sm text-gray-400">Your User ID:</span>
             <span id="userId-display" class="block font-mono text-pink-400 break-all">Connecting...</span>
         </div>
+        
+        <!-- API Key Input Section (New) -->
+        <div id="api-key-section" class="bg-gray-900 rounded-2xl p-8 shadow-xl mb-8 hidden">
+            <h3 class="text-2xl font-bold text-white mb-4">Manual API Key</h3>
+            <p class="text-gray-400 mb-4">It seems the automatic configuration failed. Please enter your Firebase API key below to connect to the forum.</p>
+            <input
+                id="api-key-input"
+                type="text"
+                class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
+                placeholder="Enter your Firebase API key here"
+            >
+            <button
+                id="reconnect-button"
+                class="mt-4 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg transform hover:scale-105"
+            >
+                Connect with API Key
+            </button>
+        </div>
 
         <!-- New Post Form -->
-        <div class="bg-gray-900 rounded-2xl p-8 shadow-xl mb-8">
+        <div id="post-form-section" class="bg-gray-900 rounded-2xl p-8 shadow-xl mb-8 hidden">
             <h3 class="text-2xl font-bold text-white mb-4">Post a Message</h3>
             <input
                 id="post-name"
@@ -448,8 +466,10 @@
             >
                 Post Message
             </button>
-            <div id="forum-status" class="mt-4 text-center text-sm text-red-400"></div>
         </div>
+
+        <!-- Forum Status and Error Messages -->
+        <div id="forum-status" class="mt-4 text-center text-sm text-red-400"></div>
 
         <!-- Posts Display Area -->
         <div id="posts-container" class="space-y-6">
@@ -473,27 +493,41 @@
     const userName = 'Angel Heart';
 
     // This function handles all the Firebase initialization and forum setup
-    const initializeFirebaseAndForum = async () => {
+    const initializeFirebaseAndForum = async (manualApiKey = null) => {
         const forumStatus = document.getElementById('forum-status');
         const userIdDisplay = document.getElementById('userId-display');
+        const postFormSection = document.getElementById('post-form-section');
+        const apiKeySection = document.getElementById('api-key-section');
 
         userIdDisplay.textContent = 'Connecting...';
         forumStatus.textContent = 'Connecting to the forum...';
 
+        let firebaseConfig = {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
         // Check for the Canvas environment variables
         if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
-            const errorMsg = "Error: Firebase configuration or app ID is unavailable. The forum cannot be loaded.";
+            const errorMsg = "Error: Firebase configuration or app ID is unavailable.";
             console.error(errorMsg);
-            forumStatus.textContent = errorMsg;
+            forumStatus.textContent = `${errorMsg} Please use the manual API key input below.`;
+            apiKeySection.classList.remove('hidden');
             userIdDisplay.textContent = 'Unavailable';
-            return; // Exit the function gracefully
+            return;
+        } else {
+            // Use environment variables if they are present
+            try {
+                firebaseConfig = JSON.parse(__firebase_config);
+                appId = __app_id;
+            } catch (e) {
+                console.error("Failed to parse Firebase config from environment variable:", e);
+                forumStatus.textContent = "Error parsing Firebase configuration. Please use the manual API key input.";
+                apiKeySection.classList.remove('hidden');
+                userIdDisplay.textContent = 'Unavailable';
+                return;
+            }
         }
         
         try {
-            const firebaseConfig = JSON.parse(__firebase_config);
-            appId = __app_id;
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
             // Initialize Firebase services
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
@@ -523,19 +557,25 @@
         } catch (e) {
             console.error("Firebase initialization or authentication failed:", e);
             // Provide a more specific error message to help with debugging
-            forumStatus.textContent = `Error: Cannot connect to the forum. Details: ${e.message}`;
+            forumStatus.textContent = `Error: Cannot connect to the forum. Details: ${e.message}. Please try the manual API key input.`;
+            apiKeySection.classList.remove('hidden');
             userIdDisplay.textContent = 'Unavailable';
         }
     };
-
+    
     const setupForum = () => {
         const postButton = document.getElementById('post-button');
         const postNameInput = document.getElementById('post-name');
         const postMessageInput = document.getElementById('post-message');
         const postsContainer = document.getElementById('posts-container');
         const forumStatus = document.getElementById('forum-status');
+        const postFormSection = document.getElementById('post-form-section');
+        const apiKeySection = document.getElementById('api-key-section');
+
         forumStatus.textContent = ''; // Clear status on successful connection
-        
+        postFormSection.classList.remove('hidden'); // Show the post form
+        apiKeySection.classList.add('hidden'); // Hide the API key input
+
         // Pre-fill the name field with the user's preferred name
         postNameInput.value = userName;
 
