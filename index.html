@@ -273,7 +273,52 @@ The heart i needed most <br>
         </div>
     </section>
 
-        <!-- NEW: Gemini Poem Creator Section -->
+       <!-- Poetry Card 2 - Placeholder for your poem -->
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
+                    <h3 class="text-2xl font-bold text-purple-400 mb-2">Poem Title 2</h3>
+                    <p class="text-gray-400 text-sm mb-4">
+                        A new piece that will soon become a song.
+                    </p>
+                    <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
+                        <p class="text-gray-300 leading-relaxed text-lg">
+                            Through gilded gates and skies of grace, <br>
+                            A timeless dance, a cosmic race. <br>
+                            The echoes of a song unheard, <br>
+                            Carried on the wing of a single bird. <br>
+                            <br>
+                            A promise written in the air, <br>
+                            A silent and a hopeful prayer. <br>
+                            For all the souls that seek to find, <br>
+                            A peaceful haven for the mind. <br>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Poetry Card 3 - Placeholder for your poem -->
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
+                    <h3 class="text-2xl font-bold text-purple-400 mb-2">Poem Title 3</h3>
+                    <p class="text-gray-400 text-sm mb-4">
+                        An excerpt from "Angel Hearts, Book One."
+                    </p>
+                    <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
+                        <p class="text-gray-300 leading-relaxed text-lg">
+                            A fragile dream, a tender thought, <br>
+                            A lesson that the spirit's taught. <br>
+                            In every beat, a rhythm lies, <br>
+                            Reflected in the other's eyes. <br>
+                            <br>
+                            So let the world a symphony make, <br>
+                            For every fragile, hopeful sake. <br>
+                            Let kindness be the guiding star, <br>
+                            No matter where or who we are. <br>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW: Gemini Poem Creator Section -->
     <section id="poem-creator" class="py-20 bg-gray-900">
         <div class="container mx-auto px-4 max-w-2xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
@@ -330,6 +375,8 @@ The heart i needed most <br>
             const poemOutput = document.getElementById('poem-output');
             const messageBox = document.getElementById('message-box');
 
+            const API_KEY_STORAGE_KEY = 'gemini-api-key';
+
             const showMessage = (text, type = 'info') => {
                 let colorClass = '';
                 if (type === 'error') {
@@ -342,6 +389,19 @@ The heart i needed most <br>
                 messageBox.innerHTML = `<span class="${colorClass}">${text}</span>`;
             };
 
+            const getApiKey = () => {
+                const storedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+                if (storedKey) {
+                    return storedKey;
+                }
+                const newKey = prompt("Please enter your Gemini API key to use the poem generator. You can get one for free at aistudio.google.com.");
+                if (newKey) {
+                    localStorage.setItem(API_KEY_STORAGE_KEY, newKey);
+                    return newKey;
+                }
+                return null;
+            };
+
             // Function to make API call to Gemini
             const generatePoem = async () => {
                 const prompt = promptInput.value;
@@ -350,15 +410,9 @@ The heart i needed most <br>
                     return;
                 }
                 
-                // IMPORTANT: This code requires an API key to communicate with the Gemini API.
-                // If you are running this on your own website, you must get a free key from Google AI Studio.
-                // Replace the text below with your actual API key.
-                const apiKey = AIzaSyCbBRuXjAUzfi8hAsZIIq9E6QgowDaPmhM
-;
-                if (apiKey === AIzaSyCbBRuXjAUzfi8hAsZIIq9E6QgowDaPmhM
- || apiKey === AIzaSyCbBRuXjAUzfi8hAsZIIq9E6QgowDaPmhM
-) {
-                    showMessage('API Key is missing. Please add your key to the code to proceed.', 'error');
+                const apiKey = getApiKey();
+                if (!apiKey) {
+                    showMessage('API Key is missing. Please enter your key when prompted to proceed.', 'error');
                     return;
                 }
 
@@ -430,3 +484,4 @@ The heart i needed most <br>
     </script>
 </body>
 </html>
+
