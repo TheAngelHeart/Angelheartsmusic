@@ -481,35 +481,14 @@
         forumStatus.textContent = 'Connecting to the forum...';
 
         try {
-            let firebaseConfig;
-            let initialAuthToken;
+            // Get the configuration from the Canvas environment.
+            if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
+                throw new Error("Firebase configuration or app ID is unavailable.");
+            }
             
-            // Check if the environment variables are available. If not, use a hardcoded fallback.
-            if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
-                firebaseConfig = JSON.parse(__firebase_config);
-                appId = __app_id;
-                initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                console.log("Using environment variables for Firebase configuration.");
-            } else {
-                // This is a hardcoded configuration for when environment variables are not available.
-                console.warn("Environment variables for Firebase are missing. Using hardcoded fallback.");
-                firebaseConfig = {
-                    apiKey: "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
-                    authDomain: "theangelheart-8c3d4.firebaseapp.com",
-                    projectId: "theangelheart-8c3d4",
-                    storageBucket: "theangelheart-8c3d4.firebasestorage.app",
-                    messagingSenderId: "1037239430431",
-                    appId: "1:1037239430431:web:9e8ae59a2ca61ef17bd42a",
-                    measurementId: "G-Z2YJXCBN09"
-                };
-                appId = 'theangelheart-8c3d4'; // Using a consistent fallback app ID.
-                initialAuthToken = null; // No custom token available with the fallback.
-            }
-
-            // Ensure we have a valid configuration before proceeding.
-            if (!firebaseConfig.apiKey) {
-                throw new Error("Firebase API Key is not configured.");
-            }
+            const firebaseConfig = JSON.parse(__firebase_config);
+            appId = __app_id;
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
             // Initialize Firebase services
             const app = initializeApp(firebaseConfig);
