@@ -480,12 +480,16 @@
         userIdDisplay.textContent = 'Connecting...';
         forumStatus.textContent = 'Connecting to the forum...';
 
+        // Check for the Canvas environment variables
+        if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
+            const errorMsg = "Error: Firebase configuration or app ID is unavailable. The forum cannot be loaded.";
+            console.error(errorMsg);
+            forumStatus.textContent = errorMsg;
+            userIdDisplay.textContent = 'Unavailable';
+            return; // Exit the function gracefully
+        }
+        
         try {
-            // Get the configuration from the Canvas environment.
-            if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
-                throw new Error("Firebase configuration or app ID is unavailable.");
-            }
-            
             const firebaseConfig = JSON.parse(__firebase_config);
             appId = __app_id;
             const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
