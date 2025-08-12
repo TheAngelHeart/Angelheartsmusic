@@ -273,7 +273,7 @@ The heart i needed most <br>
         </div>
     </section>
 
-     <!-- NEW: Gemini Poem Creator Section -->
+    <!-- NEW: Gemini Poem Creator Section -->
     <section id="poem-creator" class="py-20 bg-gray-900">
         <div class="container mx-auto px-4 max-w-2xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
@@ -300,6 +300,9 @@ The heart i needed most <br>
             <div id="poem-output" class="mt-8 bg-gray-800 rounded-2xl p-8 shadow-xl min-h-64 flex items-center justify-center text-center text-gray-400 italic">
                 Your poem will appear here.
             </div>
+
+            <!-- New message box for user feedback -->
+            <div id="message-box" class="mt-4 text-center text-sm"></div>
         </div>
     </section>
 
@@ -325,23 +328,46 @@ The heart i needed most <br>
             const promptInput = document.getElementById('poem-prompt');
             const generateButton = document.getElementById('generate-button');
             const poemOutput = document.getElementById('poem-output');
+            const messageBox = document.getElementById('message-box');
+
+            const showMessage = (text, type = 'info') => {
+                let colorClass = '';
+                if (type === 'error') {
+                    colorClass = 'text-red-400';
+                } else if (type === 'success') {
+                    colorClass = 'text-green-400';
+                } else {
+                    colorClass = 'text-gray-400';
+                }
+                messageBox.innerHTML = `<span class="${colorClass}">${text}</span>`;
+            };
 
             // Function to make API call to Gemini
             const generatePoem = async () => {
                 const prompt = promptInput.value;
                 if (!prompt) {
-                    poemOutput.innerHTML = '<span class="text-red-400">Please enter a topic for your poem!</span>';
+                    showMessage('Please enter a topic for your poem!', 'error');
                     return;
                 }
                 
+                // NOTE: If you are running this code on your own web server, you must provide your own API key.
+                // Replace the empty string below with your key from Google AI Studio.
+                const apiKey = "AIzaSyAGnpAPNT_hmymsrP9O0LKDkg37Lbeo1sA
+";
+                if (apiKey === "AIzaSyAGnpAPNT_hmymsrP9O0LKDkg37Lbeo1sA
+") {
+                    showMessage('API Key is missing. Please add your Gemini API key to the code to proceed.', 'error');
+                    return;
+                }
+
                 // Show a loading message while waiting for the response
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
+                showMessage('Generating...', 'info');
                 
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: `Write a short poem about: ${prompt}` }] });
                 
                 const payload = { contents: chatHistory };
-                const apiKey = "";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
                 let retries = 0;
@@ -371,8 +397,9 @@ The heart i needed most <br>
                         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
                         if (text) {
-                            // Replace newlines with <br> tags for HTML display
+                            // Display the poem
                             poemOutput.innerHTML = `<p class="whitespace-pre-wrap">${text}</p>`;
+                            showMessage('Poem generated successfully!', 'success');
                             return;
                         } else {
                             throw new Error("Invalid response format from API.");
@@ -380,13 +407,13 @@ The heart i needed most <br>
 
                     } catch (error) {
                         console.error("API call failed:", error);
-                        poemOutput.innerHTML = '<span class="text-red-400">Oops! Something went wrong. Please try again.</span>';
+                        showMessage('Oops! Something went wrong. Please try again.', 'error');
                         return;
                     }
                 }
                 
                 // If all retries fail
-                poemOutput.innerHTML = '<span class="text-red-400">Failed to generate poem after multiple attempts. Please try again later.</span>';
+                showMessage('Failed to generate poem after multiple attempts. Please try again later.', 'error');
             };
 
             generateButton.addEventListener('click', generatePoem);
