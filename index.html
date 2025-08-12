@@ -378,77 +378,73 @@
         </div>
     </footer>
 
-    <!-- Firebase SDKs -->
+    <!-- All JavaScript, including Firebase and Poem Creator, in a single script block for reliability -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // Use global variables provided by the Canvas environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
         let db;
         let auth;
         let userId = null;
-
-        // Initialize Firebase on window load
-        window.onload = async () => {
-            let firebaseConfig;
+        
+        // This function handles all the Firebase initialization and forum setup
+        const initializeFirebaseAndForum = async () => {
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
             const forumStatus = document.getElementById('forum-status');
+            const userIdDisplay = document.getElementById('userId-display');
 
-            // Set a default error message and let the code proceed only if successful
-            let initializationSuccessful = false;
-            forumStatus.textContent = 'Connecting to forum...';
-            document.getElementById('userId-display').textContent = 'Connecting...';
+            // Reset UI to a connecting state
+            userIdDisplay.textContent = 'Connecting...';
+            forumStatus.textContent = 'Connecting to the forum...';
 
             try {
-                // Safely check if the configuration exists and is a valid JSON string
-                if (typeof __firebase_config !== 'undefined' && typeof __firebase_config === 'string' && __firebase_config.length > 0) {
-                    firebaseConfig = JSON.parse(__firebase_config);
-                    // Double-check for essential properties after parsing
-                    if (!firebaseConfig || !firebaseConfig.apiKey) {
-                        throw new Error("Invalid or missing Firebase configuration properties.");
-                    }
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-                    console.log("Firebase initialized successfully.");
-                    initializationSuccessful = true;
-                } else {
-                    throw new Error("Firebase configuration is not available or is malformed.");
+                // Safely check for and parse the Firebase configuration
+                const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+                if (!firebaseConfigStr || typeof firebaseConfigStr !== 'string' || firebaseConfigStr.length === 0) {
+                    throw new Error("Firebase configuration is not available.");
                 }
-            } catch (e) {
-                console.error("Firebase initialization failed:", e);
-                forumStatus.textContent = 'Error: Firebase configuration issue. Cannot connect to the forum.';
-                document.getElementById('userId-display').textContent = 'Unavailable';
-            }
+                const firebaseConfig = JSON.parse(firebaseConfigStr);
+                if (!firebaseConfig || !firebaseConfig.apiKey) {
+                    throw new Error("Invalid or missing Firebase configuration properties.");
+                }
 
-            // Only proceed with authentication and forum setup if initialization was successful
-            if (initializationSuccessful) {
-                try {
-                    onAuthStateChanged(auth, (user) => {
+                // Initialize Firebase services
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                console.log("Firebase initialized successfully.");
+
+                // Sign in the user with the provided token or anonymously
+                await new Promise((resolve, reject) => {
+                    const unsubscribe = onAuthStateChanged(auth, async (user) => {
                         if (user) {
                             userId = user.uid;
-                            document.getElementById('userId-display').textContent = userId;
+                            userIdDisplay.textContent = userId;
                             console.log("Authenticated with user ID:", userId);
                             setupForum();
+                            unsubscribe(); // Stop listening once authenticated
+                            resolve();
                         } else {
-                            console.log("No user signed in yet. Attempting anonymous sign-in...");
-                            document.getElementById('userId-display').textContent = "Authenticating...";
+                            try {
+                                if (initialAuthToken) {
+                                    await signInWithCustomToken(auth, initialAuthToken);
+                                } else {
+                                    await signInAnonymously(auth);
+                                }
+                            } catch (e) {
+                                reject(e);
+                            }
                         }
-                    });
+                    }, reject);
+                });
 
-                    // Sign in with custom token or anonymously
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (e) {
-                    console.error("Firebase authentication failed:", e);
-                    forumStatus.textContent = 'Error: Authentication failed. Cannot connect to the forum.';
-                }
+            } catch (e) {
+                console.error("Firebase initialization or authentication failed:", e);
+                forumStatus.textContent = 'Error: Firebase configuration issue. Cannot connect to the forum.';
+                userIdDisplay.textContent = 'Unavailable';
+                // Forum setup will not be called in case of an error
             }
         };
 
@@ -460,22 +456,18 @@
             const forumStatus = document.getElementById('forum-status');
             forumStatus.textContent = ''; // Clear status on successful connection
 
-            // Reference to the public forum collection
-            // Path: /artifacts/{appId}/public/data/forum-posts
             const forumCollectionRef = collection(db, `artifacts/${appId}/public/data/forum-posts`);
 
             // Listen for new posts in real-time
             const q = query(forumCollectionRef);
             const unsubscribe = onSnapshot(q, (snapshot) => {
-                postsContainer.innerHTML = ''; // Clear existing posts
+                postsContainer.innerHTML = '';
                 const posts = [];
                 snapshot.forEach(doc => {
                     posts.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Sort posts by timestamp in descending order (newest first)
                 posts.sort((a, b) => {
-                    // Handle cases where timestamp might be null (e.g., while the post is being saved)
                     const timeA = a.timestamp ? a.timestamp.seconds : 0;
                     const timeB = b.timestamp ? b.timestamp.seconds : 0;
                     return timeB - timeA;
@@ -533,7 +525,7 @@
                     
                     postNameInput.value = '';
                     postMessageInput.value = '';
-                    forumStatus.textContent = ''; // Clear status on success
+                    forumStatus.textContent = '';
 
                 } catch (e) {
                     console.error("Error adding document: ", e);
@@ -541,17 +533,14 @@
                 }
             });
         };
-    </script>
-    
-    <!-- Poem Creator Script (completely separated) -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+
+        // This function is for the Gemini Poem Creator
+        const setupPoemCreator = () => {
             const promptInput = document.getElementById('poem-prompt');
             const generateButton = document.getElementById('generate-button');
             const poemOutput = document.getElementById('poem-output');
             
-            // This is the correct API key for the Gemini poem generator.
-            const geminiApiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
+            const geminiApiKey = ""; // This is an empty API key and will be replaced by the Canvas environment.
 
             const generatePoem = async () => {
                 const prompt = promptInput.value;
@@ -622,6 +611,12 @@
                     generatePoem();
                 }
             });
+        };
+
+        // Start everything once the DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeFirebaseAndForum();
+            setupPoemCreator();
         });
     </script>
 </body>
