@@ -413,7 +413,7 @@
     </script>
 
 <!-- Forum Section -->
-<section id="forum" class="py-20 bg-gray-800">
+<section id="forum" class="py-20 bg-gray-800 font-sans text-white">
     <div class="container mx-auto px-4 max-w-2xl">
         <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
             Angel Hearts Forum
@@ -423,26 +423,27 @@
         </p>
 
         <!-- Display current user ID -->
-        <div class="text-center mb-6 p-4 bg-gray-900 rounded-xl shadow-inner">
+        <div class="text-center mb-6 p-4 bg-gray-900 rounded-xl shadow-inner border border-gray-700">
             <span class="text-sm text-gray-400">Your User ID:</span>
             <span id="userId-display" class="block font-mono text-pink-400 break-all">Connecting...</span>
         </div>
         
-        <!-- API Key Input Section (New) -->
-        <div id="api-key-section" class="bg-gray-900 rounded-2xl p-8 shadow-xl mb-8 hidden">
-            <h3 class="text-2xl font-bold text-white mb-4">Manual API Key</h3>
-            <p class="text-gray-400 mb-4">It seems the automatic configuration failed. Please enter your Firebase API key below to connect to the forum.</p>
-            <input
-                id="api-key-input"
-                type="text"
-                class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
-                placeholder="Enter your Firebase API key here"
-            >
+        <!-- Manual Configuration Input Section -->
+        <div id="manual-config-section" class="bg-gray-900 rounded-2xl p-8 shadow-xl mb-8 hidden">
+            <h3 class="text-2xl font-bold text-white mb-4">Manual Firebase Configuration</h3>
+            <p class="text-gray-400 mb-4">
+                The automatic connection failed. Please paste your full Firebase configuration JSON object below.
+            </p>
+            <textarea
+                id="config-input"
+                class="w-full h-48 p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none font-mono"
+                placeholder="Paste your Firebase config JSON here, e.g., { 'apiKey': '...', 'authDomain': '...', 'projectId': '...' }"
+            ></textarea>
             <button
-                id="reconnect-button"
+                id="connect-button"
                 class="mt-4 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg transform hover:scale-105"
             >
-                Connect with API Key
+                Connect to Forum
             </button>
         </div>
 
@@ -493,13 +494,13 @@
     const userName = 'Angel Heart';
 
     // This function handles all the Firebase initialization and forum setup
-    const initializeFirebaseAndForum = async (manualApiKey = null) => {
+    const initializeFirebaseAndForum = async (manualConfig = null) => {
         const forumStatus = document.getElementById('forum-status');
         const userIdDisplay = document.getElementById('userId-display');
         const postFormSection = document.getElementById('post-form-section');
-        const apiKeySection = document.getElementById('api-key-section');
-        const reconnectButton = document.getElementById('reconnect-button');
-        const apiKeyInput = document.getElementById('api-key-input');
+        const manualConfigSection = document.getElementById('manual-config-section');
+        const connectButton = document.getElementById('connect-button');
+        const configInput = document.getElementById('config-input');
 
         userIdDisplay.textContent = 'Connecting...';
         forumStatus.textContent = 'Connecting to the forum...';
@@ -507,35 +508,29 @@
         let firebaseConfig = {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Check for the Canvas environment variables or use a manual key
-        if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined' || manualApiKey) {
+        // Check for the Canvas environment variables first
+        if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
             const errorMsg = "Error: Firebase configuration or app ID is unavailable.";
-            if (!manualApiKey) {
-                console.error(errorMsg);
-                forumStatus.textContent = `${errorMsg} Please use the manual API key input below.`;
-                apiKeySection.classList.remove('hidden');
-                userIdDisplay.textContent = 'Unavailable';
-                reconnectButton.addEventListener('click', () => {
-                    const key = apiKeyInput.value.trim();
-                    if (key) {
-                        initializeFirebaseAndForum(key);
+            console.error(errorMsg);
+            forumStatus.textContent = `${errorMsg} Please use the manual configuration input below.`;
+            manualConfigSection.classList.remove('hidden');
+            userIdDisplay.textContent = 'Unavailable';
+            
+            // Set up event listener for the manual connect button
+            connectButton.addEventListener('click', () => {
+                try {
+                    const config = JSON.parse(configInput.value.trim());
+                    if (config.apiKey && config.projectId) {
+                        initializeFirebaseAndForum(config);
                     } else {
-                        forumStatus.textContent = 'Please enter a valid API key.';
+                        forumStatus.textContent = 'Error: Incomplete Firebase config. Please provide apiKey and projectId at a minimum.';
                     }
-                });
-                return;
-            } else {
-                // Use a default appId and construct config with manual key
-                appId = "default-app-id";
-                firebaseConfig = {
-                    apiKey: manualApiKey,
-                    authDomain: "default-auth-domain", // Placeholder, not critical for this app
-                    projectId: "default-project-id", // Placeholder, critical for Firestore path
-                    storageBucket: "default-storage-bucket",
-                    messagingSenderId: "default-messaging-sender-id",
-                    appId: "default-app-id"
-                };
-            }
+                } catch (e) {
+                    forumStatus.textContent = 'Error: Invalid JSON format. Please check your configuration.';
+                    console.error("Invalid JSON:", e);
+                }
+            });
+            return;
         } else {
             // Use environment variables if they are present
             try {
@@ -543,13 +538,20 @@
                 appId = __app_id;
             } catch (e) {
                 console.error("Failed to parse Firebase config from environment variable:", e);
-                forumStatus.textContent = "Error parsing Firebase configuration. Please use the manual API key input.";
-                apiKeySection.classList.remove('hidden');
+                forumStatus.textContent = "Error parsing Firebase configuration. Please use the manual configuration input.";
+                manualConfigSection.classList.remove('hidden');
                 userIdDisplay.textContent = 'Unavailable';
                 return;
             }
         }
         
+        // If a manual config was provided, use that instead
+        if (manualConfig) {
+            firebaseConfig = manualConfig;
+            // The appId is critical for the Firestore path.
+            appId = firebaseConfig.projectId || "manual-app-id"; 
+        }
+
         try {
             // Initialize Firebase services
             const app = initializeApp(firebaseConfig);
@@ -557,8 +559,10 @@
             auth = getAuth(app);
             console.log("Firebase initialized successfully.");
             forumStatus.textContent = 'Successfully connected!';
-            postFormSection.classList.remove('hidden'); // Show the post form
-            apiKeySection.classList.add('hidden'); // Hide the API key input
+            
+            // Hide the manual config and show the post form
+            manualConfigSection.classList.add('hidden');
+            postFormSection.classList.remove('hidden');
 
             // Set up an authentication listener to get the user ID
             const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -583,8 +587,8 @@
         } catch (e) {
             console.error("Firebase initialization or authentication failed:", e);
             // Provide a more specific error message to help with debugging
-            forumStatus.textContent = `Error: Cannot connect to the forum. Details: ${e.message}. Please try the manual API key input.`;
-            apiKeySection.classList.remove('hidden');
+            forumStatus.textContent = `Error: Cannot connect to the forum. Details: ${e.message}. Please use the manual configuration input.`;
+            manualConfigSection.classList.remove('hidden');
             userIdDisplay.textContent = 'Unavailable';
         }
     };
@@ -602,7 +606,6 @@
         postNameInput.value = userName;
 
         // Reference to the Firestore collection where posts are stored.
-        // It uses the __app_id to create a unique path for your app.
         const forumCollectionRef = collection(db, `artifacts/${appId}/public/data/forum-posts`);
 
         // Listen for new posts in real-time
