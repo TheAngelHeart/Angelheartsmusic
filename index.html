@@ -417,65 +417,42 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithCustomToken, signInAnonymously } from 'firebase/auth';
 import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, orderBy, getDocs, doc, setDoc, where } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faTimesCircle, faCheckCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane, faTimesCircle, faCheckCircle, faSpinner, faCopy } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 
-// Use this variable if provided by the environment, otherwise use a placeholder
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-// Use this variable if provided by the environment, otherwise use an empty object
-const firebaseConfigEnv = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-
 const App = () => {
-  const [firebaseConfig, setFirebaseConfig] = useState(firebaseConfigEnv);
-  const [isConfigManual, setIsConfigManual] = useState(Object.keys(firebaseConfigEnv).length === 0);
   const [db, setDb] = useState(null);
   const [auth, setAuth] = useState(null);
   const [userId, setUserId] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState('initial'); // 'initial', 'connecting', 'connected', 'error'
   const [errorMessage, setErrorMessage] = useState('');
-
-  // Manual configuration state
-  const [manualApiKey, setManualApiKey] = useState('');
-  const [manualAuthDomain, setManualAuthDomain] = useState('');
-  const [manualProjectId, setManualProjectId] = useState('');
-  const [manualStorageBucket, setManualStorageBucket] = useState('');
-  const [manualMessagingSenderId, setManualMessagingSenderId] = useState('');
-  const [manualAppId, setManualAppId] = useState('');
+  const [configJson, setConfigJson] = useState('');
 
   // Handle manual config form submission
-  const handleManualConfigSubmit = (e) => {
+  const handleConfigSubmit = (e) => {
     e.preventDefault();
-    const newConfig = {
-      apiKey: manualApiKey,
-      authDomain: manualAuthDomain,
-      projectId: manualProjectId,
-      storageBucket: manualStorageBucket,
-      messagingSenderId: manualMessagingSenderId,
-      appId: manualAppId,
-    };
-    setFirebaseConfig(newConfig);
-    setIsConfigManual(false); // Hide the manual form after submission
-  };
-
-  // Effect to initialize Firebase when the config changes
-  useEffect(() => {
-    const initializeFirebase = async () => {
-      if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.apiKey) {
-        setErrorMessage('Firebase configuration is missing. Please provide it.');
-        setConnectionStatus('error');
-        return;
+    setConnectionStatus('connecting');
+    setErrorMessage('');
+    let firebaseConfig;
+    try {
+      firebaseConfig = JSON.parse(configJson);
+      if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+        throw new Error('Invalid Firebase config. Missing apiKey or projectId.');
       }
+    } catch (error) {
+      console.error("JSON parse error:", error);
+      setErrorMessage(`Invalid JSON format. Please ensure your configuration is a valid JSON object. Error: ${error.message}`);
+      setConnectionStatus('error');
+      return;
+    }
 
-      setConnectionStatus('connecting');
-      setErrorMessage('');
-
+    // Effect to initialize Firebase when the config changes
+    const initializeFirebase = async () => {
       try {
         const app = initializeApp(firebaseConfig);
         const authInstance = getAuth(app);
         const dbInstance = getFirestore(app);
 
-        // Sign in with the provided custom token or anonymously
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         let userCredential;
         if (initialAuthToken) {
@@ -497,10 +474,21 @@ const App = () => {
       }
     };
 
-    if (!isConfigManual && Object.keys(firebaseConfig).length > 0) {
-      initializeFirebase();
+    initializeFirebase();
+  };
+
+  const handleCopyUserId = () => {
+    try {
+      navigator.clipboard.writeText(userId);
+    } catch (error) {
+      const el = document.createElement('textarea');
+      el.value = userId;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
     }
-  }, [firebaseConfig, isConfigManual]);
+  };
 
   const ConnectionStatus = () => {
     if (connectionStatus === 'initial' || connectionStatus === 'connecting') {
@@ -534,99 +522,59 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 font-sans">
-      <div className="max-w-xl w-full bg-white rounded-xl shadow-2xl p-8 space-y-6">
+      <div className="max-w-2xl w-full bg-white rounded-xl shadow-2xl p-8 space-y-6">
         <h1 className="text-3xl font-bold text-center text-gray-800">Angel Hearts Forum</h1>
         <p className="text-center text-gray-600">
           Connect to your Firebase project to start sharing your music and poems.
         </p>
         
-        {isConfigManual && (
-          <form onSubmit={handleManualConfigSubmit} className="space-y-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h2 className="text-xl font-semibold text-center text-gray-700">Manual Firebase Configuration</h2>
+        {connectionStatus !== 'connected' ? (
+          <form onSubmit={handleConfigSubmit} className="space-y-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <h2 className="text-xl font-semibold text-center text-gray-700">Paste Firebase Configuration</h2>
             <p className="text-sm text-gray-500 text-center">
-              Please paste your Firebase configuration details from your project settings.
+              Go to your Firebase project settings, find the "Firebase SDK snippet," and copy the full JSON configuration object. Paste it below.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input 
-                type="text" 
-                placeholder="apiKey" 
-                value={manualApiKey} 
-                onChange={(e) => setManualApiKey(e.target.value)} 
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                required
-              />
-              <input 
-                type="text" 
-                placeholder="authDomain" 
-                value={manualAuthDomain} 
-                onChange={(e) => setManualAuthDomain(e.target.value)} 
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                required
-              />
-              <input 
-                type="text" 
-                placeholder="projectId" 
-                value={manualProjectId} 
-                onChange={(e) => setManualProjectId(e.target.value)} 
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                required
-              />
-              <input 
-                type="text" 
-                placeholder="storageBucket" 
-                value={manualStorageBucket} 
-                onChange={(e) => setManualStorageBucket(e.target.value)} 
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                required
-              />
-              <input 
-                type="text" 
-                placeholder="messagingSenderId" 
-                value={manualMessagingSenderId} 
-                onChange={(e) => setManualMessagingSenderId(e.target.value)} 
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                required
-              />
-              <input 
-                type="text" 
-                placeholder="appId" 
-                value={manualAppId} 
-                onChange={(e) => setManualAppId(e.target.value)} 
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                required
-              />
-            </div>
+            <textarea
+              className="w-full h-40 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors font-mono text-xs"
+              placeholder={`Example:\n{\n  "apiKey": "AIzaSy...",\n  "authDomain": "my-project-123.firebaseapp.com",\n  "projectId": "my-project-123",\n  "storageBucket": "my-project-123.appspot.com",\n  "messagingSenderId": "1234567890",\n  "appId": "1:1234567890:web:abcdef"\n}`}
+              value={configJson}
+              onChange={(e) => setConfigJson(e.target.value)}
+              required
+            />
             <button 
               type="submit" 
               className="w-full p-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-lg shadow-md hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 ease-in-out transform hover:scale-105"
             >
               Connect to Forum
             </button>
+            <div className="flex justify-center mt-4">
+              <ConnectionStatus />
+            </div>
           </form>
-        )}
-
-        {/* Display connection status and user ID */}
-        {!isConfigManual && (
+        ) : (
           <div className="flex flex-col items-center space-y-4">
             <ConnectionStatus />
-            {connectionStatus === 'connected' && (
-              <div className="bg-gray-100 p-4 rounded-lg w-full text-center text-sm break-all">
-                <p className="text-gray-700 font-medium">Your User ID:</p>
+            <div className="bg-gray-100 p-4 rounded-lg w-full text-center text-sm break-all flex flex-col items-center">
+              <p className="text-gray-700 font-medium mb-2">Your User ID:</p>
+              <div className="flex items-center space-x-2">
                 <code className="text-gray-500 select-all">{userId}</code>
+                <button 
+                  onClick={handleCopyUserId} 
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                  title="Copy User ID"
+                >
+                  <FontAwesomeIcon icon={faCopy} />
+                </button>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Placeholder for future functionality */}
-        {connectionStatus === 'connected' && (
-          <div className="mt-8 p-6 bg-green-50 rounded-lg text-center border-2 border-green-200">
-            <p className="text-lg font-semibold text-green-800">
-              Connection successful! The forum is ready.
-            </p>
-            <p className="text-green-700 mt-2">
-              We can now add the ability to post and view messages.
-            </p>
+            </div>
+            <div className="mt-8 p-6 bg-green-50 rounded-lg text-center border-2 border-green-200 w-full">
+              <p className="text-lg font-semibold text-green-800">
+                Connection successful! The forum is ready.
+              </p>
+              <p className="text-green-700 mt-2">
+                We can now add the ability to post and view messages.
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -634,7 +582,5 @@ const App = () => {
   );
 };
 
-export default App;
-
-</body>
+export default App;</body>
 </html>
