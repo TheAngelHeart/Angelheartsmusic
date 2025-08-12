@@ -13,6 +13,14 @@
             font-family: 'Inter', sans-serif;
             scroll-behavior: smooth;
         }
+        /* Hide the scrollbar for the poem display but keep it functional */
+        .custom-scrollbar-hidden::-webkit-scrollbar {
+            display: none;
+        }
+        .custom-scrollbar-hidden {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
@@ -26,6 +34,7 @@
             <div class="flex space-x-6">
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
+                <a href="#poem-creator" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Create</a>
             </div>
         </nav>
     </header>
@@ -40,7 +49,7 @@
                 Welcome to the official home of Angel Hearts Music and Poetry.
                 A collection of lyrical songs and heartfelt poems, converted to music with AI.
             </p>
-            <a href="#music" class="px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform zhover:scale-105">
+            <a href="#music" class="px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105">
                 Explore the Music
             </a>
         </div>
@@ -53,14 +62,16 @@
                 My Music
             </h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Music Card 1 -->
+                <!-- Music Card 1 - All The Queens -->
                 <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/album/37GNWNnDIYwvpSPCy71X8l?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-                <!-- Music Card 2 -->
-             <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/album/7dHpJnb6dKDcoYe6NpmmQv?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <!-- Music Card 2 - All Those Queens -->
+                <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/album/7dHpJnb6dKDcoYe6NpmmQv?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 
-                <!-- Music Card 3 -->
-             <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/album/5manuqpSneaBiEdpfuYTxs?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <!-- Music Card 3 - Oh Angel Rise Up -->
+                <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/album/5manuqpSneaBiEdpfuYTxs?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            </div>
+        </div>
     </section>
 
     <!-- Poetry Section -->
@@ -70,202 +81,202 @@
                 My Poetry
             </h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Poetry Card 1 -->
+                <!-- Poetry Card 1 - All The Queens -->
                 <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
                     <h3 class="text-2xl font-bold text-purple-400 mb-2">All The Queens</h3>
                     <p class="text-gray-400 text-sm mb-4">
                         Newest Lyrics.
                     </p>
                     <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
-                        <p class="text-gray-300 leading-relaxed text-lg">
-                           I've played the card game of life <BR>
-The joker knows my name <BR>
-Never giving up a inch <BR>
-I've been lost upon my way <BR>
-Each card i drew i lost <BR>
-Until i found a card of light <BR>
-This card i hold close to my heart <BR>
-Up until this very night <BR>
-<BR>
-I've known the Queen of diamonds <BR>
-Had nights out with the Queen of clubs <BR>
-I've known the sadness of the Queen of Spades <BR>
-Felt the Queen of hearts love <BR>
-<BR>
-All the Queens they shine so bright <BR>
-Though only one shone within my light <BR>
-The Queen of hearts my little star <BR>
-Changed my world for she saw my heart <BR>
-All the Queens they shine so bright <BR>
-The Queen of Hearts i held so tight <BR>
-All the Queens meant the world to me <BR>
-Though only the Queen of hearts <BR>
-Give me the gift to see <BR>
-<BR>
-I won the card game of life <BR>
-When the card i drew was yours <BR>
-My little angel heart of love <BR>
-My Queen of hearts was born <BR>
-I love my little angel so <BR>
-For her heart it is my light <BR>
-She touched my soul with kindness <BR>
-Gifting me the truth of sight <BR>
-<BR>
-I've known the Queen of diamonds <BR>
-Had nights out with the Queen of clubs <BR>
-I've known the sadness of the Queen of Spades <BR>
-Felt the Queen of hearts love <BR>
-<BR>
-All the Queens they shine so bright <BR>
-Though only one shone within my light <BR>
-The Queen of hearts my little star <BR>
-Changed my world for she saw my heart <BR>
-All the Queens they shine so bright <BR>
-The Queen of Hearts i held so tight <BR>
-All the Queens meant the world to me <BR>
-Though only the Queen of hearts <BR>
-Give me the gift to see <BR>
-<BR>
-My Queen of Hearts <BR>
-Sadness fills my heart <BR>
-Knowing I had to say goodbye <BR>
-To my existing deck of cards <BR>
-All that remains are memories <BR>
-Of when I drew that heart of love <BR>
-My beautiful little Queen of light <BR>
-In heaven up above <BR>
+                        <p class="text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                            I've played the card game of life <br>
+                            The joker knows my name <br>
+                            Never giving up a inch <br>
+                            I've been lost upon my way <br>
+                            Each card i drew i lost <br>
+                            Until i found a card of light <br>
+                            This card i hold close to my heart <br>
+                            Up until this very night <br>
+                            <br>
+                            I've known the Queen of diamonds <br>
+                            Had nights out with the Queen of clubs <br>
+                            I've known the sadness of the Queen of Spades <br>
+                            Felt the Queen of hearts love <br>
+                            <br>
+                            All the Queens they shine so bright <br>
+                            Though only one shone within my light <br>
+                            The Queen of hearts my little star <br>
+                            Changed my world for she saw my heart <br>
+                            All the Queens they shine so bright <br>
+                            The Queen of Hearts i held so tight <br>
+                            All the Queens meant the world to me <br>
+                            Though only the Queen of hearts <br>
+                            Give me the gift to see <br>
+                            <br>
+                            I won the card game of life <br>
+                            When the card i drew was yours <br>
+                            My little angel heart of love <br>
+                            My Queen of hearts was born <br>
+                            I love my little angel so <br>
+                            For her heart it is my light <br>
+                            She touched my soul with kindness <br>
+                            Gifting me the truth of sight <br>
+                            <br>
+                            I've known the Queen of diamonds <br>
+                            Had nights out with the Queen of clubs <br>
+                            I've known the sadness of the Queen of Spades <br>
+                            Felt the Queen of hearts love <br>
+                            <br>
+                            All the Queens they shine so bright <br>
+                            Though only one shone within my light <br>
+                            The Queen of hearts my little star <br>
+                            Changed my world for she saw my heart <br>
+                            All the Queens they shine so bright <br>
+                            The Queen of Hearts i held so tight <br>
+                            All the Queens meant the world to me <br>
+                            Though only the Queen of hearts <br>
+                            Give me the gift to see <br>
+                            <br>
+                            My Queen of Hearts <br>
+                            Sadness fills my heart <br>
+                            Knowing I had to say goodbye <br>
+                            To my existing deck of cards <br>
+                            All that remains are memories <br>
+                            Of when I drew that heart of love <br>
+                            My beautiful little Queen of light <br>
+                            In heaven up above <br>
                         </p>
                     </div>
                 </div>
 
-                <!-- Poetry Card 2 -->
+                <!-- Poetry Card 2 - All Those Queens -->
                 <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
                     <h3 class="text-2xl font-bold text-purple-400 mb-2">All Those Queen</h3>
                     <p class="text-gray-400 text-sm mb-4">
                         New Lyrics.
                     </p>
                     <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
-                        <p class="text-gray-300 leading-relaxed text-lg">
-                            So many tried to hold you down <BR>
-Within the darkness of the night <BR>
-Hearts so filled with hatred <BR>
-Souls that have lost the light <BR>
-They forced you to your knees <BR>
-Broken within their sight <BR>
-Yet within your heart that beats i side <BR>
-A rainbow shone of love <BR>
-<BR>
-You fought your way back to your feet <BR>
-like you have done all your life <BR>
-Not one soul there to help you <BR>
-To pick you up in your darkest night <BR>
-<BR>
-All of those Queens <BR>
-Standing tall within the night <BR>
-Rainbow colours shine within their eyes <BR>
-Destinies path glows bright <BR>
-All of those Queens <BR>
-Faced the darkness of the day <BR>
-Until they found their path of light <BR>
-All of those Queens they shine so bright <BR>
-<BR>
-They tried to break your mind <BR>
-Break that heart that beat of love <BR>
-They called you names and put you down <BR>
-Saying you will never be enough <BR>
-Yet you saw that rainbow in the sky <BR>
-A unity of the heart <BR>
-It gave you the strength inside you need <BR>
-To fight for who you are <BR>
-<BR>
-You fought your way back to your feet <BR>
-like you have done all your life <BR>
-Not one soul there to help you <BR>
-To pick you up in your darkest night <BR>
-<BR>
-All of those Queens <BR>
-Standing tall within the night <BR>
-Rainbow colours shine within their eyes <BR>
-Destinies path glows bright <BR>
-All of those Queens <BR>
-Faced the darkness of the day <BR>
-Until they found their path of light <BR>
-All of those Queens shall find their way <BR>
-<BR>
-Darkness to the rainbows end <BR>
-The rising of our newfound friends <BR>
-That shine I colours born of love <BR>
-Like the rainbow that glows so high above <BR>
-Each heart has felt the touch of night <BR>
-Found inner strength to win their fight <BR>
-Now the fallen have scaled those walls <BR>
-For all those Queens are standing tall <BR>
+                        <p class="text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                            So many tried to hold you down <br>
+                            Within the darkness of the night <br>
+                            Hearts so filled with hatred <br>
+                            Souls that have lost the light <br>
+                            They forced you to your knees <br>
+                            Broken within their sight <br>
+                            Yet within your heart that beats i side <br>
+                            A rainbow shone of love <br>
+                            <br>
+                            You fought your way back to your feet <br>
+                            like you have done all your life <br>
+                            Not one soul there to help you <br>
+                            To pick you up in your darkest night <br>
+                            <br>
+                            All of those Queens <br>
+                            Standing tall within the night <br>
+                            Rainbow colours shine within their eyes <br>
+                            Destinies path glows bright <br>
+                            All of those Queens <br>
+                            Faced the darkness of the day <br>
+                            Until they found their path of light <br>
+                            All of those Queens they shine so bright <br>
+                            <br>
+                            They tried to break your mind <br>
+                            Break that heart that beat of love <br>
+                            They called you names and put you down <br>
+                            Saying you will never be enough <br>
+                            Yet you saw that rainbow in the sky <br>
+                            A unity of the heart <br>
+                            It gave you the strength inside you need <br>
+                            To fight for who you are <br>
+                            <br>
+                            You fought your way back to your feet <br>
+                            like you have done all your life <br>
+                            Not one soul there to help you <br>
+                            To pick you up in your darkest night <br>
+                            <br>
+                            All of those Queens <br>
+                            Standing tall within the night <br>
+                            Rainbow colours shine within their eyes <br>
+                            Destinies path glows bright <br>
+                            All of those Queens <br>
+                            Faced the darkness of the day <br>
+                            Until they found their path of light <br>
+                            All of those Queens shall find their way <br>
+                            <br>
+                            Darkness to the rainbows end <br>
+                            The rising of our newfound friends <br>
+                            That shine I colours born of love <br>
+                            Like the rainbow that glows so high above <br>
+                            Each heart has felt the touch of night <br>
+                            Found inner strength to win their fight <br>
+                            Now the fallen have scaled those walls <br>
+                            For all those Queens are standing tall <br>
                         </p>
                     </div>
                 </div>
 
-                <!-- Poetry Card 3 -->
+                <!-- Poetry Card 3 - Oh Angel Rise Up -->
                 <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
                     <h3 class="text-2xl font-bold text-purple-400 mb-2">Oh Angel Rise Up</h3>
                     <p class="text-gray-400 text-sm mb-4">
                         New Lyrics.
                     </p>
                     <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
-                        <p class="text-gray-300 leading-relaxed text-lg">
-                           I walk this road in solitude <br>
-With a heart broken in two <br>
-The ultimate price i pain in life <br>
-Its the cost of losing you <br>
-Yet still I walk this road of hope <br>
-That I may feel your heartbeat again <br>
-Sometimes I fall upon my knees <br>
-Though it's that moment I remember when <br>
-<br>
-An angel always walked with me <br>
-Thought the shadows of my life <br>
-Never turning away from love <br>
-Her heart it beat with mine <br>
-<br>
-Oh angel rise up <br>
-Be the light that I need <br>
-Protect my heart from darkness <br>
-Won't you be a friend to me <br>
-Oh angel rise up <br>
-Be a shield in this void of night <br>
-Protect my heart from breaking <br>
-Oh angel gave me sight <br>
-<br>
-I walk this road with hope <br>
-That I'll find you once again <br>
-Upon this road of rainbow dreams <br>
-You were my baby and my friend <br>
-I'll fight against the darkness <br>
-Crawl along this road of night <br>
-For there within the distance <br>
-I see an angels light <br>
-<br>
-An angel always walked with me <br>
-Thought the shadows of my life <br>
-Never turning away from love <br>
-Her heart it beat with mine <br>
-<br>
-Oh angel rise up <br>
-Be the light that I need <br>
-Protect my heart from darkness <br>
-Won't you be a friend to me <br>
-Oh angel rise up <br>
-Be a shield in this void of night <br>
-Protect my heart from breaking <br>
-Oh angel gave me sight <br>
-<br>
-You were the beating of my heart <br>
-The light within my eyes <br>
-You gave me the strength of an angel <br>
-Kindness was your light <br>
-You were the greatest soul I've ever known <br>
-The promise of a gift of hope <br>
-Though most of all you were my friend <br>
-The heart i needed most <br>
+                        <p class="text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                            I walk this road in solitude <br>
+                            With a heart broken in two <br>
+                            The ultimate price i pain in life <br>
+                            Its the cost of losing you <br>
+                            Yet still I walk this road of hope <br>
+                            That I may feel your heartbeat again <br>
+                            Sometimes I fall upon my knees <br>
+                            Though it's that moment I remember when <br>
+                            <br>
+                            An angel always walked with me <br>
+                            Thought the shadows of my life <br>
+                            Never turning away from love <br>
+                            Her heart it beat with mine <br>
+                            <br>
+                            Oh angel rise up <br>
+                            Be the light that I need <br>
+                            Protect my heart from darkness <br>
+                            Won't you be a friend to me <br>
+                            Oh angel rise up <br>
+                            Be a shield in this void of night <br>
+                            Protect my heart from breaking <br>
+                            Oh angel gave me sight <br>
+                            <br>
+                            I walk this road with hope <br>
+                            That I'll find you once again <br>
+                            Upon this road of rainbow dreams <br>
+                            You were my baby and my friend <br>
+                            I'll fight against the darkness <br>
+                            Crawl along this road of night <br>
+                            For there within the distance <br>
+                            I see an angels light <br>
+                            <br>
+                            An angel always walked with me <br>
+                            Thought the shadows of my life <br>
+                            Never turning away from love <br>
+                            Her heart it beat with mine <br>
+                            <br>
+                            Oh angel rise up <br>
+                            Be the light that I need <br>
+                            Protect my heart from darkness <br>
+                            Won't you be a friend to me <br>
+                            Oh angel rise up <br>
+                            Be a shield in this void of night <br>
+                            Protect my heart from breaking <br>
+                            Oh angel gave me sight <br>
+                            <br>
+                            You were the beating of my heart <br>
+                            The light within my eyes <br>
+                            You gave me the strength of an angel <br>
+                            Kindness was your light <br>
+                            You were the greatest soul I've ever known <br>
+                            The promise of a gift of hope <br>
+                            Though most of all you were my friend <br>
+                            The heart i needed most <br>
                         </p>
                     </div>
                 </div>
@@ -273,52 +284,7 @@ The heart i needed most <br>
         </div>
     </section>
 
-       <!-- Poetry Card 2 - Placeholder for your poem -->
-                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
-                    <h3 class="text-2xl font-bold text-purple-400 mb-2">Poem Title 2</h3>
-                    <p class="text-gray-400 text-sm mb-4">
-                        A new piece that will soon become a song.
-                    </p>
-                    <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
-                        <p class="text-gray-300 leading-relaxed text-lg">
-                            Through gilded gates and skies of grace, <br>
-                            A timeless dance, a cosmic race. <br>
-                            The echoes of a song unheard, <br>
-                            Carried on the wing of a single bird. <br>
-                            <br>
-                            A promise written in the air, <br>
-                            A silent and a hopeful prayer. <br>
-                            For all the souls that seek to find, <br>
-                            A peaceful haven for the mind. <br>
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Poetry Card 3 - Placeholder for your poem -->
-                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
-                    <h3 class="text-2xl font-bold text-purple-400 mb-2">Poem Title 3</h3>
-                    <p class="text-gray-400 text-sm mb-4">
-                        An excerpt from "Angel Hearts, Book One."
-                    </p>
-                    <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
-                        <p class="text-gray-300 leading-relaxed text-lg">
-                            A fragile dream, a tender thought, <br>
-                            A lesson that the spirit's taught. <br>
-                            In every beat, a rhythm lies, <br>
-                            Reflected in the other's eyes. <br>
-                            <br>
-                            So let the world a symphony make, <br>
-                            For every fragile, hopeful sake. <br>
-                            Let kindness be the guiding star, <br>
-                            No matter where or who we are. <br>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-     <!-- NEW: Gemini Poem Creator Section -->
+    <!-- NEW: Gemini Poem Creator Section -->
     <section id="poem-creator" class="py-20 bg-gray-900">
         <div class="container mx-auto px-4 max-w-2xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
@@ -484,5 +450,4 @@ The heart i needed most <br>
     </script>
 </body>
 </html>
-
 
