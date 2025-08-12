@@ -498,6 +498,8 @@
         const userIdDisplay = document.getElementById('userId-display');
         const postFormSection = document.getElementById('post-form-section');
         const apiKeySection = document.getElementById('api-key-section');
+        const reconnectButton = document.getElementById('reconnect-button');
+        const apiKeyInput = document.getElementById('api-key-input');
 
         userIdDisplay.textContent = 'Connecting...';
         forumStatus.textContent = 'Connecting to the forum...';
@@ -505,14 +507,35 @@
         let firebaseConfig = {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Check for the Canvas environment variables
-        if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
+        // Check for the Canvas environment variables or use a manual key
+        if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined' || manualApiKey) {
             const errorMsg = "Error: Firebase configuration or app ID is unavailable.";
-            console.error(errorMsg);
-            forumStatus.textContent = `${errorMsg} Please use the manual API key input below.`;
-            apiKeySection.classList.remove('hidden');
-            userIdDisplay.textContent = 'Unavailable';
-            return;
+            if (!manualApiKey) {
+                console.error(errorMsg);
+                forumStatus.textContent = `${errorMsg} Please use the manual API key input below.`;
+                apiKeySection.classList.remove('hidden');
+                userIdDisplay.textContent = 'Unavailable';
+                reconnectButton.addEventListener('click', () => {
+                    const key = apiKeyInput.value.trim();
+                    if (key) {
+                        initializeFirebaseAndForum(key);
+                    } else {
+                        forumStatus.textContent = 'Please enter a valid API key.';
+                    }
+                });
+                return;
+            } else {
+                // Use a default appId and construct config with manual key
+                appId = "default-app-id";
+                firebaseConfig = {
+                    apiKey: manualApiKey,
+                    authDomain: "default-auth-domain", // Placeholder, not critical for this app
+                    projectId: "default-project-id", // Placeholder, critical for Firestore path
+                    storageBucket: "default-storage-bucket",
+                    messagingSenderId: "default-messaging-sender-id",
+                    appId: "default-app-id"
+                };
+            }
         } else {
             // Use environment variables if they are present
             try {
@@ -533,6 +556,9 @@
             db = getFirestore(app);
             auth = getAuth(app);
             console.log("Firebase initialized successfully.");
+            forumStatus.textContent = 'Successfully connected!';
+            postFormSection.classList.remove('hidden'); // Show the post form
+            apiKeySection.classList.add('hidden'); // Hide the API key input
 
             // Set up an authentication listener to get the user ID
             const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -569,12 +595,8 @@
         const postMessageInput = document.getElementById('post-message');
         const postsContainer = document.getElementById('posts-container');
         const forumStatus = document.getElementById('forum-status');
-        const postFormSection = document.getElementById('post-form-section');
-        const apiKeySection = document.getElementById('api-key-section');
 
         forumStatus.textContent = ''; // Clear status on successful connection
-        postFormSection.classList.remove('hidden'); // Show the post form
-        apiKeySection.classList.add('hidden'); // Hide the API key input
 
         // Pre-fill the name field with the user's preferred name
         postNameInput.value = userName;
