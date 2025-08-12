@@ -420,9 +420,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane, faTimesCircle, faCheckCircle, faSpinner, faCopy } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 
-// -- Tailwind CSS Configuration (Assumed to be available) --
 // This application uses Tailwind CSS for styling.
-// Add this script to your HTML file if Tailwind isn't already configured:
+// If Tailwind isn't already configured, you can add this script to your HTML file:
 // <script src="https://cdn.tailwindcss.com"></script>
 
 const App = () => {
@@ -506,7 +505,12 @@ const App = () => {
         });
         
         // Sort messages by timestamp on the client side for reliable ordering
-        fetchedMessages.sort((a, b) => a.timestamp - b.timestamp);
+        fetchedMessages.sort((a, b) => {
+          // Ensure both timestamps exist before comparing
+          const timestampA = a.timestamp ? a.timestamp.toDate() : 0;
+          const timestampB = b.timestamp ? b.timestamp.toDate() : 0;
+          return timestampA - timestampB;
+        });
         setMessages(fetchedMessages);
       }, (error) => {
         console.error("Error fetching messages: ", error);
@@ -594,6 +598,7 @@ const App = () => {
           Connect to your Firebase project to start sharing your music and poems.
         </p>
         
+        {/* This conditional renders the configuration form or the chat interface */}
         {connectionStatus !== 'connected' ? (
           <form onSubmit={handleConfigSubmit} className="space-y-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
             <h2 className="text-xl font-semibold text-center text-gray-700">Paste Firebase Configuration</h2>
