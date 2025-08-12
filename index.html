@@ -378,7 +378,7 @@
                                 retries++;
                                 continue;
                             }
-                            throw new Error(`API error: ${response.statusText}`);
+                            throw new Error(`API error: ${response.status} - ${response.statusText}`);
                         }
 
                         const result = await response.json();
@@ -389,12 +389,15 @@
                             poemOutput.innerHTML = `<p class="whitespace-pre-line">${text}</p>`;
                             return;
                         } else {
+                            // Log the full response for debugging
+                            console.error("API response was not in the expected format:", result);
                             throw new Error("Invalid response format from API.");
                         }
 
                     } catch (error) {
                         console.error("API call failed:", error);
-                        poemOutput.innerHTML = '<span class="text-red-400">Oops! Something went wrong. Please try again.</span>';
+                        // Display a more informative error message to the user
+                        poemOutput.innerHTML = `<span class="text-red-400">Error: ${error.message}. Please try again.</span>`;
                         return;
                     }
                 }
