@@ -384,9 +384,19 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
+            authDomain: "theangelheart-8c3d4.firebaseapp.com",
+            projectId: "theangelheart-8c3d4",
+            storageBucket: "theangelheart-8c3d4.firebasestorage.app",
+            messagingSenderId: "1037239430431",
+            appId: "1:1037239430431:web:9e8ae59a2ca61ef17bd42a",
+            measurementId: "G-Z2YJXCBN09"
+        };
+        
         // Global variables provided by the Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
         let db;
@@ -395,12 +405,6 @@
 
         // Initialize Firebase on window load
         window.onload = async () => {
-            if (Object.keys(firebaseConfig).length === 0) {
-                console.error("Firebase config is missing. Forum functionality will be disabled.");
-                document.getElementById('forum-status').textContent = 'Error: Forum is not available.';
-                return;
-            }
-            
             try {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
@@ -530,8 +534,8 @@
             const generateButton = document.getElementById('generate-button');
             const poemOutput = document.getElementById('poem-output');
             
-            // Your API key provided by you, Angel Heart.
-            const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
+            // This API key is now taken from your Firebase config.
+            const apiKey = "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24";
 
             const generatePoem = async () => {
                 const prompt = promptInput.value;
@@ -606,7 +610,5 @@
     </script>
 </body>
 </html>
-
-
 
 
