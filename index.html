@@ -382,7 +382,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables provided by the Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -391,42 +391,41 @@
         
         let db;
         let auth;
-        let userId;
+        let userId = null;
 
         // Initialize Firebase on window load
         window.onload = async () => {
             if (Object.keys(firebaseConfig).length === 0) {
                 console.error("Firebase config is missing. Forum functionality will be disabled.");
+                document.getElementById('forum-status').textContent = 'Error: Forum is not available.';
                 return;
             }
             
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-
-            // Authentication
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userId = user.uid;
-                    document.getElementById('userId-display').textContent = userId;
-                    console.log("Authenticated with user ID:", userId);
-                    // Initialize forum listeners and functionality after auth is ready
-                    setupForum();
-                } else {
-                    console.error("No user is signed in.");
-                    document.getElementById('userId-display').textContent = "Not authenticated";
-                }
-            });
-
-            // Sign in with custom token or anonymously
             try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Authentication
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        document.getElementById('userId-display').textContent = userId;
+                        console.log("Authenticated with user ID:", userId);
+                        // Initialize forum listeners and functionality after auth is ready
+                        setupForum();
+                    }
+                });
+
+                // Sign in with custom token or anonymously
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
                     await signInAnonymously(auth);
                 }
             } catch (error) {
-                console.error("Firebase authentication failed:", error);
+                console.error("Firebase authentication or initialization failed:", error);
+                document.getElementById('forum-status').textContent = 'Error: Could not connect to the forum.';
             }
         };
 
@@ -451,24 +450,36 @@
                 });
 
                 // Sort posts by timestamp in descending order (newest first)
-                posts.sort((a, b) => b.timestamp - a.timestamp);
+                posts.sort((a, b) => {
+                    // Handle cases where timestamp might be null (e.g., while the post is being saved)
+                    const timeA = a.timestamp ? a.timestamp.seconds : 0;
+                    const timeB = b.timestamp ? b.timestamp.seconds : 0;
+                    return timeB - timeA;
+                });
 
                 posts.forEach(post => {
                     const postElement = document.createElement('div');
                     postElement.className = 'bg-gray-900 rounded-2xl p-6 shadow-md border border-gray-700';
 
-                    const name = post.name || 'Anonymous';
+                    const name = post.name && post.name.trim() !== '' ? post.name : 'Anonymous';
+                    const postUserId = post.userId || 'Unknown';
                     const timestamp = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleString() : 'Just now';
                     
                     postElement.innerHTML = `
                         <div class="flex justify-between items-start mb-2">
-                            <h4 class="font-bold text-lg text-pink-400">${name}</h4>
+                            <div>
+                                <h4 class="font-bold text-lg text-pink-400">${name}</h4>
+                                <span class="text-xs text-gray-500">User ID: <span class="font-mono break-all">${postUserId}</span></span>
+                            </div>
                             <span class="text-sm text-gray-500">${timestamp}</span>
                         </div>
                         <p class="text-gray-300 whitespace-pre-line">${post.message}</p>
                     `;
                     postsContainer.appendChild(postElement);
                 });
+            }, (error) => {
+                console.error("Error fetching forum posts:", error);
+                forumStatus.textContent = 'Error: Could not load forum posts.';
             });
 
             // Handle new post creation
@@ -481,6 +492,11 @@
                     return;
                 }
                 
+                if (!userId) {
+                    forumStatus.textContent = 'User not authenticated. Please wait a moment.';
+                    return;
+                }
+
                 forumStatus.textContent = 'Posting...';
 
                 try {
@@ -493,11 +509,11 @@
                     
                     postNameInput.value = '';
                     postMessageInput.value = '';
-                    forumStatus.textContent = '';
+                    forumStatus.textContent = ''; // Clear status on success
 
                 } catch (e) {
                     console.error("Error adding document: ", e);
-                    forumStatus.textContent = 'Failed to post message. Please try again.';
+                    forumStatus.textContent = `Failed to post message: ${e.message}`;
                 }
             });
         };
@@ -519,8 +535,8 @@
                 
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24"; // User-provided API key
-                
+                const apiKey = ""; // API key is provided by the canvas environment
+
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] });
                 
