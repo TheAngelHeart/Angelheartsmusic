@@ -331,15 +331,12 @@
         </div>
     </footer>
 
-    <!-- All JavaScript in a single script block for reliability -->
-    <script type="module">
-        const setupPoemCreator = () => {
+    <script>
+        // JavaScript for the Gemini Poem Creator
+        document.addEventListener('DOMContentLoaded', async () => {
             const promptInput = document.getElementById('poem-prompt');
             const generateButton = document.getElementById('generate-button');
             const poemOutput = document.getElementById('poem-output');
-            
-            // This is an empty API key and will be replaced by the Canvas environment.
-            const geminiApiKey = ""; 
 
             const generatePoem = async () => {
                 const prompt = promptInput.value;
@@ -350,11 +347,13 @@
                 
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
+                const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24"; // User-provided API key
+                
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] });
                 
                 const payload = { contents: chatHistory };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
                 let retries = 0;
                 const maxRetries = 5;
@@ -410,11 +409,6 @@
                     generatePoem();
                 }
             });
-        };
-
-        // Start the poem creator once the DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            setupPoemCreator();
         });
     </script>
 </body>
