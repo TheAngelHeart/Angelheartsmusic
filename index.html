@@ -348,9 +348,14 @@
                 
                 // Get the API key from the environment.
                 const apiKey = typeof __api_key !== 'undefined' ? __api_key : '';
+                if (!apiKey) {
+                    poemOutput.innerHTML = '<span class="text-red-400">Error: API key is not available.</span>';
+                    return;
+                }
 
                 let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: `Write a short poem about: ${prompt}` }] });
+                // Use a more specific prompt for better results, referencing your persona.
+                chatHistory.push({ role: "user", parts: [{ text: `Write a short poem for Angel Heart about: ${prompt}` }] });
                 
                 const payload = { contents: chatHistory };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
@@ -374,8 +379,12 @@
                                 retries++;
                                 continue;
                             }
-                            const errorText = response.statusText ? response.statusText : 'An unexpected error occurred.';
-                            throw new Error(`API error: ${response.status} - ${errorText}`);
+                            
+                            // More specific error handling for non-429 errors
+                            const errorText = response.statusText || 'An unexpected error occurred.';
+                            console.error(`API call failed with status ${response.status}: ${errorText}`);
+                            poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please check your API key and try again.</span>`;
+                            return;
                         }
 
                         const result = await response.json();
@@ -411,6 +420,4 @@
     </script>
 </body>
 </html>
-
-
 
