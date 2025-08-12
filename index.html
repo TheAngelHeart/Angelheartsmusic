@@ -346,16 +346,10 @@
                 
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                // === IMPORTANT: PASTE YOUR GOOGLE AI STUDIO API KEY HERE ===
-                // This is a temporary workaround to the API key not being passed automatically.
-                // Replace 'YOUR_API_KEY_HERE' with your actual key.
-                const apiKey = 'AIzaSyAGnpAPNT_hmymsrP9O0LKDkg37Lbeo1sA';
+                // === This API key is automatically provided by the Canvas environment. ===
+                // === Do not modify this line, as the environment will handle it. ===
+                const apiKey = "";
                 
-                if (!apiKey || apiKey === 'AIzaSyAGnpAPNT_hmymsrP9O0LKDkg37Lbeo1sA') {
-                    poemOutput.innerHTML = '<span class="text-red-400">Error: API key is not available. Please insert your API key into the code.</span>';
-                    return;
-                }
-
                 let chatHistory = [];
                 // Use a more specific prompt for better results, referencing your persona.
                 chatHistory.push({ role: "user", parts: [{ text: `Write a short poem for Angel Heart about: ${prompt}` }] });
@@ -383,10 +377,9 @@
                                 continue;
                             }
                             
-                            // More specific error handling for non-429 errors
                             const errorText = response.statusText || 'An unexpected error occurred.';
                             console.error(`API call failed with status ${response.status}: ${errorText}`);
-                            poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please check your API key and try again.</span>`;
+                            poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please try again.</span>`;
                             return;
                         }
 
@@ -423,5 +416,6 @@
     </script>
 </body>
 </html>
+
 
 
