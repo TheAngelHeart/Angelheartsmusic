@@ -21,14 +21,6 @@
             -ms-overflow-style: none; /* IE and Edge */
             scrollbar-width: none; /* Firefox */
         }
-        /* Style for the forum messages */
-        .forum-message {
-            background-color: #1f2937; /* A darker gray */
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
@@ -43,7 +35,6 @@
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
                 <a href="#poem-creator" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Create</a>
-                <a href="#forum" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Forum</a>
             </div>
         </nav>
     </header>
@@ -293,7 +284,7 @@
         </div>
     </section>
 
-    <!-- NEW: Gemini Poem Creator Section -->
+    <!-- Gemini Poem Creator Section -->
     <section id="poem-creator" class="py-20 bg-gray-900">
         <div class="container mx-auto px-4 max-w-2xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
@@ -323,47 +314,6 @@
         </div>
     </section>
     
-    <!-- NEW: Forum Section -->
-    <section id="forum" class="py-20 bg-gray-800">
-        <div class="container mx-auto px-4 max-w-3xl">
-            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
-                Community Forum
-            </h2>
-            <p class="text-center text-gray-400 mb-8">
-                Share your thoughts and connect with others. Your user ID is required for posting, shown below.
-            </p>
-            
-            <!-- User ID Display -->
-            <div id="user-id-container" class="bg-gray-900 rounded-xl p-4 mb-8 text-center shadow-inner">
-                <span class="text-sm font-bold text-purple-400">Your User ID: </span>
-                <span id="user-id" class="text-sm text-gray-400">Loading...</span>
-            </div>
-
-            <!-- Message box for alerts and status -->
-            <div id="forum-message-box" class="mb-6 hidden bg-gray-900 text-center rounded-xl p-3 text-sm"></div>
-
-            <!-- Container for messages -->
-            <div id="forum-messages" class="h-96 overflow-y-auto custom-scrollbar-hidden space-y-4 p-4 rounded-xl bg-gray-900 mb-6 shadow-xl">
-                <p class="text-center text-gray-500 italic">Loading messages...</p>
-            </div>
-
-            <!-- New post input area -->
-            <div class="bg-gray-900 rounded-2xl p-6 shadow-xl">
-                <textarea
-                    id="post-message-input"
-                    class="w-full h-24 p-4 bg-gray-800 rounded-xl text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                    placeholder="Write your message here..."
-                ></textarea>
-                <button
-                    id="post-message-button"
-                    class="mt-4 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105"
-                >
-                    Post Message
-                </button>
-            </div>
-        </div>
-    </section>
-
     <!-- Footer -->
     <footer class="bg-gray-950 text-center py-8">
         <p class="text-gray-400 text-sm">
@@ -381,138 +331,9 @@
         </div>
     </footer>
 
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+    <script>
+        // JavaScript for the Gemini Poem Creator
         document.addEventListener('DOMContentLoaded', async () => {
-            // --- FIREBASE INITIALIZATION & AUTHENTICATION ---
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-            // Initialize Firebase App
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            const auth = getAuth(app);
-            
-            let userId = null;
-            const userIdDisplay = document.getElementById('user-id');
-            const forumMessageBox = document.getElementById('forum-message-box');
-            const postMessageInput = document.getElementById('post-message-input');
-            const postMessageButton = document.getElementById('post-message-button');
-
-            // Sign in the user. We listen for auth changes to ensure we have a valid user before proceeding.
-            const authenticateUser = async () => {
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) {
-                    console.error("Firebase authentication error:", error);
-                    forumMessageBox.textContent = "Error during authentication. Forum features may be unavailable.";
-                    forumMessageBox.classList.remove('hidden');
-                    forumMessageBox.classList.add('text-red-400');
-                }
-            };
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    // User is signed in
-                    userId = user.uid;
-                    userIdDisplay.textContent = userId;
-                    console.log("User signed in with ID:", userId);
-
-                    // Now that we have a user, we can start listening for messages
-                    setupForumListener(db, appId);
-                } else {
-                    // User is signed out or not authenticated
-                    console.log("User is not signed in.");
-                    userId = null;
-                    userIdDisplay.textContent = "Please sign in to post";
-                }
-            });
-
-            await authenticateUser();
-
-            // --- FORUM FUNCTIONALITY ---
-            const forumMessagesContainer = document.getElementById('forum-messages');
-
-            const setupForumListener = (db, appId) => {
-                const q = collection(db, `artifacts/${appId}/public/data/messages`);
-                
-                // Set up a real-time listener for new messages
-                onSnapshot(q, (snapshot) => {
-                    forumMessagesContainer.innerHTML = ''; // Clear existing messages
-                    const messages = [];
-                    snapshot.forEach((doc) => {
-                        messages.push({ id: doc.id, ...doc.data() });
-                    });
-
-                    // Sort messages by timestamp, oldest first
-                    messages.sort((a, b) => a.timestamp?.toMillis() - b.timestamp?.toMillis());
-
-                    if (messages.length === 0) {
-                        forumMessagesContainer.innerHTML = '<p class="text-center text-gray-500 italic">No messages yet. Be the first to post!</p>';
-                    } else {
-                        messages.forEach(msg => {
-                            const messageElement = document.createElement('div');
-                            messageElement.className = 'forum-message';
-                            const timestamp = msg.timestamp ? new Date(msg.timestamp.toMillis()).toLocaleString() : 'Just now';
-                            
-                            messageElement.innerHTML = `
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-sm text-purple-400 font-bold">User: ${msg.userId}</span>
-                                    <span class="text-xs text-gray-500">${timestamp}</span>
-                                </div>
-                                <p class="text-gray-300 text-lg">${msg.text}</p>
-                            `;
-                            forumMessagesContainer.appendChild(messageElement);
-                        });
-                        // Scroll to the bottom of the messages container
-                        forumMessagesContainer.scrollTop = forumMessagesContainer.scrollHeight;
-                    }
-                }, (error) => {
-                    console.error("Error fetching messages:", error);
-                    forumMessagesContainer.innerHTML = '<p class="text-center text-red-400">Failed to load messages. Please try again later.</p>';
-                });
-            };
-
-            // Event listener for posting a new message
-            postMessageButton.addEventListener('click', async () => {
-                const messageText = postMessageInput.value.trim();
-                
-                if (!userId) {
-                    forumMessageBox.textContent = "You must be signed in to post a message.";
-                    forumMessageBox.classList.remove('hidden');
-                    forumMessageBox.classList.add('text-red-400');
-                    return;
-                }
-
-                if (messageText) {
-                    try {
-                        const messagesCollection = collection(db, `artifacts/${appId}/public/data/messages`);
-                        await addDoc(messagesCollection, {
-                            userId: userId,
-                            text: messageText,
-                            timestamp: serverTimestamp()
-                        });
-                        postMessageInput.value = ''; // Clear the input field
-                        forumMessageBox.classList.add('hidden'); // Hide any previous messages
-                    } catch (error) {
-                        console.error("Error adding document:", error);
-                        forumMessageBox.textContent = "Failed to post message. Please try again.";
-                        forumMessageBox.classList.remove('hidden');
-                        forumMessageBox.classList.add('text-red-400');
-                    }
-                }
-            });
-
-            // --- POEM CREATOR SCRIPT ---
             const promptInput = document.getElementById('poem-prompt');
             const generateButton = document.getElementById('generate-button');
             const poemOutput = document.getElementById('poem-output');
@@ -526,7 +347,7 @@
                 
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                const apiKey = 'AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24';
+                const apiKey = ""; // API key is automatically provided by the environment
                 
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] });
@@ -556,7 +377,7 @@
                             
                             const errorText = response.statusText || 'An unexpected error occurred.';
                             console.error(`API call failed with status ${response.status}: ${errorText}`);
-                            poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please check your API key and try again.</span>`;
+                            poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please try again.</span>`;
                             return;
                         }
 
@@ -592,9 +413,6 @@
     </script>
 </body>
 </html>
-
-
-
 
 
 
