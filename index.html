@@ -346,12 +346,16 @@
                 
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                // === This API key is automatically provided by the Canvas environment. ===
-                // === Do not modify this line, as the environment will handle it. ===
                 const apiKey = "";
                 
+                // Add a check to see if the apiKey is actually present
+                if (!apiKey) {
+                    poemOutput.innerHTML = '<span class="text-red-400">Error: Missing API key. This is a system-level issue. Please try again or contact support.</span>';
+                    console.error("API Key is missing. Cannot make API call.");
+                    return;
+                }
+
                 let chatHistory = [];
-                // Use a more specific prompt for better results, referencing your persona.
                 chatHistory.push({ role: "user", parts: [{ text: `Write a short poem for Angel Heart about: ${prompt}` }] });
                 
                 const payload = { contents: chatHistory };
@@ -359,7 +363,7 @@
 
                 let retries = 0;
                 const maxRetries = 5;
-                const baseDelay = 1000; // 1 second
+                const baseDelay = 1000;
 
                 while (retries < maxRetries) {
                     try {
@@ -380,12 +384,8 @@
                             const errorText = response.statusText || 'An unexpected error occurred.';
                             console.error(`API call failed with status ${response.status}: ${errorText}`);
 
-                            // Added a more specific error message for 403 Forbidden errors
-                            if (response.status === 403) {
-                                poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (403 - Forbidden). This may be due to an invalid API key. Please try again.</span>`;
-                            } else {
-                                poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please try again.</span>`;
-                            }
+                            // User-friendly error message for the UI
+                            poemOutput.innerHTML = `<span class="text-red-400">Uh oh, there was an issue connecting. It looks like an API key problem. Please try again or contact support.</span>`;
                             return;
                         }
 
@@ -402,7 +402,7 @@
 
                     } catch (error) {
                         console.error("API call failed:", error);
-                        poemOutput.innerHTML = `<span class="text-red-400">Error: ${error.message}. Please try again.</span>`;
+                        poemOutput.innerHTML = `<span class="text-red-400">Uh oh, there was an issue connecting. It looks like an API key problem. Please try again or contact support.</span>`;
                         return;
                     }
                 }
@@ -414,7 +414,7 @@
 
             promptInput.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
-                    event.preventDefault(); // Prevent new line in textarea
+                    event.preventDefault();
                     generatePoem();
                 }
             });
