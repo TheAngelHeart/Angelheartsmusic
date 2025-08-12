@@ -485,11 +485,26 @@
 
         try {
             // Safely check for and parse the Firebase configuration from the Canvas environment.
+            // If the environment variable is not available, we use a hardcoded fallback.
+            const hardcodedFirebaseConfig = {
+                apiKey: "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
+                authDomain: "theangelheart-8c3d4.firebaseapp.com",
+                projectId: "theangelheart-8c3d4",
+                storageBucket: "theangelheart-8c3d4.firebasestorage.app",
+                messagingSenderId: "1037239430431",
+                appId: "1:1037239430431:web:9e8ae59a2ca61ef17bd42a",
+                measurementId: "G-Z2YJXCBN09"
+            };
+
             const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-            if (!firebaseConfigStr || typeof firebaseConfigStr !== 'string' || firebaseConfigStr.length === 0) {
-                throw new Error("Firebase configuration is not available.");
+            let firebaseConfig;
+
+            if (firebaseConfigStr && typeof firebaseConfigStr === 'string' && firebaseConfigStr.length > 0) {
+                firebaseConfig = JSON.parse(firebaseConfigStr);
+            } else {
+                console.warn("Using hardcoded Firebase configuration as __firebase_config is unavailable.");
+                firebaseConfig = hardcodedFirebaseConfig;
             }
-            const firebaseConfig = JSON.parse(firebaseConfigStr);
 
             // Initialize Firebase services
             const app = initializeApp(firebaseConfig);
