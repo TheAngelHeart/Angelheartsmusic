@@ -311,7 +311,6 @@
             <div id="poem-output" class="mt-8 bg-gray-800 rounded-2xl p-8 shadow-xl min-h-64 flex items-center justify-center text-center text-gray-400 italic">
                 Your poem will appear here.
             </div>
-
         </div>
     </section>
 
@@ -338,7 +337,6 @@
             const generateButton = document.getElementById('generate-button');
             const poemOutput = document.getElementById('poem-output');
 
-            // Function to make API call to Gemini
             const generatePoem = async () => {
                 const prompt = promptInput.value;
                 if (!prompt) {
@@ -346,12 +344,11 @@
                     return;
                 }
                 
-                // Show a loading message while waiting for the response
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                // Use the environment's provided API key
-                const apiKey = "";
-                
+                // Get the API key from the environment.
+                const apiKey = typeof __api_key !== 'undefined' ? __api_key : '';
+
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: `Write a short poem about: ${prompt}` }] });
                 
@@ -372,45 +369,41 @@
 
                         if (!response.ok) {
                             if (response.status === 429) {
-                                // Too many requests, implement exponential backoff
                                 const delay = baseDelay * Math.pow(2, retries);
                                 await new Promise(resolve => setTimeout(resolve, delay));
                                 retries++;
                                 continue;
                             }
-                            throw new Error(`API error: ${response.status} - ${response.statusText}`);
+                            const errorText = response.statusText ? response.statusText : 'An unexpected error occurred.';
+                            throw new Error(`API error: ${response.status} - ${errorText}`);
                         }
 
                         const result = await response.json();
                         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
                         if (text) {
-                            // Display the poem
                             poemOutput.innerHTML = `<p class="whitespace-pre-line">${text}</p>`;
                             return;
                         } else {
-                            // Log the full response for debugging
                             console.error("API response was not in the expected format:", result);
                             throw new Error("Invalid response format from API.");
                         }
 
                     } catch (error) {
                         console.error("API call failed:", error);
-                        // Display a more informative error message to the user
                         poemOutput.innerHTML = `<span class="text-red-400">Error: ${error.message}. Please try again.</span>`;
                         return;
                     }
                 }
                 
-                // If all retries fail
                 poemOutput.innerHTML = '<span class="text-red-400">Failed to generate poem after multiple attempts. Please try again later.</span>';
             };
 
             generateButton.addEventListener('click', generatePoem);
 
-            // Optional: Also generate on Enter key press
             promptInput.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent new line in textarea
                     generatePoem();
                 }
             });
@@ -418,5 +411,6 @@
     </script>
 </body>
 </html>
+
 
 
