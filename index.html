@@ -474,9 +474,6 @@
 
     // This function handles all the Firebase initialization and forum setup
     const initializeFirebaseAndForum = async () => {
-        // The __app_id variable is automatically provided by the Canvas environment.
-        appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         const forumStatus = document.getElementById('forum-status');
         const userIdDisplay = document.getElementById('userId-display');
 
@@ -484,27 +481,15 @@
         forumStatus.textContent = 'Connecting to the forum...';
 
         try {
-            // Safely check for and parse the Firebase configuration from the Canvas environment.
-            // If the environment variable is not available, we use a hardcoded fallback.
-            const hardcodedFirebaseConfig = {
-                apiKey: "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
-                authDomain: "theangelheart-8c3d4.firebaseapp.com",
-                projectId: "theangelheart-8c3d4",
-                storageBucket: "theangelheart-8c3d4.firebasestorage.app",
-                messagingSenderId: "1037239430431",
-                appId: "1:1037239430431:web:9e8ae59a2ca61ef17bd42a",
-                measurementId: "G-Z2YJXCBN09"
-            };
-
-            const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-            let firebaseConfig;
-
-            if (firebaseConfigStr && typeof firebaseConfigStr === 'string' && firebaseConfigStr.length > 0) {
-                firebaseConfig = JSON.parse(firebaseConfigStr);
-            } else {
-                console.warn("Using hardcoded Firebase configuration as __firebase_config is unavailable.");
-                firebaseConfig = hardcodedFirebaseConfig;
+            // Safely get and parse the Firebase configuration from the Canvas environment.
+            // These variables are provided by the hosting environment.
+            if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
+                throw new Error("Firebase configuration or app ID is unavailable.");
             }
+            
+            const firebaseConfig = JSON.parse(__firebase_config);
+            appId = __app_id;
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
             // Initialize Firebase services
             const app = initializeApp(firebaseConfig);
@@ -534,7 +519,8 @@
 
         } catch (e) {
             console.error("Firebase initialization or authentication failed:", e);
-            forumStatus.textContent = 'Error: Firebase configuration issue. Cannot connect to the forum.';
+            // Provide a more specific error message to help with debugging
+            forumStatus.textContent = `Error: Cannot connect to the forum. Details: ${e.message}`;
             userIdDisplay.textContent = 'Unavailable';
         }
     };
@@ -547,7 +533,7 @@
         const forumStatus = document.getElementById('forum-status');
         forumStatus.textContent = ''; // Clear status on successful connection
         
-        // --- NEW: Pre-fill the name field with the user's preferred name ---
+        // Pre-fill the name field with the user's preferred name
         postNameInput.value = userName;
 
         // Reference to the Firestore collection where posts are stored.
