@@ -35,7 +35,6 @@
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
                 <a href="#poem-creator" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Create</a>
-                <a href="#forum" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Forum</a>
             </div>
         </nav>
     </header>
@@ -314,52 +313,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Forum Section -->
-    <section id="forum" class="py-20 bg-gray-800">
-        <div class="container mx-auto px-4 max-w-2xl">
-            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
-                Angel Hearts Forum
-            </h2>
-            <p class="text-center text-gray-400 mb-8">
-                Share your thoughts and connect with others. Your user ID is shown below for community interaction.
-            </p>
-
-            <!-- Display current user ID -->
-            <div class="text-center mb-6 p-4 bg-gray-900 rounded-xl shadow-inner">
-                <span class="text-sm text-gray-400">Your User ID:</span>
-                <span id="userId-display" class="block font-mono text-pink-400 break-all">Connecting...</span>
-            </div>
-
-            <!-- New Post Form -->
-            <div class="bg-gray-900 rounded-2xl p-8 shadow-xl mb-8">
-                <h3 class="text-2xl font-bold text-white mb-4">Post a Message</h3>
-                <input
-                    id="post-name"
-                    type="text"
-                    class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
-                    placeholder="Your Name (optional)"
-                >
-                <textarea
-                    id="post-message"
-                    class="w-full h-24 p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                    placeholder="Write your message here..."
-                ></textarea>
-                <button
-                    id="post-button"
-                    class="mt-4 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg transform hover:scale-105"
-                >
-                    Post Message
-                </button>
-                <div id="forum-status" class="mt-4 text-center text-sm text-red-400"></div>
-            </div>
-
-            <!-- Posts Display Area -->
-            <div id="posts-container" class="space-y-6">
-                <!-- Posts will be dynamically inserted here by JavaScript -->
-            </div>
-        </div>
-    </section>
     
     <!-- Footer -->
     <footer class="bg-gray-950 text-center py-8">
@@ -378,169 +331,15 @@
         </div>
     </footer>
 
-    <!-- All JavaScript, including Firebase and Poem Creator, in a single script block for reliability -->
+    <!-- All JavaScript in a single script block for reliability -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        let db;
-        let auth;
-        let userId = null;
-        
-        // This function handles all the Firebase initialization and forum setup
-        const initializeFirebaseAndForum = async () => {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-            const forumStatus = document.getElementById('forum-status');
-            const userIdDisplay = document.getElementById('userId-display');
-
-            // Reset UI to a connecting state
-            userIdDisplay.textContent = 'Connecting...';
-            forumStatus.textContent = 'Connecting to the forum...';
-
-            try {
-                // Safely check for and parse the Firebase configuration
-                const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-                if (!firebaseConfigStr || typeof firebaseConfigStr !== 'string' || firebaseConfigStr.length === 0) {
-                    throw new Error("Firebase configuration is not available.");
-                }
-                const firebaseConfig = JSON.parse(firebaseConfigStr);
-                if (!firebaseConfig || !firebaseConfig.apiKey) {
-                    throw new Error("Invalid or missing Firebase configuration properties.");
-                }
-
-                // Initialize Firebase services
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                console.log("Firebase initialized successfully.");
-
-                // Sign in the user with the provided token or anonymously
-                await new Promise((resolve, reject) => {
-                    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            userId = user.uid;
-                            userIdDisplay.textContent = userId;
-                            console.log("Authenticated with user ID:", userId);
-                            setupForum();
-                            unsubscribe(); // Stop listening once authenticated
-                            resolve();
-                        } else {
-                            try {
-                                if (initialAuthToken) {
-                                    await signInWithCustomToken(auth, initialAuthToken);
-                                } else {
-                                    await signInAnonymously(auth);
-                                }
-                            } catch (e) {
-                                reject(e);
-                            }
-                        }
-                    }, reject);
-                });
-
-            } catch (e) {
-                console.error("Firebase initialization or authentication failed:", e);
-                forumStatus.textContent = 'Error: Firebase configuration issue. Cannot connect to the forum.';
-                userIdDisplay.textContent = 'Unavailable';
-                // Forum setup will not be called in case of an error
-            }
-        };
-
-        const setupForum = () => {
-            const postButton = document.getElementById('post-button');
-            const postNameInput = document.getElementById('post-name');
-            const postMessageInput = document.getElementById('post-message');
-            const postsContainer = document.getElementById('posts-container');
-            const forumStatus = document.getElementById('forum-status');
-            forumStatus.textContent = ''; // Clear status on successful connection
-
-            const forumCollectionRef = collection(db, `artifacts/${appId}/public/data/forum-posts`);
-
-            // Listen for new posts in real-time
-            const q = query(forumCollectionRef);
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                postsContainer.innerHTML = '';
-                const posts = [];
-                snapshot.forEach(doc => {
-                    posts.push({ id: doc.id, ...doc.data() });
-                });
-
-                posts.sort((a, b) => {
-                    const timeA = a.timestamp ? a.timestamp.seconds : 0;
-                    const timeB = b.timestamp ? b.timestamp.seconds : 0;
-                    return timeB - timeA;
-                });
-
-                posts.forEach(post => {
-                    const postElement = document.createElement('div');
-                    postElement.className = 'bg-gray-900 rounded-2xl p-6 shadow-md border border-gray-700';
-
-                    const name = post.name && post.name.trim() !== '' ? post.name : 'Anonymous';
-                    const postUserId = post.userId || 'Unknown';
-                    const timestamp = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleString() : 'Just now';
-                    
-                    postElement.innerHTML = `
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h4 class="font-bold text-lg text-pink-400">${name}</h4>
-                                <span class="text-xs text-gray-500">User ID: <span class="font-mono break-all">${postUserId}</span></span>
-                            </div>
-                            <span class="text-sm text-gray-500">${timestamp}</span>
-                        </div>
-                        <p class="text-gray-300 whitespace-pre-line">${post.message}</p>
-                    `;
-                    postsContainer.appendChild(postElement);
-                });
-            }, (error) => {
-                console.error("Error fetching forum posts:", error);
-                forumStatus.textContent = 'Error: Could not load forum posts.';
-            });
-
-            // Handle new post creation
-            postButton.addEventListener('click', async () => {
-                const name = postNameInput.value.trim();
-                const message = postMessageInput.value.trim();
-
-                if (!message) {
-                    forumStatus.textContent = 'Please write a message to post.';
-                    return;
-                }
-                
-                if (!userId) {
-                    forumStatus.textContent = 'User not authenticated. Please wait a moment.';
-                    return;
-                }
-
-                forumStatus.textContent = 'Posting...';
-
-                try {
-                    await addDoc(forumCollectionRef, {
-                        name: name,
-                        message: message,
-                        timestamp: serverTimestamp(),
-                        userId: userId,
-                    });
-                    
-                    postNameInput.value = '';
-                    postMessageInput.value = '';
-                    forumStatus.textContent = '';
-
-                } catch (e) {
-                    console.error("Error adding document: ", e);
-                    forumStatus.textContent = `Failed to post message: ${e.message}`;
-                }
-            });
-        };
-
-        // This function is for the Gemini Poem Creator
         const setupPoemCreator = () => {
             const promptInput = document.getElementById('poem-prompt');
             const generateButton = document.getElementById('generate-button');
             const poemOutput = document.getElementById('poem-output');
             
-            const geminiApiKey = ""; // This is an empty API key and will be replaced by the Canvas environment.
+            // This is an empty API key and will be replaced by the Canvas environment.
+            const geminiApiKey = ""; 
 
             const generatePoem = async () => {
                 const prompt = promptInput.value;
@@ -613,9 +412,8 @@
             });
         };
 
-        // Start everything once the DOM is ready
+        // Start the poem creator once the DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
-            initializeFirebaseAndForum();
             setupPoemCreator();
         });
     </script>
