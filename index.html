@@ -468,6 +468,9 @@
     let auth;
     let userId = null;
     let appId = null;
+    
+    // Personalize the name field with a user name from the persona.
+    const userName = 'Angel Heart';
 
     // This function handles all the Firebase initialization and forum setup
     const initializeFirebaseAndForum = async () => {
@@ -528,6 +531,9 @@
         const postsContainer = document.getElementById('posts-container');
         const forumStatus = document.getElementById('forum-status');
         forumStatus.textContent = ''; // Clear status on successful connection
+        
+        // --- NEW: Pre-fill the name field with the user's preferred name ---
+        postNameInput.value = userName;
 
         // Reference to the Firestore collection where posts are stored.
         // It uses the __app_id to create a unique path for your app.
@@ -602,7 +608,7 @@
                 });
                 
                 // Clear the form on successful post.
-                postNameInput.value = '';
+                postNameInput.value = userName; // Reset to the default name
                 postMessageInput.value = '';
                 forumStatus.textContent = '';
 
