@@ -429,19 +429,23 @@
         </div>
         
         <!-- Manual Configuration Input Section -->
+        <!-- This new section uses individual fields instead of a JSON blob -->
         <div id="manual-config-section" class="bg-gray-900 rounded-2xl p-8 shadow-xl mb-8 hidden">
             <h3 class="text-2xl font-bold text-white mb-4">Manual Firebase Configuration</h3>
             <p class="text-gray-400 mb-4">
-                The automatic connection failed. Please paste your full Firebase configuration JSON object below.
+                The automatic connection failed. Please enter your Firebase configuration details below.
             </p>
-            <textarea
-                id="config-input"
-                class="w-full h-48 p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none font-mono"
-                placeholder="Paste your Firebase config JSON here, e.g., { 'apiKey': '...', 'authDomain': '...', 'projectId': '...' }"
-            ></textarea>
+            <div class="space-y-4">
+                <input id="config-apiKey" type="text" placeholder="apiKey" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
+                <input id="config-authDomain" type="text" placeholder="authDomain" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
+                <input id="config-projectId" type="text" placeholder="projectId" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
+                <input id="config-storageBucket" type="text" placeholder="storageBucket" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
+                <input id="config-messagingSenderId" type="text" placeholder="messagingSenderId" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
+                <input id="config-appId" type="text" placeholder="appId" class="w-full p-3 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
+            </div>
             <button
                 id="connect-button"
-                class="mt-4 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg transform hover:scale-105"
+                class="mt-6 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg transform hover:scale-105"
             >
                 Connect to Forum
             </button>
@@ -500,8 +504,7 @@
         const postFormSection = document.getElementById('post-form-section');
         const manualConfigSection = document.getElementById('manual-config-section');
         const connectButton = document.getElementById('connect-button');
-        const configInput = document.getElementById('config-input');
-
+        
         userIdDisplay.textContent = 'Connecting...';
         forumStatus.textContent = 'Connecting to the forum...';
 
@@ -518,16 +521,29 @@
             
             // Set up event listener for the manual connect button
             connectButton.addEventListener('click', () => {
-                try {
-                    const config = JSON.parse(configInput.value.trim());
-                    if (config.apiKey && config.projectId) {
-                        initializeFirebaseAndForum(config);
-                    } else {
-                        forumStatus.textContent = 'Error: Incomplete Firebase config. Please provide apiKey and projectId at a minimum.';
-                    }
-                } catch (e) {
-                    forumStatus.textContent = 'Error: Invalid JSON format. Please check your configuration.';
-                    console.error("Invalid JSON:", e);
+                // Read values from the individual input fields
+                const apiKey = document.getElementById('config-apiKey').value.trim();
+                const authDomain = document.getElementById('config-authDomain').value.trim();
+                const projectId = document.getElementById('config-projectId').value.trim();
+                const storageBucket = document.getElementById('config-storageBucket').value.trim();
+                const messagingSenderId = document.getElementById('config-messagingSenderId').value.trim();
+                const appIdInput = document.getElementById('config-appId').value.trim();
+
+                // Build the configuration object
+                const config = {
+                    apiKey: apiKey,
+                    authDomain: authDomain,
+                    projectId: projectId,
+                    storageBucket: storageBucket,
+                    messagingSenderId: messagingSenderId,
+                    appId: appIdInput
+                };
+
+                // Validate that at least the most critical parts are provided
+                if (config.apiKey && config.projectId) {
+                    initializeFirebaseAndForum(config);
+                } else {
+                    forumStatus.textContent = 'Error: Please provide at least the apiKey and projectId to connect.';
                 }
             });
             return;
@@ -558,7 +574,6 @@
             db = getFirestore(app);
             auth = getAuth(app);
             console.log("Firebase initialized successfully.");
-            forumStatus.textContent = 'Successfully connected!';
             
             // Hide the manual config and show the post form
             manualConfigSection.classList.add('hidden');
@@ -570,6 +585,7 @@
                     userId = user.uid;
                     userIdDisplay.textContent = userId;
                     console.log("Authenticated with user ID:", userId);
+                    forumStatus.textContent = 'Successfully connected!';
                     setupForum();
                     unsubscribe(); // Stop listening once authenticated
                 } else {
