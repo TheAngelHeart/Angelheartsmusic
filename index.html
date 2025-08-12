@@ -402,60 +402,42 @@
                 
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                // IMPORTANT: The API key is now set to an empty string, allowing the environment to provide it.
+                // The API key is set to an empty string, which the environment will automatically populate.
                 const apiKey = ""; 
 
-                let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] });
-                const payload = { contents: chatHistory };
-                
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                try {
+                    const payload = { 
+                        contents: [{ 
+                            role: "user", 
+                            parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] 
+                        }] 
+                    };
+                    
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
-                // Implement exponential backoff for API calls
-                const maxRetries = 5;
-                let retryCount = 0;
-                let response;
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
 
-                while (retryCount < maxRetries) {
-                    try {
-                        response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (response.status === 429) { // Too many requests
-                            const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
-                            console.warn(`API rate limit exceeded. Retrying in ${delay / 1000} seconds...`);
-                            await new Promise(res => setTimeout(res, delay));
-                            retryCount++;
-                            continue;
-                        }
-
-                        if (!response.ok) {
-                            throw new Error(`API request failed with status: ${response.status}`);
-                        }
-
-                        const result = await response.json();
-
-                        if (result.candidates && result.candidates.length > 0 &&
-                            result.candidates[0].content && result.candidates[0].content.parts &&
-                            result.candidates[0].content.parts.length > 0) {
-                            const text = result.candidates[0].content.parts[0].text;
-                            poemOutput.innerHTML = `<p class="text-left whitespace-pre-line">${text}</p>`;
-                        } else {
-                            poemOutput.innerHTML = '<span class="text-red-400">Error: Could not generate a poem. Please try a different topic.</span>';
-                        }
-                        return; // Exit loop on success
-                    } catch (error) {
-                        console.error('Fetch error:', error);
-                        poemOutput.innerHTML = '<span class="text-red-400">Error: An unexpected error occurred. Please check your network and try again.</span>';
-                        return;
+                    if (!response.ok) {
+                        throw new Error(`API request failed with status: ${response.status}`);
                     }
-                }
 
-                if (retryCount >= maxRetries) {
-                    poemOutput.innerHTML = '<span class="text-red-400">Error: The API is not responding after multiple retries. Please try again later.</span>';
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        poemOutput.innerHTML = `<p class="text-left whitespace-pre-line">${text}</p>`;
+                    } else {
+                        poemOutput.innerHTML = '<span class="text-red-400">Error: Could not generate a poem. Please try a different topic.</span>';
+                    }
+                } catch (error) {
+                    console.error('Poem generation failed:', error);
+                    poemOutput.innerHTML = '<span class="text-red-400">Error: An unexpected error occurred. Please check your network and try again.</span>';
                 }
             };
             
