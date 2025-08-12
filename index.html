@@ -414,6 +414,10 @@
                         console.log("Authenticated with user ID:", userId);
                         // Initialize forum listeners and functionality after auth is ready
                         setupForum();
+                    } else {
+                        console.log("No user signed in yet. Waiting for authentication...");
+                        // Optionally, display a message that auth is pending
+                        document.getElementById('userId-display').textContent = "Authenticating...";
                     }
                 });
 
@@ -519,12 +523,15 @@
         };
     </script>
     
+    <!-- Poem Creator Script (completely separated) -->
     <script>
-        // JavaScript for the Gemini Poem Creator
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const promptInput = document.getElementById('poem-prompt');
             const generateButton = document.getElementById('generate-button');
             const poemOutput = document.getElementById('poem-output');
+            
+            // Your API key provided by you, Angel Heart.
+            const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
 
             const generatePoem = async () => {
                 const prompt = promptInput.value;
@@ -535,8 +542,6 @@
                 
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                const apiKey = ""; // API key is provided by the canvas environment
-
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] });
                 
@@ -601,6 +606,7 @@
     </script>
 </body>
 </html>
+
 
 
 
