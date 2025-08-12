@@ -346,10 +346,13 @@
                 
                 poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
                 
-                // Get the API key from the environment.
-                const apiKey = typeof __api_key !== 'undefined' ? __api_key : '';
-                if (!apiKey) {
-                    poemOutput.innerHTML = '<span class="text-red-400">Error: API key is not available.</span>';
+                // === IMPORTANT: PASTE YOUR GOOGLE AI STUDIO API KEY HERE ===
+                // This is a temporary workaround to the API key not being passed automatically.
+                // Replace 'YOUR_API_KEY_HERE' with your actual key.
+                const apiKey = 'AIzaSyAGnpAPNT_hmymsrP9O0LKDkg37Lbeo1sA';
+                
+                if (!apiKey || apiKey === 'AIzaSyAGnpAPNT_hmymsrP9O0LKDkg37Lbeo1sA') {
+                    poemOutput.innerHTML = '<span class="text-red-400">Error: API key is not available. Please insert your API key into the code.</span>';
                     return;
                 }
 
@@ -420,4 +423,5 @@
     </script>
 </body>
 </html>
+
 
