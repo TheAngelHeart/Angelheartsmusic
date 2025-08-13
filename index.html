@@ -348,6 +348,7 @@
                     return;
                 }
 
+                // Show a loading state
                 poemOutput.textContent = 'Generating your poem...';
                 
                 try {
@@ -382,7 +383,7 @@
                                 poemOutput.textContent = generatedText;
                                 success = true;
                             } else {
-                                poemOutput.textContent = 'Sorry, something went wrong while generating the poem. Please try again.';
+                                poemOutput.textContent = 'Sorry, the API response was empty. Please try again.';
                                 throw new Error('API response missing content.');
                             }
                         } catch (error) {
@@ -396,16 +397,19 @@
                     }
 
                     if (!success) {
-                        poemOutput.textContent = 'Sorry, the request failed after multiple retries. Please try again later.';
+                        poemOutput.textContent = 'Sorry, the request failed after multiple retries. This could be due to a network issue or a temporary service problem. Please check your connection and try again later.';
                     }
 
                 } catch (error) {
-                    console.error('Error in poem generation:', error);
-                    poemOutput.textContent = 'Failed to connect to the service. Please check your network connection.';
+                    console.error('Unexpected error in poem generation:', error);
+                    poemOutput.textContent = 'An unexpected error occurred. Please try again.';
                 }
             });
         });
     </script>
+
+</body>
+</html>
 
 <!DOCTYPE html>
 <html lang="en">
