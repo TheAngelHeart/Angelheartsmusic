@@ -375,7 +375,7 @@
         async function initializeAndAuthenticate() {
             if (!firebaseConfig) {
                 console.error("Firebase config not available. Forum functionality disabled.");
-                forumLoadingStatus.textContent = "Forum is currently unavailable.";
+                forumLoadingStatus.textContent = "Forum is unavailable: Firebase configuration is missing.";
                 return;
             }
 
