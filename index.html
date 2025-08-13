@@ -146,10 +146,12 @@
                             Sadness fills my heart 
                             Knowing I had to say goodbye 
                             To my existing deck of cards 
-                            All that remains are memories 
-                            Of when I drew that heart of love 
-                            My beautiful little Queen of light 
-                            In heaven up above
+                            Upon this road of rainbow dreams 
+                            You were my baby and my friend 
+                            I'll fight against the darkness 
+                            Crawl along this road of night 
+                            For there within the distance 
+                            I see an angels light 
                         </p>
                     </div>
                 </div>
@@ -348,68 +350,42 @@
                     return;
                 }
 
-                // Show a loading state
                 poemOutput.textContent = 'Generating your poem...';
                 
                 try {
-                    // Exponential backoff retry logic for API calls
-                    const maxRetries = 5;
-                    let retries = 0;
-                    let success = false;
-                    
-                    while (retries < maxRetries && !success) {
-                        try {
-                            const chatHistory = [{ role: "user", parts: [{ text: userPrompt }] }];
-                            const payload = {
-                                contents: chatHistory,
-                            };
-                            const apiKey = "";
-                            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    const chatHistory = [{ role: "user", parts: [{ text: userPrompt }] }];
+                    const payload = {
+                        contents: chatHistory,
+                    };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
-                            const response = await fetch(apiUrl, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(payload)
-                            });
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
 
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
-                            }
-
-                            const result = await response.json();
-                            const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                            if (generatedText) {
-                                poemOutput.textContent = generatedText;
-                                success = true;
-                            } else {
-                                poemOutput.textContent = 'Sorry, the API response was empty. Please try again.';
-                                throw new Error('API response missing content.');
-                            }
-                        } catch (error) {
-                            console.error(`Attempt ${retries + 1} failed:`, error);
-                            if (retries < maxRetries - 1) {
-                                const delay = Math.pow(2, retries) * 1000;
-                                await new Promise(res => setTimeout(res, delay));
-                            }
-                            retries++;
-                        }
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
                     }
 
-                    if (!success) {
-                        poemOutput.textContent = 'Sorry, the request failed after multiple retries. This could be due to a network issue or a temporary service problem. Please check your connection and try again later.';
-                    }
+                    const result = await response.json();
+                    const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
+                    if (generatedText) {
+                        poemOutput.textContent = generatedText;
+                    } else {
+                        poemOutput.textContent = 'Sorry, the API response was empty. Please try again.';
+                    }
                 } catch (error) {
-                    console.error('Unexpected error in poem generation:', error);
-                    poemOutput.textContent = 'An unexpected error occurred. Please try again.';
+                    console.error('Error generating poem:', error);
+                    poemOutput.textContent = `Sorry, the request failed. This could be due to a network issue or a temporary service problem. Please check your connection and try again later.`;
                 }
             });
         });
     </script>
-
-</body>
-</html>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -587,7 +563,7 @@
         }
     </style>
 </head>
-<body>
+
     <div id="app"></div>
 
     <script type="module">
