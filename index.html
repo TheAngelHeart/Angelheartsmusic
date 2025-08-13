@@ -352,8 +352,8 @@
             // ----------------------------------------------------------------------
 
             generateButton.addEventListener('click', async () => {
-                const userPrompt = poemPrompt.value;
-                if (!userPrompt) {
+                const userTopic = poemPrompt.value;
+                if (!userTopic) {
                     poemOutput.textContent = 'Please enter a topic to generate a poem.';
                     return;
                 }
@@ -361,7 +361,10 @@
                 poemOutput.textContent = 'Generating your poem...';
                 
                 try {
-                    const chatHistory = [{ role: "user", parts: [{ text: userPrompt }] }];
+                    // Create a more specific prompt for the AI to ensure it generates a poem
+                    const creativePrompt = `Write a beautiful and heartfelt poem about "${userTopic}" in the style of Angel Hearts Music. Ensure the poem has at least three stanzas and uses line breaks appropriately.`;
+
+                    const chatHistory = [{ role: "user", parts: [{ text: creativePrompt }] }];
                     const payload = {
                         contents: chatHistory,
                     };
