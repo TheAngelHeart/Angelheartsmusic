@@ -649,7 +649,7 @@
                     <form id="config-form" class="space-y-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
                         <h2 class="text-xl font-semibold text-center text-gray-700">Paste Firebase Configuration</h2>
                         <p class="text-sm text-gray-500 text-center">
-                            Go to your Firebase project settings, find the "Firebase SDK snippet," and copy the full JSON configuration object. Paste it below.
+                            Go to your Firebase project settings, find the "Firebase SDK snippet," and copy the **full JSON configuration object**. Paste it below.
                         </p>
                         <textarea id="config-json" class="w-full h-40 p-3 rounded-lg border border-gray-300 focus-ring-blue"
                             placeholder="Example:\n{\n  \"apiKey\": \"AIzaSy...\",\n  \"authDomain\": \"my-project-123.firebaseapp.com\",\n  \"projectId\": \"my-project-123\",\n  \"storageBucket\": \"my-project-123.appspot.com\",\n  \"messagingSenderId\": \"1234567890\",\n  \"appId\": \"1:1234567890:web:abcdef\"\n}"
@@ -688,19 +688,28 @@
             `;
 
             try {
-                firebaseConfig = JSON.parse(configInput.value);
+                // Remove any surrounding whitespace or comments
+                const rawConfig = configInput.value.trim().replace(/^(var firebaseConfig = )/, '');
+                firebaseConfig = JSON.parse(rawConfig);
+                
+                // Validate that essential keys exist
                 if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-                    throw new Error('Invalid Firebase config. Missing apiKey or projectId.');
+                    throw new Error('Missing essential Firebase keys (apiKey or projectId).');
                 }
             } catch (error) {
+                let errorMessage = "Please check the JSON format for errors like missing commas or quotes.";
+                if (error.message.includes('Missing essential Firebase keys')) {
+                    errorMessage = "The configuration is missing the 'apiKey' or 'projectId' fields. Please copy the full JSON object from Firebase.";
+                }
+                
                 statusDisplay.innerHTML = `
                     <span class="error-icon">&#x2716;</span>
                     <div style="text-align:center;">
                         <span style="color:#ef4444; font-weight:600;">Connection failed.</span>
-                        <p class="text-sm text-gray-500">Invalid JSON format or missing details.</p>
+                        <p class="text-sm text-gray-500">${errorMessage}</p>
                     </div>
                 `;
-                console.error("JSON parse error:", error);
+                console.error("Configuration error:", error);
                 return;
             }
 
@@ -728,7 +737,7 @@
                     <span class="error-icon">&#x2716;</span>
                     <div style="text-align:center;">
                         <span style="color:#ef4444; font-weight:600;">Connection failed.</span>
-                        <p class="text-sm text-gray-500">Check your configuration. Error: ${error.message}</p>
+                        <p class="text-sm text-gray-500">A Firebase error occurred. Please check your configuration and try again. Error: ${error.message}</p>
                     </div>
                 `;
                 console.error("Firebase connection error:", error);
