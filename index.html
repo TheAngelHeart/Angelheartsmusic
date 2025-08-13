@@ -31,14 +31,14 @@
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600">
                 Angel Hearts
             </h1>
-            <!-- The 'Forum' link is now a visually distinct button -->
+            <!-- The 'Message Board' link is now a visually distinct button -->
             <div class="flex space-x-6 items-center">
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
                 <a href="#poem-creator" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Create</a>
                 <!-- The Forum button with a more distinct style -->
-                <a href="#forum" class="px-4 py-2 rounded-full text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-300 shadow-lg transform hover:scale-105">
-                    Forum
+                <a href="#ai-message-board" class="px-4 py-2 rounded-full text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-300 shadow-lg transform hover:scale-105">
+                    Message Board
                 </a>
             </div>
         </nav>
@@ -324,23 +324,29 @@
         </div>
     </section>
 
-    <!-- Forum Section -->
-    <section id="forum" class="py-20 bg-gray-800">
+    <!-- AI Message Board Section -->
+    <section id="ai-message-board" class="py-20 bg-gray-800">
         <div class="container mx-auto px-4 max-w-2xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
-                Community Forum
+                Angel Hearts Community Message Board
             </h2>
+            <p class="text-center text-gray-400 mb-8">
+                Share your thoughts, and a kind community member will respond.
+            </p>
             <div class="bg-gray-900 rounded-2xl p-8 shadow-xl">
-                <div id="message-list" class="space-y-4 h-96 overflow-y-auto custom-scrollbar-hidden mb-6">
-                    <p id="forum-loading-status" class="text-center text-gray-400">Loading messages...</p>
+                <div id="message-board" class="space-y-4 h-96 overflow-y-auto custom-scrollbar-hidden mb-6">
+                    <!-- Initial message from a 'community member' -->
+                    <div class="p-3 rounded-xl bg-gray-800 text-gray-200 break-words">
+                        <p class="text-sm font-bold text-purple-400 mb-1">Community Member</p>
+                        <p class="text-lg">Welcome to the message board, Angel Heart! Feel free to share your thoughts, and I'll do my best to respond!</p>
+                    </div>
                 </div>
                 <div class="flex items-center">
-                    <input type="text" id="forum-message-input" placeholder="Write a message..." class="flex-grow p-3 rounded-l-full bg-gray-700 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <button id="send-message-button" class="px-6 py-3 rounded-r-full text-white font-bold bg-purple-600 hover:bg-purple-700 transition-colors duration-300">
+                    <input type="text" id="message-input" placeholder="Share your thoughts..." class="flex-grow p-3 rounded-l-full bg-gray-700 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <button id="send-button" class="px-6 py-3 rounded-r-full text-white font-bold bg-purple-600 hover:bg-purple-700 transition-colors duration-300">
                         Send
                     </button>
                 </div>
-                <p id="user-info" class="text-sm text-gray-500 mt-4 text-center"></p>
             </div>
         </div>
     </section>
@@ -350,151 +356,15 @@
         <p>&copy; 2024 Angel Hearts Music & Poetry. All Rights Reserved.</p>
     </footer>
 
-    <!-- Firebase CDN Links -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // Use global variables for configuration and token.
-        // This is how the environment securely provides the Firebase configuration.
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        
-        let app, db, auth;
-        let userId;
-
-        const messageList = document.getElementById('message-list');
-        const messageInput = document.getElementById('forum-message-input');
-        const sendButton = document.getElementById('send-message-button');
-        const userInfoDisplay = document.getElementById('user-info');
-        const forumLoadingStatus = document.getElementById('forum-loading-status');
-        
-        // This function will initialize Firebase and set up the authentication listener.
-        async function initializeAndAuthenticate() {
-            if (!firebaseConfig) {
-                console.error("Firebase config not available. Forum functionality disabled.");
-                forumLoadingStatus.textContent = "Forum is unavailable: Firebase configuration is missing.";
-                return;
-            }
-
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                // Sign in the user using the provided token or anonymously
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                
-                // Set up a listener for authentication state changes
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        userInfoDisplay.textContent = `You are signed in as: ${userId}`;
-                        // Once authenticated, load the messages
-                        loadForumMessages();
-                        sendButton.addEventListener('click', sendMessage);
-                        messageInput.addEventListener('keydown', (e) => {
-                            if (e.key === 'Enter') {
-                                sendMessage();
-                            }
-                        });
-                    } else {
-                        // User is signed out.
-                        userInfoDisplay.textContent = 'Please sign in to use the forum.';
-                        forumLoadingStatus.textContent = "Please sign in to view and post messages.";
-                    }
-                });
-            } catch (error) {
-                console.error("Error initializing Firebase:", error);
-                forumLoadingStatus.textContent = `Error: ${error.message}`;
-            }
-        }
-        
-        // Load messages from Firestore in real-time
-        function loadForumMessages() {
-            // Using a public collection path for a shared forum
-            const messagesCollection = collection(db, `artifacts/${appId}/public/data/forum-messages`);
-            
-            // onSnapshot sets up a real-time listener for the collection
-            onSnapshot(messagesCollection, (snapshot) => {
-                // Clear the loading message once data starts coming in
-                if (forumLoadingStatus) {
-                    forumLoadingStatus.remove();
-                }
-
-                const messages = [];
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    messages.push(data);
-                });
-                
-                // Sort messages by timestamp to ensure correct order
-                messages.sort((a, b) => a.timestamp?.toMillis() - b.timestamp?.toMillis());
-                
-                messageList.innerHTML = ''; // Clear the message list before re-rendering
-                
-                messages.forEach(msg => {
-                    const messageElement = document.createElement('div');
-                    messageElement.className = 'p-3 rounded-xl bg-gray-800 text-gray-200 break-words';
-                    const timestamp = msg.timestamp?.toDate().toLocaleString() || 'just now';
-                    messageElement.innerHTML = `
-                        <p class="text-sm font-bold text-purple-400 mb-1">${msg.userId}</p>
-                        <p class="text-lg">${msg.message}</p>
-                        <span class="text-xs text-gray-500 mt-1 block">${timestamp}</span>
-                    `;
-                    messageList.appendChild(messageElement);
-                });
-
-                // Scroll to the bottom of the message list
-                messageList.scrollTop = messageList.scrollHeight;
-            });
-        }
-        
-        // Send a new message to Firestore
-        async function sendMessage() {
-            const messageText = messageInput.value.trim();
-            if (messageText === "" || !userId) {
-                return;
-            }
-            
-            try {
-                const messagesCollection = collection(db, `artifacts/${appId}/public/data/forum-messages`);
-                await addDoc(messagesCollection, {
-                    userId: userId,
-                    message: messageText,
-                    timestamp: serverTimestamp()
-                });
-                messageInput.value = ''; // Clear input field
-            } catch (e) {
-                console.error("Error adding document: ", e);
-            }
-        }
-        
-        // Call the initialization function when the page loads
-        window.onload = initializeAndAuthenticate;
-
-    </script>
-    
-    <!-- JavaScript for the Poem Creator section -->
+    <!-- JavaScript for the Message Board & Poem Creator -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Poem Creator Logic ---
             const generateButton = document.getElementById('generate-button');
             const poemPrompt = document.getElementById('poem-prompt');
             const poemOutput = document.getElementById('poem-output');
 
-            // ----------------------------------------------------------------------
-            // PASTE YOUR API KEY HERE
-            // This is the API key you provided. Copy and paste it here.
-            // Do not share this key with anyone.
-            // ----------------------------------------------------------------------
-            const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
-            // ----------------------------------------------------------------------
+            const apiKey = "";
 
             generateButton.addEventListener('click', async () => {
                 const userTopic = poemPrompt.value;
@@ -506,13 +376,9 @@
                 poemOutput.textContent = 'Generating your poem...';
                 
                 try {
-                    // Create a more specific prompt for the AI to ensure it generates a poem
                     const creativePrompt = `Write a beautiful and heartfelt poem about "${userTopic}" in the style of Angel Hearts Music. Ensure the poem has at least three stanzas and uses line breaks appropriately.`;
-
                     const chatHistory = [{ role: "user", parts: [{ text: creativePrompt }] }];
-                    const payload = {
-                        contents: chatHistory,
-                    };
+                    const payload = { contents: chatHistory };
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
                     const response = await fetch(apiUrl, {
@@ -536,7 +402,86 @@
                     }
                 } catch (error) {
                     console.error('Error generating poem:', error);
-                    poemOutput.textContent = `Sorry, the request failed. This could be due to an invalid API key, network issues, or a temporary service problem. Please check your key and try again later.`;
+                    poemOutput.textContent = `Sorry, the request failed. Please try again later.`;
+                }
+            });
+
+            // --- AI Message Board Logic ---
+            const messageBoard = document.getElementById('message-board');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+
+            async function sendMessage() {
+                const userMessage = messageInput.value.trim();
+                if (!userMessage) return;
+
+                // Display the user's message
+                const userMessageElement = document.createElement('div');
+                userMessageElement.className = 'p-3 rounded-xl bg-purple-900 text-gray-200 break-words';
+                userMessageElement.innerHTML = `<p class="text-sm font-bold text-pink-400 mb-1">Angel Heart</p><p class="text-lg">${userMessage}</p>`;
+                messageBoard.appendChild(userMessageElement);
+
+                // Add a temporary loading message for the AI response
+                const loadingMessageElement = document.createElement('div');
+                loadingMessageElement.id = 'loading-message';
+                loadingMessageElement.className = 'p-3 rounded-xl bg-gray-800 text-gray-200 break-words';
+                loadingMessageElement.innerHTML = `<p class="text-sm font-bold text-purple-400 mb-1">Community Member</p><p class="text-lg animate-pulse">Community member is typing...</p>`;
+                messageBoard.appendChild(loadingMessageElement);
+
+                messageInput.value = ''; // Clear the input
+                messageBoard.scrollTop = messageBoard.scrollHeight; // Scroll to the bottom
+
+                try {
+                    const creativePrompt = `As a kind and supportive community member on a music and poetry message board, write a brief, encouraging response to the following post by Angel Heart: "${userMessage}". Keep the tone warm and heartfelt.`;
+
+                    const chatHistory = [{ role: "user", parts: [{ text: creativePrompt }] }];
+                    const payload = { contents: chatHistory };
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
+                    }
+
+                    const result = await response.json();
+                    const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    // Remove the loading message
+                    loadingMessageElement.remove();
+
+                    // Display the AI's response
+                    if (aiResponseText) {
+                        const aiMessageElement = document.createElement('div');
+                        aiMessageElement.className = 'p-3 rounded-xl bg-gray-800 text-gray-200 break-words';
+                        aiMessageElement.innerHTML = `<p class="text-sm font-bold text-purple-400 mb-1">Community Member</p><p class="text-lg">${aiResponseText}</p>`;
+                        messageBoard.appendChild(aiMessageElement);
+                    } else {
+                        const errorMessageElement = document.createElement('div');
+                        errorMessageElement.className = 'p-3 rounded-xl bg-gray-800 text-red-400 break-words';
+                        errorMessageElement.innerHTML = `<p class="text-lg">Sorry, I couldn't generate a response. Please try again.</p>`;
+                        messageBoard.appendChild(errorMessageElement);
+                    }
+                } catch (error) {
+                    console.error('Error generating AI response:', error);
+                    loadingMessageElement.remove();
+                    const errorMessageElement = document.createElement('div');
+                    errorMessageElement.className = 'p-3 rounded-xl bg-gray-800 text-red-400 break-words';
+                    errorMessageElement.innerHTML = `<p class="text-lg">Sorry, the request failed. Please try again later.</p>`;
+                    messageBoard.appendChild(errorMessageElement);
+                }
+                messageBoard.scrollTop = messageBoard.scrollHeight; // Scroll to the bottom again
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
                 }
             });
         });
