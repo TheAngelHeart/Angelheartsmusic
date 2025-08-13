@@ -411,6 +411,7 @@
             });
         });
     </script>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -592,17 +593,6 @@
         let userId = null;
         let unsubscribeFromMessages = null;
 
-        // Hardcoded Firebase configuration
-        const firebaseConfig = {
-            "apiKey": "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
-            "authDomain": "theangelheart-8c3d4.firebaseapp.com",
-            "projectId": "theangelheart-8c3d4",
-            "storageBucket": "theangelheart-8c3d4.firebasestorage.app",
-            "messagingSenderId": "1037239430431",
-            "appId": "1:1037239430431:web:9e8ae59a2ca61ef17bd42a",
-            "measurementId": "G-Z2YJXCBN09"
-        };
-
         // Render the main UI
         function renderUI() {
             const appDiv = document.getElementById('app');
@@ -664,7 +654,8 @@
         
         async function connectToFirebase() {
             try {
-                // Initialize Firebase services with the hardcoded config
+                // Use the built-in Firebase configuration provided by the platform
+                const firebaseConfig = JSON.parse(__firebase_config);
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
@@ -680,7 +671,7 @@
                 userId = auth.currentUser.uid;
                 updateMainContent();
             } catch (error) {
-                // This catch block is for unexpected errors, but with the hardcoded config, it should not be triggered for the original error.
+                // This catch block is for unexpected errors, but with the new approach, it should be stable.
                 const mainContentDiv = document.getElementById('main-content');
                 mainContentDiv.innerHTML = `
                     <div class="connection-status error-icon">
