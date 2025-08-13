@@ -386,30 +386,40 @@
         const messageBoard = document.getElementById('message-board');
         const loadingMessage = document.getElementById('loading-message');
         const messageInput = document.getElementById('message-input');
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                userId = user.uid;
-                authStatus.textContent = 'Connected to Firestore';
-                userIdDisplay.textContent = `Your User ID: ${userId}`;
-                sendButton.disabled = false;
-                startListeningForMessages();
-            } else {
-                // Sign in anonymously if a custom token is not provided
+        
+        async function initFirebase() {
+            try {
+                // Try to sign in with the custom token if available
                 if (initialAuthToken) {
-                    try {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } catch (error) {
-                        console.error("Error signing in with custom token:", error);
-                        authStatus.textContent = 'Authentication failed. Trying anonymous sign-in...';
-                        await signInAnonymously(auth);
-                    }
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Signed in with custom token.");
                 } else {
+                    // Fallback to anonymous sign-in
                     await signInAnonymously(auth);
+                    console.log("Signed in anonymously.");
                 }
+            } catch (error) {
+                console.error("Error during Firebase sign-in:", error);
+                authStatus.textContent = 'Authentication failed. Please refresh the page.';
+                return;
             }
-        });
 
+            // Set up the listener for auth state changes
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    userId = user.uid;
+                    authStatus.textContent = 'Connected to Firestore';
+                    userIdDisplay.textContent = `Your User ID: ${userId}`;
+                    sendButton.disabled = false;
+                    startListeningForMessages();
+                } else {
+                    console.log("User is signed out.");
+                    authStatus.textContent = 'Disconnected. Please refresh.';
+                    sendButton.disabled = true;
+                }
+            });
+        }
+        
         // Function to listen for real-time messages
         function startListeningForMessages() {
             // Firestore collection path for public data
@@ -417,12 +427,10 @@
 
             // Use onSnapshot to get real-time updates
             onSnapshot(messagesCollection, (snapshot) => {
-                // Clear any loading messages
                 if (loadingMessage) {
                     loadingMessage.style.display = 'none';
                 }
 
-                // Get all messages and sort them by timestamp
                 const messages = [];
                 snapshot.forEach(doc => {
                     messages.push({ ...doc.data(), id: doc.id });
@@ -430,19 +438,16 @@
 
                 // Manually sort the messages by timestamp since orderBy() can cause issues
                 messages.sort((a, b) => {
-                    // Handle cases where timestamp might be null
                     if (!a.timestamp) return -1;
                     if (!b.timestamp) return 1;
                     return a.timestamp.seconds - b.timestamp.seconds;
                 });
 
-                // Clear the message board and re-render all messages
                 messageBoard.innerHTML = '';
                 messages.forEach(msg => {
                     displayMessage(msg);
                 });
 
-                // Scroll to the latest message
                 messageBoard.scrollTop = messageBoard.scrollHeight;
             }, (error) => {
                 console.error("Error listening to messages:", error);
@@ -455,7 +460,6 @@
             const messageElement = document.createElement('div');
             messageElement.className = 'p-3 rounded-xl break-words';
 
-            // Determine if the message is from the current user
             const isCurrentUser = msg.userId === userId;
             if (isCurrentUser) {
                 messageElement.classList.add('bg-purple-900', 'text-right', 'ml-auto');
@@ -466,7 +470,6 @@
             const senderName = isCurrentUser ? 'You' : `User (${msg.userId.substring(0, 5)}...)`;
             const senderColor = isCurrentUser ? 'text-pink-400' : 'text-purple-400';
 
-            // Format the timestamp
             const date = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleString() : 'Just now';
 
             messageElement.innerHTML = `
@@ -480,19 +483,21 @@
         // Function to send a new message
         async function sendMessage() {
             const messageText = messageInput.value.trim();
-            if (!messageText || !userId) return;
+            if (!messageText || !userId) {
+                console.error("Cannot send message: Text is empty or user is not authenticated.");
+                return;
+            }
 
             try {
-                // Add a new document to the 'messages' collection
                 await addDoc(collection(db, `/artifacts/${appId}/public/data/messages`), {
                     userId: userId,
                     text: messageText,
-                    timestamp: serverTimestamp() // Use server timestamp to ensure accuracy
+                    timestamp: serverTimestamp()
                 });
                 messageInput.value = '';
+                console.log("Message sent successfully!");
             } catch (error) {
                 console.error("Error sending message:", error);
-                // Create a custom error box instead of an alert
                 const errorBox = document.createElement('div');
                 errorBox.className = 'p-3 rounded-xl bg-red-800 text-red-100 break-words mt-4';
                 errorBox.innerHTML = `<p class="text-lg">Error sending message. Please try again.</p>`;
@@ -507,6 +512,9 @@
                 sendMessage();
             }
         });
+
+        // Start the Firebase initialization process
+        initFirebase();
     </script>
     <!-- Gemini Poem Creator Logic -->
     <script type="module">
