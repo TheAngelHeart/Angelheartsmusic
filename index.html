@@ -31,10 +31,12 @@
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600">
                 Angel Hearts
             </h1>
+            <!-- NEW: Added the 'Forum' link to the navigation bar -->
             <div class="flex space-x-6">
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
                 <a href="#poem-creator" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Create</a>
+                <a href="#forum" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Forum</a>
             </div>
         </nav>
     </header>
@@ -97,12 +99,12 @@
                             Until i found a card of light 
                             This card i hold close to my heart 
                             Up until this very night 
-                            
+                             
                             I've known the Queen of diamonds 
                             Had nights out with the Queen of clubs 
                             I've known the sadness of the Queen of Spades 
                             Felt the Queen of hearts love 
-                            
+                             
                             All the Queens they shine so bright 
                             Though only one shone within my light 
                             The Queen of hearts my little star 
@@ -112,7 +114,7 @@
                             All the Queens meant the world to me 
                             Though only the Queen of hearts 
                             Give me the gift to see 
-                            
+                             
                             I won the card game of life 
                             When the card i drew was yours 
                             My little angel heart of love 
@@ -121,12 +123,12 @@
                             For her heart it is my light 
                             She touched my soul with kindness 
                             Gifting me the truth of sight 
-                            
+                             
                             I've known the Queen of diamonds 
                             Had nights out with the Queen of clubs 
                             I've known the sadness of the Queen of Spades 
                             Felt the Queen of hearts love 
-                            
+                             
                             All the Queens they shine so bright 
                             Though only one shone within my light 
                             The Queen of hearts my little star 
@@ -136,7 +138,7 @@
                             All the Queens meant the world to me 
                             Though only the Queen of hearts 
                             Give me the gift to see 
-                            
+                             
                             My Queen of Hearts 
                             Sadness fills my heart 
                             Knowing I had to say goodbye 
@@ -165,12 +167,12 @@
                             Broken within their sight 
                             Yet within your heart that beats i side 
                             A rainbow shone of love 
-                            
+                             
                             You fought your way back to your feet 
                             like you have done all your life 
                             Not one soul there to help you 
                             To pick you up in your darkest night 
-                            
+                             
                             All of those Queens 
                             Standing tall within the night 
                             Rainbow colours shine within their eyes 
@@ -179,7 +181,7 @@
                             Faced the darkness of the day 
                             Until they found their path of light 
                             All of those Queens they shine so bright 
-                            
+                             
                             They tried to break your mind 
                             Break that heart that beat of love 
                             They called you names and put you down 
@@ -188,12 +190,12 @@
                             A unity of the heart 
                             It gave you the strength inside you need 
                             To fight for who you are 
-                            
+                             
                             You fought your way back to your feet 
                             like you have done all your life 
                             Not one soul there to help you 
                             To pick you up in your darkest night 
-                            
+                             
                             All of those Queens 
                             Standing tall within the night 
                             Rainbow colours shine within their eyes 
@@ -202,7 +204,7 @@
                             Faced the darkness of the day 
                             Until they found their path of light 
                             All of those Queens shall find their way 
-                            
+                             
                             Darkness to the rainbows end 
                             The rising of our newfound friends 
                             That shine I colours born of love 
@@ -231,12 +233,12 @@
                             That I may feel your heartbeat again 
                             Sometimes I fall upon my knees 
                             Though it's that moment I remember when 
-                            
+                             
                             An angel always walked with me 
                             Thought the shadows of my life 
                             Never turning away from love 
                             Her heart it beat with mine 
-                            
+                             
                             Oh angel rise up 
                             Be the light that I need 
                             Protect my heart from darkness 
@@ -245,7 +247,7 @@
                             Be a shield in this void of night 
                             Protect my heart from breaking 
                             Oh angel gave me sight 
-                            
+                             
                             I walk this road with hope 
                             That I'll find you once again 
                             Upon this road of rainbow dreams 
@@ -254,12 +256,12 @@
                             Crawl along this road of night 
                             For there within the distance 
                             I see an angels light 
-                            
+                             
                             An angel always walked with me 
                             Thought the shadows of my life 
                             Never turning away from love 
                             Her heart it beat with mine 
-                            
+                             
                             Oh angel rise up 
                             Be the light that I need 
                             Protect my heart from darkness 
@@ -268,7 +270,7 @@
                             Be a shield in this void of night 
                             Protect my heart from breaking 
                             Oh angel gave me sight 
-                            
+                             
                             You were the beating of my heart 
                             The light within my eyes 
                             You gave me the strength of an angel 
@@ -283,6 +285,106 @@
             </div>
         </div>
     </section>
+
+    <!-- Gemini Poem Creator Section -->
+    <section id="poem-creator" class="py-20 bg-gray-900">
+        <div class="container mx-auto px-4 max-w-2xl">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
+                Create Your Own Poem with Gemini
+            </h2>
+            <p class="text-center text-gray-400 mb-8">
+                Enter a topic below, and Gemini will craft a unique poem for you.
+            </p>
+            <div class="bg-gray-800 rounded-2xl p-8 shadow-xl">
+                <textarea
+                    id="poem-prompt"
+                    class="w-full h-32 p-4 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                    placeholder="e.g., 'a peaceful forest at sunset' or 'a journey through the stars'"
+                ></textarea>
+                <button
+                    id="generate-button"
+                    class="mt-6 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105"
+                >
+                    Generate Poem
+                </button>
+            </div>
+            
+            <!-- Area to display the generated poem -->
+            <div id="poem-output" class="mt-8 bg-gray-800 rounded-2xl p-8 shadow-xl min-h-64 flex items-center justify-center text-center text-gray-400 italic">
+                Your poem will appear here.
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW: Forum Section -->
+    <section id="forum" class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">
+                Community Forum
+            </h2>
+            <div class="bg-gray-900 rounded-2xl p-8 shadow-xl text-center">
+                <p class="text-gray-400 text-lg">
+                    This is where the forum posts will appear!
+                    We can add functionality here for you and your community to share thoughts and new poetry.
+                </p>
+                <p id="userIdDisplay" class="mt-4 text-sm text-gray-500"></p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-950 text-center py-8">
+        <p class="text-gray-400 text-sm">
+            &copy; 2025 Angel Hearts. All rights reserved.
+        </p>
+        <!-- Placeholder for social media links -->
+        <div class="mt-4 flex justify-center space-x-6 text-gray-500">
+            <a href="#" class="hover:text-pink-400 transition-colors duration-300">
+                <!-- Example: Placeholder SVG for a social media icon -->
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.258 12.012c0 5.669-4.588 10.257-10.258 10.257S1.742 17.681 1.742 12.012 6.33 1.755 12.012 1.755 22.258 6.343 22.258 12.012zm-10.258-7.795c-4.223 0-7.669 3.446-7.669 7.669s3.446 7.669 7.669 7.669 7.669-3.446 7.669-7.669-3.446-7.669-7.669-7.669zm-1.895 10.57h1.498v-3.791h-1.498v3.791zm3.89-6.079c-.779 0-1.398-.62-1.398-1.398s.62-1.398 1.398-1.398 1.398.62 1.398 1.398-.62 1.398-1.398 1.398zm0 2.251h1.498v5.33h-1.498v-5.33zm-4.707-.001h1.498v-1.558h-1.498v1.558zm-1.895-1.558h1.498v-1.558h-1.498v1.558zm-2.812-.001h1.498v-1.558h-1.498v1.558z"/></svg>
+            </a>
+            <a href="#" class="hover:text-pink-400 transition-colors duration-300">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.321 7.202h-2.912c-.085-1.05-.183-2.022-.294-2.917h3.206c.07.72.138 1.488.2 2.302zM12 20c-1.378 0-2.671-.24-3.83-.69l1.455-2.83c1.076.417 2.26.634 3.498.634 1.258 0 2.443-.217 3.522-.634l1.455 2.83c-1.16.45-2.453.69-3.83.69zm-4.226-7.801c.216-1.13.435-2.27.653-3.41h1.168c-.218 1.14-.437 2.28-.653 3.41h-1.168zm8.448 0c-.216-1.13-.435-2.27-.653-3.41h-1.168c.218 1.14.437 2.28.653 3.41h1.168zm-4.224-4.298c-1.076.417-2.26.634-3.498.634-1.258 0-2.443-.217-3.522-.634l-1.455-2.83c1.16-.45 2.453-.69 3.83-.69s2.671.24 3.83.69l-1.455 2.83z"/></svg>
+            </a>
+        </div>
+    </footer>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        // --- Firebase Initialization ---
+        // This is necessary to use Firebase services like Firestore for the forum.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        const userIdDisplay = document.getElementById('userIdDisplay');
+
+        if (typeof __initial_auth_token !== 'undefined') {
+            signInWithCustomToken(auth, __initial_auth_token).catch((error) => {
+                console.error("Error signing in with custom token:", error);
+                signInAnonymously(auth);
+            });
+        } else {
+            signInAnonymously(auth);
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                const userId = user.uid;
+                userIdDisplay.textContent = `User ID: ${userId}`;
+                console.log("User signed in with ID:", userId);
+            } else {
+                // User is signed out
+                userIdDisplay.textContent = "User ID: Not Signed In";
+                console.log("User signed out.");
+            }
+        });
+    </script>
+</body>
+</html>
 
     <!-- Gemini Poem Creator Section -->
     <section id="poem-creator" class="py-20 bg-gray-900">
