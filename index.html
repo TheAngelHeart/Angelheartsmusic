@@ -592,6 +592,17 @@
         let userId = null;
         let unsubscribeFromMessages = null;
 
+        // Hardcoded Firebase configuration
+        const firebaseConfig = {
+            "apiKey": "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
+            "authDomain": "theangelheart-8c3d4.firebaseapp.com",
+            "projectId": "theangelheart-8c3d4",
+            "storageBucket": "theangelheart-8c3d4.firebasestorage.app",
+            "messagingSenderId": "1037239430431",
+            "appId": "1:1037239430431:web:9e8ae59a2ca61ef17bd42a",
+            "measurementId": "G-Z2YJXCBN09"
+        };
+
         // Render the main UI
         function renderUI() {
             const appDiv = document.getElementById('app');
@@ -599,7 +610,7 @@
                 <div class="container-card">
                     <h1 class="text-3xl font-bold text-center text-gray-800">Angel Hearts Forum</h1>
                     <p class="text-center text-gray-600">
-                        Connect to your Firebase project to start sharing your music and poems.
+                        Sharing our music and poems.
                     </p>
                     <div id="main-content"></div>
                 </div>
@@ -640,44 +651,24 @@
                 listenForMessages();
 
             } else {
-                mainContentDiv.innerHTML = `
-                    <form id="config-form" class="space-y-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
-                        <h2 class="text-xl font-semibold text-center text-gray-700">Paste Firebase Configuration</h2>
-                        <p class="text-sm text-gray-500 text-center">
-                            Go to your Firebase project settings, find the "Firebase SDK snippet," and copy the **full JSON configuration object**. Paste it below.
-                        </p>
-                        <textarea id="config-json" class="w-full h-40 p-3 rounded-lg border border-gray-300 focus-ring-blue"
-                            placeholder="Example:\n{\n  \"apiKey\": \"AIzaSy...\",\n  \"authDomain\": \"my-project-123.firebaseapp.com\",\n  \"projectId\": \"my-project-123\",\n  \"storageBucket\": \"my-project-123.appspot.com\",\n  \"messagingSenderId\": \"1234567890\",\n  \"appId\": \"1:1234567890:web:abcdef\"\n}"
-                            required
-                        ></textarea>
-                        <button type="submit" class="connect-button">
-                            Connect to Forum
-                        </button>
-                        <div id="status-display" class="connection-status">
-                            <span class="text-sm text-gray-500">Awaiting configuration...</span>
+                 mainContentDiv.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="connection-status">
+                            <span class="connecting-icon" style="color:#6b7280;">&#x231B;</span>
+                            <span style="color:#6b7280;">Connecting...</span>
                         </div>
-                    </form>
+                    </div>
                 `;
-
-                document.getElementById('config-form').addEventListener('submit', handleConfigSubmit);
             }
         }
         
-        async function connectToFirebase(firebaseConfig) {
-            const statusDisplay = document.getElementById('status-display');
-            
-            statusDisplay.innerHTML = `
-                <span class="connecting-icon" style="color:#6b7280;">&#x231B;</span>
-                <span style="color:#6b7280;">Connecting...</span>
-            `;
-
+        async function connectToFirebase() {
             try {
-                // Initialize Firebase services
+                // Initialize Firebase services with the hardcoded config
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Explicitly handle sign-in first, then update UI
                 const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
                 
                 if (initialAuthToken) {
@@ -686,70 +677,20 @@
                     await signInAnonymously(auth);
                 }
                 
-                // Get the user ID after successful sign-in
                 userId = auth.currentUser.uid;
-                
-                // Update the UI to show the chat
                 updateMainContent();
             } catch (error) {
-                // Handle connection errors and display them to the user
-                let errorMessage;
-                if (error.message.includes('auth/configuration-not-found')) {
-                    errorMessage = "The 'authDomain' property is missing from your Firebase configuration. Please copy the complete configuration block from your Firebase project settings.";
-                } else {
-                    errorMessage = `A Firebase error occurred. Please check your configuration and try again. Error: ${error.message}`;
-                }
-                statusDisplay.innerHTML = `
-                    <span class="error-icon">&#x2716;</span>
-                    <div style="text-align:center;">
-                        <span style="color:#ef4444; font-weight:600;">Connection failed.</span>
-                        <p class="text-sm text-gray-500">${errorMessage}</p>
+                // This catch block is for unexpected errors, but with the hardcoded config, it should not be triggered for the original error.
+                const mainContentDiv = document.getElementById('main-content');
+                mainContentDiv.innerHTML = `
+                    <div class="connection-status error-icon">
+                        <span>&#x2716;</span>
+                        <span>Connection failed due to an unexpected error.</span>
+                        <p class="text-sm text-gray-500">${error.message}</p>
                     </div>
                 `;
                 console.error("Firebase connection error:", error);
             }
-        }
-        
-        async function handleConfigSubmit(e) {
-            e.preventDefault();
-            const statusDisplay = document.getElementById('status-display');
-            const configInput = document.getElementById('config-json');
-            let firebaseConfig;
-
-            try {
-                const configText = configInput.value.trim();
-                // Check if the input starts and ends with curly braces, indicating a JSON object
-                if (!configText.startsWith('{') || !configText.endsWith('}')) {
-                    throw new Error('Invalid JSON format. Please ensure you are copying the full JSON object, including the curly braces {}.');
-                }
-                
-                firebaseConfig = JSON.parse(configText);
-                
-                if (!firebaseConfig.apiKey || !firebaseConfig.projectId || !firebaseConfig.authDomain) {
-                    throw new Error('Missing essential Firebase keys (apiKey, projectId, or authDomain). Please copy the full JSON object from Firebase.');
-                }
-            } catch (error) {
-                let errorMessage;
-                if (error.message.includes('Missing essential Firebase keys')) {
-                    errorMessage = "The configuration is missing required fields like 'apiKey', 'projectId', or 'authDomain'. Please copy the full JSON object from Firebase.";
-                } else if (error.message.includes('Invalid JSON format')) {
-                    errorMessage = "The format is incorrect. Please ensure you are copying the full code snippet, including the curly braces {} and that keys and string values are surrounded by double quotes.";
-                } else {
-                    errorMessage = `A configuration error occurred. Details: ${error.message}`;
-                }
-                
-                statusDisplay.innerHTML = `
-                    <span class="error-icon">&#x2716;</span>
-                    <div style="text-align:center;">
-                        <span style="color:#ef4444; font-weight:600;">Connection failed.</span>
-                        <p class="text-sm text-gray-500">${errorMessage}</p>
-                    </div>
-                `;
-                console.error("Configuration error:", error);
-                return;
-            }
-            
-            connectToFirebase(firebaseConfig);
         }
         
         // Listen for messages in real-time
@@ -828,10 +769,14 @@
             }
         }
         
-        // Initial render on page load
-        document.addEventListener('DOMContentLoaded', renderUI);
+        // Initial render and connection on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderUI();
+            connectToFirebase();
+        });
     </script>
 </body>
 </html>
+
 </body>
 </html>
