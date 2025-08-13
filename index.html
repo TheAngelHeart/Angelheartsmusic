@@ -289,7 +289,7 @@
         </div>
     </section>
 
-    <!-- Gemini Poem Creator Section -->
+  <!-- Gemini Poem Creator Section -->
     <section id="poem-creator" class="py-20 bg-gray-900">
         <div class="container mx-auto px-4 max-w-2xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
@@ -329,83 +329,134 @@
         </div>
     </section>
 
+   <!-- Gemini Poem Creator Section -->
+    <section id="poem-creator" class="py-20 bg-gray-900">
+        <div class="container mx-auto px-4 max-w-2xl">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
+                Create Your Own Poem with Gemini
+            </h2>
+            <p class="text-center text-gray-400 mb-8">
+                Enter a topic below, and Gemini will craft a unique poem for you.
+            </p>
+            <div class="bg-gray-800 rounded-2xl p-8 shadow-xl">
+                <textarea
+                    id="poem-prompt"
+                    class="w-full h-32 p-4 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                    placeholder="e.g., 'a peaceful forest at sunset' or 'a journey through the stars'"
+                ></textarea>
+                <button
+                    id="generate-button"
+                    class="mt-6 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105"
+                >
+                    Generate Poem
+                </button>
+            </div>
+            
+            <!-- Area to display the generated poem -->
+            <div id="poem-output" class="mt-8 bg-gray-800 rounded-2xl p-8 shadow-xl min-h-64 flex items-center justify-center text-center text-gray-400 italic">
+                Your poem will appear here.
+            </div>
+        </div>
+    </section>
+    
     <!-- Footer -->
-    <footer class="bg-gray-900 py-6 text-center text-gray-500">
-        <p>&copy; 2024 Angel Hearts Music & Poetry. All Rights Reserved.</p>
+    <footer class="bg-gray-950 text-center py-8">
+        <p class="text-gray-400 text-sm">
+            &copy; 2025 Angel Hearts. All rights reserved.
+        </p>
+        <!-- Placeholder for social media links -->
+        <div class="mt-4 flex justify-center space-x-6 text-gray-500">
+            <a href="#" class="hover:text-pink-400 transition-colors duration-300">
+                <!-- Example: Placeholder SVG for a social media icon -->
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.258 12.012c0 5.669-4.588 10.257-10.258 10.257S1.742 17.681 1.742 12.012 6.33 1.755 12.012 1.755 22.258 6.343 22.258 12.012zm-10.258-7.795c-4.223 0-7.669 3.446-7.669 7.669s3.446 7.669 7.669 7.669 7.669-3.446 7.669-7.669-3.446-7.669-7.669-7.669zm-1.895 10.57h1.498v-3.791h-1.498v3.791zm3.89-6.079c-.779 0-1.398-.62-1.398-1.398s.62-1.398 1.398-1.398 1.398.62 1.398 1.398-.62 1.398-1.398 1.398zm0 2.251h1.498v5.33h-1.498v-5.33zm-4.707-.001h1.498v-1.558h-1.498v1.558zm-1.895-1.558h1.498v-1.558h-1.498v1.558zm-2.812-.001h1.498v-1.558h-1.498v1.558z"/></svg>
+            </a>
+            <a href="#" class="hover:text-pink-400 transition-colors duration-300">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.321 7.202h-2.912c-.085-1.05-.183-2.022-.294-2.917h3.206c.07.72.138 1.488.2 2.302zM12 20c-1.378 0-2.671-.24-3.83-.69l1.455-2.83c1.076.417 2.26.634 3.498.634 1.258 0 2.443-.217 3.522-.634l1.455 2.83c-1.16.45-2.453.69-3.83.69zm-4.226-7.801c.216-1.13.435-2.27.653-3.41h1.168c-.218 1.14-.437 2.28-.653 3.41h-1.168zm8.448 0c-.216-1.13-.435-2.27-.653-3.41h-1.168c.218 1.14.437 2.28.653 3.41h1.168zm-4.224-4.298c-1.076.417-2.26.634-3.498.634-1.258 0-2.443-.217-3.522-.634l-1.455-2.83c1.16-.45 2.453-.69 3.83-.69s2.671.24 3.83.69l-1.455 2.83z"/></svg>
+            </a>
+        </div>
     </footer>
 
-    <!-- JavaScript for the Poem Creator section -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // JavaScript for the Gemini Poem Creator
+        document.addEventListener('DOMContentLoaded', async () => {
+            const promptInput = document.getElementById('poem-prompt');
             const generateButton = document.getElementById('generate-button');
-            const poemPrompt = document.getElementById('poem-prompt');
             const poemOutput = document.getElementById('poem-output');
 
-            generateButton.addEventListener('click', async () => {
-                const userPrompt = poemPrompt.value;
-                if (!userPrompt) {
-                    poemOutput.textContent = 'Please enter a topic to generate a poem.';
+            const generatePoem = async () => {
+                const prompt = promptInput.value;
+                if (!prompt) {
+                    poemOutput.innerHTML = '<span class="text-red-400">Please enter a topic for your poem!</span>';
                     return;
                 }
-
-                poemOutput.textContent = 'Generating your poem...';
                 
-                try {
-                    // Exponential backoff retry logic for API calls
-                    const maxRetries = 5;
-                    let retries = 0;
-                    let success = false;
-                    
-                    while (retries < maxRetries && !success) {
-                        try {
-                            const chatHistory = [{ role: "user", parts: [{ text: userPrompt }] }];
-                            const payload = {
-                                contents: chatHistory,
-                            };
-                            const apiKey = "";
-                            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                poemOutput.innerHTML = '<span class="italic text-gray-400 animate-pulse">Crafting your poem...</span>';
+                
+                const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24"; // User-provided API key
+                
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: `Write a beautiful and heartfelt poem about: ${prompt}` }] });
+                
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
-                            const response = await fetch(apiUrl, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(payload)
-                            });
+                let retries = 0;
+                const maxRetries = 5;
+                const baseDelay = 1000;
 
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
+                while (retries < maxRetries) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            if (response.status === 429) {
+                                const delay = baseDelay * Math.pow(2, retries);
+                                await new Promise(resolve => setTimeout(resolve, delay));
+                                retries++;
+                                continue;
                             }
-
-                            const result = await response.json();
-                            const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                            if (generatedText) {
-                                poemOutput.textContent = generatedText;
-                                success = true;
-                            } else {
-                                poemOutput.textContent = 'Sorry, something went wrong while generating the poem. Please try again.';
-                                throw new Error('API response missing content.');
-                            }
-                        } catch (error) {
-                            console.error(`Attempt ${retries + 1} failed:`, error);
-                            if (retries < maxRetries - 1) {
-                                const delay = Math.pow(2, retries) * 1000;
-                                await new Promise(res => setTimeout(res, delay));
-                            }
-                            retries++;
+                            
+                            const errorText = response.statusText || 'An unexpected error occurred.';
+                            console.error(`API call failed with status ${response.status}: ${errorText}`);
+                            poemOutput.innerHTML = `<span class="text-red-400">Error: API call failed (${response.status} - ${errorText}). Please try again.</span>`;
+                            return;
                         }
-                    }
 
-                    if (!success) {
-                        poemOutput.textContent = 'Sorry, the request failed after multiple retries. Please try again later.';
-                    }
+                        const result = await response.json();
+                        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-                } catch (error) {
-                    console.error('Error in poem generation:', error);
-                    poemOutput.textContent = 'Failed to connect to the service. Please check your network connection.';
+                        if (text) {
+                            poemOutput.innerHTML = `<p class="whitespace-pre-line">${text}</p>`;
+                            return;
+                        } else {
+                            console.error("API response was not in the expected format:", result);
+                            throw new Error("Invalid response format from API.");
+                        }
+
+                    } catch (error) {
+                        console.error("API call failed:", error);
+                        poemOutput.innerHTML = `<span class="text-red-400">Error: ${error.message}. Please try again.</span>`;
+                        return;
+                    }
+                }
+                
+                poemOutput.innerHTML = '<span class="text-red-400">Failed to generate poem after multiple attempts. Please try again later.</span>';
+            };
+            
+            generateButton.addEventListener('click', generatePoem);
+            promptInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    generatePoem();
                 }
             });
         });
     </script>
+
 
 <!DOCTYPE html>
 <html lang="en">
