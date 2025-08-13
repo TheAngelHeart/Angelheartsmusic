@@ -31,14 +31,13 @@
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600">
                 Angel Hearts
             </h1>
-            <!-- The 'Forum' link is now a visually distinct button -->
             <div class="flex space-x-6 items-center">
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
                 <a href="#poem-creator" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Create</a>
-                <!-- The Forum button with a more distinct style -->
-                <a href="#forum" class="px-4 py-2 rounded-full text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-300 shadow-lg transform hover:scale-105">
-                    Forum
+                <!-- The Message Board button is now a visually distinct button -->
+                <a href="#message-board-section" class="px-4 py-2 rounded-full text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-300 shadow-lg transform hover:scale-105">
+                    Message Board
                 </a>
             </div>
         </nav>
@@ -83,7 +82,6 @@
                     Buy My CD's
                 </a>
             </div>
-
         </div>
     </section>
 
@@ -325,16 +323,27 @@
         </div>
     </section>
 
-    <!-- Forum Section -->
-    <section id="forum" class="py-20 bg-gray-800">
+    <!-- Message Board Section -->
+    <section id="message-board-section" class="py-20 bg-gray-800">
         <div class="container mx-auto px-4 max-w-2xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
-                MusicPoetryCreateForum
+                Angel Hearts Community Message Board
             </h2>
+            <div class="flex items-center justify-between mb-4">
+                <p id="auth-status" class="text-sm text-gray-400 italic">Connecting...</p>
+                <p id="user-id-display" class="text-sm font-mono text-gray-400 truncate"></p>
+            </div>
             <div class="bg-gray-900 rounded-2xl p-8 shadow-xl">
-                <p class="text-center text-gray-400">
-                    Welcome to the forum, Angel Heart.
-                </p>
+                <div id="message-board" class="space-y-4 h-96 overflow-y-auto custom-scrollbar-hidden mb-6">
+                    <!-- Messages will be injected here by JavaScript -->
+                    <p id="loading-message" class="text-center text-gray-500">Loading messages...</p>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" id="message-input" placeholder="Share your thoughts..." class="flex-grow p-3 rounded-l-full bg-gray-700 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <button id="send-button" class="px-6 py-3 rounded-r-full text-white font-bold bg-purple-600 hover:bg-purple-700 transition-colors duration-300" disabled>
+                        Send
+                    </button>
+                </div>
             </div>
         </div>
     </section>
@@ -344,441 +353,200 @@
         <p>&copy; 2024 Angel Hearts Music & Poetry. All Rights Reserved.</p>
     </footer>
 
-    <!-- JavaScript for the Poem Creator section -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const generateButton = document.getElementById('generate-button');
-            const poemPrompt = document.getElementById('poem-prompt');
-            const poemOutput = document.getElementById('poem-output');
-
-            // ----------------------------------------------------------------------
-            // PASTE YOUR API KEY HERE
-            // This is the API key you provided. Copy and paste it here.
-            // Do not share this key with anyone.
-            // ----------------------------------------------------------------------
-            const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
-            // ----------------------------------------------------------------------
-
-            generateButton.addEventListener('click', async () => {
-                const userTopic = poemPrompt.value;
-                if (!userTopic) {
-                    poemOutput.textContent = 'Please enter a topic to generate a poem.';
-                    return;
-                }
-
-                poemOutput.textContent = 'Generating your poem...';
-                
-                try {
-                    // Create a more specific prompt for the AI to ensure it generates a poem
-                    const creativePrompt = `Write a beautiful and heartfelt poem about "${userTopic}" in the style of Angel Hearts Music. Ensure the poem has at least three stanzas and uses line breaks appropriately.`;
-
-                    const chatHistory = [{ role: "user", parts: [{ text: creativePrompt }] }];
-                    const payload = {
-                        contents: chatHistory,
-                    };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
-                    }
-
-                    const result = await response.json();
-                    const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                    if (generatedText) {
-                        poemOutput.textContent = generatedText;
-                    } else {
-                        poemOutput.textContent = 'Sorry, the API response was empty. Please try again.';
-                    }
-                } catch (error) {
-                    console.error('Error generating poem:', error);
-                    poemOutput.textContent = `Sorry, the request failed. This could be due to an invalid API key, network issues, or a temporary service problem. Please check your key and try again later.`;
-                }
-            });
-        });
-    </script>
-</body>
-</html>
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Angel Hearts Forum</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f3f4f6; /* Light gray background */
-            line-height: 1.5;
-        }
-        #app {
-            width: 100%;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
-        }
-        .container-card {
-            max-width: 48rem;
-            width: 100%;
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        .text-center { text-align: center; }
-        .text-3xl { font-size: 1.875rem; }
-        .font-bold { font-weight: 700; }
-        .text-gray-800 { color: #1f2937; }
-        .text-gray-600 { color: #4b5563; }
-        .text-xl { font-size: 1.25rem; }
-        .font-semibold { font-weight: 600; }
-        .text-gray-700 { color: #374151; }
-        .text-sm { font-size: 0.875rem; }
-        .text-gray-500 { color: #6b7280; }
-        .space-y-4 > * + * { margin-top: 1rem; }
-        .p-6 { padding: 1.5rem; }
-        .bg-gray-50 { background-color: #f9fafb; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .border { border-width: 1px; }
-        .border-gray-200 { border-color: #e5e7eb; }
-        .w-full { width: 100%; }
-        .h-40 { height: 10rem; }
-        .p-3 { padding: 0.75rem; }
-        .border-gray-300 { border-color: #d1d5db; }
-        .focus-ring-blue { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 3px #bfdbfe; }
-        .connect-button {
-            width: 100%;
-            padding: 0.75rem;
-            background: linear-gradient(to right, #8b5cf6, #4f46e5);
-            color: white;
-            font-weight: bold;
-            border-radius: 0.5rem;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.3s, background 0.3s;
-        }
-        .connect-button:hover {
-            transform: scale(1.05);
-            background: linear-gradient(to right, #7c3aed, #4338ca);
-        }
-        .connection-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-size: 1rem;
-            flex-direction: column;
-            color: #6b7280;
-        }
-        .connecting-icon {
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .connected-icon { color: #10b981; }
-        .error-icon { color: #ef4444; }
-        .chat-container {
-            width: 100%;
-            background-color: #f9fafb;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            gap: 1rem;
-            border: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-        }
-        .messages-list {
-            height: 16rem;
-            overflow-y: auto;
-            padding: 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            background-color: white;
-        }
-        .message {
-            padding: 0.5rem;
-            margin: 0.5rem 0;
-            border-radius: 0.5rem;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-        .message-me {
-            background-color: #f3e8ff;
-            text-align: right;
-            margin-left: auto;
-        }
-        .message-other {
-            background-color: #e5e7eb;
-            text-align: left;
-            margin-right: auto;
-        }
-        .message-user-id {
-            font-weight: 500;
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-bottom: 0.25rem;
-        }
-        .message-text {
-            color: #1f2937;
-        }
-        .chat-form {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .chat-input {
-            flex-grow: 1;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            border: 1px solid #d1d5db;
-            outline: none;
-        }
-        .send-button {
-            padding: 0.75rem;
-            background: linear-gradient(to right, #8b5cf6, #4f46e5);
-            color: white;
-            border-radius: 0.5rem;
-            border: none;
-            cursor: pointer;
-        }
-        .user-id-display {
-            background-color: #f3f4f6;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            width: 100%;
-            text-align: center;
-            font-size: 0.875rem;
-            word-break: break-all;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .user-id-copy-btn {
-            color: #9ca3af;
-            border: none;
-            background: none;
-            cursor: pointer;
-            padding: 0.25rem;
-        }
-        .error-message {
-            color: #ef4444;
-            font-size: 0.875rem;
-            text-align: center;
-            margin-top: 1rem;
-        }
-    </style>
-</head>
-
-    <div id="app"></div>
-
+    <!-- Firebase SDK Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global variables for Firebase
-        let app, auth, db;
-        let userId = null;
-        let unsubscribeFromMessages = null;
-        
-        // Render the main UI based on connection state
-        function renderUI() {
-            const appDiv = document.getElementById('app');
-            let content;
-            if (db && userId) {
-                // Render the chat forum if connected
-                content = `
-                    <div class="space-y-4">
-                        <div class="connection-status connected-icon">
-                            <span>&#x2714;</span>
-                            <span>Connected successfully!</span>
-                        </div>
-                        <div class="user-id-display">
-                            <p class="text-gray-700" style="font-weight: 500; margin-bottom: 0.5rem;">Your User ID:</p>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <code style="color: #6b7280; font-size: 0.875rem;">${userId}</code>
-                                <button onclick="copyUserId()" class="user-id-copy-btn">&#x2398;</button>
-                            </div>
-                        </div>
-                        <div class="chat-container">
-                            <h3 class="text-xl font-semibold text-center text-gray-700">Messages</h3>
-                            <div class="messages-list" id="messages-list"></div>
-                            <form id="chat-form" class="chat-form">
-                                <input type="text" id="chat-input" class="chat-input" placeholder="Write your message..." required />
-                                <button type="submit" class="send-button">&#x27a4;</button>
-                            </form>
-                        </div>
-                    </div>
-                `;
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Firebase configuration provided by the user
+        const firebaseConfig = {
+            "apiKey": "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
+            "authDomain": "theangelheart-8c3d4.firebaseapp.com",
+            "projectId": "theangelheart-8c3d4",
+            "storageBucket": "theangelheart-8c3d4.firebasestorage.app",
+            "messagingSenderId": "1037239430431",
+            "appId": "1:1037239430431:web:9e8ae59a2ca61ef17bd42a",
+            "measurementId": "G-Z2YJXCBN09"
+        };
+
+        // Initialize Firebase
+        let db, auth, userId;
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        const authStatus = document.getElementById('auth-status');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const sendButton = document.getElementById('send-button');
+        const messageBoard = document.getElementById('message-board');
+        const loadingMessage = document.getElementById('loading-message');
+        const messageInput = document.getElementById('message-input');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                authStatus.textContent = 'Connected to Firestore';
+                userIdDisplay.textContent = `Your User ID: ${userId}`;
+                sendButton.disabled = false;
+                startListeningForMessages();
             } else {
-                // Render the connection form if not connected
-                content = `
-                    <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-center text-gray-700">Connect to Your Firebase Project</h2>
-                        <form id="connection-form" class="space-y-4">
-                            <div class="space-y-2">
-                                <label for="firebase-config" class="text-sm font-medium text-gray-700">
-                                    Paste your Firebase configuration JSON here:
-                                </label>
-                                <textarea id="firebase-config" class="w-full h-40 p-3 border rounded-lg border-gray-300 focus:ring-blue" placeholder="e.g., { 'apiKey': '...', 'authDomain': '...' }"></textarea>
-                            </div>
-                            <button type="submit" class="connect-button">Connect</button>
-                            <div id="status-message" class="connection-status" style="display: none;"></div>
-                        </form>
-                    </div>
-                `;
-            }
-
-            appDiv.innerHTML = `
-                <div class="container-card">
-                    <h1 class="text-3xl font-bold text-center text-gray-800">Angel Hearts Forum</h1>
-                    <p class="text-center text-gray-600">Sharing our music and poems.</p>
-                    <div id="main-content">
-                        ${content}
-                    </div>
-                </div>
-            `;
-            
-            // Add event listeners after the content is rendered
-            if (db && userId) {
-                document.getElementById('chat-form').addEventListener('submit', handleSendMessage);
-                listenForMessages();
-            } else {
-                document.getElementById('connection-form').addEventListener('submit', handleConnect);
-            }
-        }
-        
-        async function handleConnect(event) {
-            event.preventDefault();
-            const configText = document.getElementById('firebase-config').value;
-            const statusMessageDiv = document.getElementById('status-message');
-            statusMessageDiv.style.display = 'flex';
-            statusMessageDiv.innerHTML = `<span class="connecting-icon">&#x231B;</span><span>Connecting...</span>`;
-
-            try {
-                const firebaseConfig = JSON.parse(configText);
-
-                // Use the provided Firebase config to initialize the app
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                
+                // Sign in anonymously if a custom token is not provided
                 if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
+                    try {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } catch (error) {
+                        console.error("Error signing in with custom token:", error);
+                        authStatus.textContent = 'Authentication failed. Trying anonymous sign-in...';
+                        await signInAnonymously(auth);
+                    }
                 } else {
                     await signInAnonymously(auth);
                 }
+            }
+        });
+
+        // Function to listen for real-time messages
+        function startListeningForMessages() {
+            // Firestore collection path for public data
+            const messagesCollection = collection(db, `/artifacts/${appId}/public/data/messages`);
+            
+            // Use onSnapshot to get real-time updates
+            onSnapshot(messagesCollection, (snapshot) => {
+                // Clear any loading messages
+                if (loadingMessage) {
+                    loadingMessage.style.display = 'none';
+                }
                 
-                userId = auth.currentUser.uid;
-                renderUI(); // Re-render to show chat forum
-            } catch (error) {
-                console.error("Firebase connection error:", error);
-                statusMessageDiv.innerHTML = `<span class="error-icon">&#x2716;</span><span>Connection failed. Please check your configuration.</span><p class="error-message">${error.message}</p>`;
-            }
-        }
-        
-        // Listen for messages in real-time
-        function listenForMessages() {
-            if (unsubscribeFromMessages) {
-                unsubscribeFromMessages();
-            }
-
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
-            const q = query(messagesCollectionRef);
-
-            unsubscribeFromMessages = onSnapshot(q, (querySnapshot) => {
-                const messagesList = document.getElementById('messages-list');
-                messagesList.innerHTML = '';
-                const fetchedMessages = [];
-                querySnapshot.forEach((doc) => {
-                    fetchedMessages.push({ id: doc.id, ...doc.data() });
+                // Get all messages and sort them by timestamp
+                const messages = [];
+                snapshot.forEach(doc => {
+                    messages.push({ ...doc.data(), id: doc.id });
+                });
+                
+                // Manually sort the messages by timestamp since orderBy() can cause issues
+                messages.sort((a, b) => {
+                    // Handle cases where timestamp might be null
+                    if (!a.timestamp) return -1;
+                    if (!b.timestamp) return 1;
+                    return a.timestamp.seconds - b.timestamp.seconds;
                 });
 
-                fetchedMessages.sort((a, b) => (a.timestamp ? a.timestamp.toMillis() : 0) - (b.timestamp ? b.timestamp.toMillis() : 0));
-
-                if (fetchedMessages.length === 0) {
-                    messagesList.innerHTML = `<p class="text-center text-gray-500" style="margin-top: 2.5rem;">No messages yet. Be the first to share!</p>`;
-                } else {
-                    fetchedMessages.forEach(message => {
-                        const messageDiv = document.createElement('div');
-                        const isMe = message.userId === userId;
-                        messageDiv.className = `message ${isMe ? 'message-me' : 'message-other'}`;
-                        messageDiv.innerHTML = `
-                            <p class="message-user-id">${isMe ? 'You' : `User: ${message.userId.substring(0, 8)}...`}</p>
-                            <p class="message-text">${message.text}</p>
-                        `;
-                        messagesList.appendChild(messageDiv);
-                    });
-                    messagesList.scrollTop = messagesList.scrollHeight;
-                }
+                // Clear the message board and re-render all messages
+                messageBoard.innerHTML = '';
+                messages.forEach(msg => {
+                    displayMessage(msg);
+                });
+                
+                // Scroll to the latest message
+                messageBoard.scrollTop = messageBoard.scrollHeight;
             }, (error) => {
-                console.error("Error fetching messages: ", error);
+                console.error("Error listening to messages:", error);
+                messageBoard.innerHTML = `<p class="text-center text-red-500">Failed to load messages. Please refresh.</p>`;
             });
         }
-        
-        // Handle sending new messages
-        async function handleSendMessage(e) {
-            e.preventDefault();
-            const chatInput = document.getElementById('chat-input');
-            const newMessage = chatInput.value.trim();
 
-            if (newMessage === '' || !db || !userId) return;
+        // Function to display a single message in the UI
+        function displayMessage(msg) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'p-3 rounded-xl break-words';
+
+            // Determine if the message is from the current user
+            const isCurrentUser = msg.userId === userId;
+            if (isCurrentUser) {
+                messageElement.classList.add('bg-purple-900', 'text-right', 'ml-auto');
+            } else {
+                messageElement.classList.add('bg-gray-800', 'mr-auto');
+            }
+
+            const senderName = isCurrentUser ? 'You' : `User (${msg.userId.substring(0, 5)}...)`;
+            const senderColor = isCurrentUser ? 'text-pink-400' : 'text-purple-400';
+            
+            // Format the timestamp
+            const date = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleString() : 'Just now';
+
+            messageElement.innerHTML = `
+                <p class="text-sm font-bold ${senderColor} mb-1">${senderName}</p>
+                <p class="text-lg">${msg.text}</p>
+                <p class="text-xs text-gray-500 mt-1">${date}</p>
+            `;
+            messageBoard.appendChild(messageElement);
+        }
+
+        // Function to send a new message
+        async function sendMessage() {
+            const messageText = messageInput.value.trim();
+            if (!messageText || !userId) return;
 
             try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
-                await addDoc(messagesCollectionRef, {
-                    text: newMessage,
+                // Add a new document to the 'messages' collection
+                await addDoc(collection(db, `/artifacts/${appId}/public/data/messages`), {
                     userId: userId,
-                    timestamp: serverTimestamp(),
+                    text: messageText,
+                    timestamp: serverTimestamp() // Use server timestamp to ensure accuracy
                 });
-                chatInput.value = '';
+                messageInput.value = '';
             } catch (error) {
-                console.error("Error adding document: ", error);
+                console.error("Error sending message:", error);
+                // Create a custom error box instead of an alert
+                const errorBox = document.createElement('div');
+                errorBox.className = 'p-3 rounded-xl bg-red-800 text-red-100 break-words mt-4';
+                errorBox.innerHTML = `<p class="text-lg">Error sending message. Please try again.</p>`;
+                messageBoard.appendChild(errorBox);
+                messageBoard.scrollTop = messageBoard.scrollHeight;
             }
         }
 
-        // Utility to copy user ID
-        function copyUserId() {
-            try {
-                navigator.clipboard.writeText(userId);
-            } catch (error) {
-                const el = document.createElement('textarea');
-                el.value = userId;
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand('copy');
-                document.body.removeChild(el);
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
             }
-        }
-        
-        // Initial render on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            renderUI();
         });
     </script>
-</body>
-</html>
-
+    <!-- Gemini Poem Creator Logic -->
+    <script type="module">
+        const generateButton = document.getElementById('generate-button');
+        const poemPrompt = document.getElementById('poem-prompt');
+        const poemOutput = document.getElementById('poem-output');
+        const apiKey = "";
+        generateButton.addEventListener('click', async () => {
+            const userTopic = poemPrompt.value;
+            if (!userTopic) {
+                poemOutput.textContent = 'Please enter a topic to generate a poem.';
+                return;
+            }
+            poemOutput.textContent = 'Generating your poem...';
+            try {
+                const creativePrompt = `Write a beautiful and heartfelt poem about "${userTopic}" in the style of Angel Hearts Music. Ensure the poem has at least three stanzas and uses line breaks appropriately.`;
+                const chatHistory = [{ role: "user", parts: [{ text: creativePrompt }] }];
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
+                }
+                const result = await response.json();
+                const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (generatedText) {
+                    poemOutput.textContent = generatedText;
+                } else {
+                    poemOutput.textContent = 'Sorry, the API response was empty. Please try again.';
+                }
+            } catch (error) {
+                console.error('Error generating poem:', error);
+                poemOutput.textContent = `Sorry, the request failed. Please try again later.`;
+            }
+        });
+    </script>
 </body>
 </html>
