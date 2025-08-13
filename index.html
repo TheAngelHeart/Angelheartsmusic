@@ -31,13 +31,12 @@
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600">
                 Angel Hearts
             </h1>
-            <!-- The 'Message Board' link is now a visually distinct button -->
             <div class="flex space-x-6 items-center">
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
                 <a href="#poem-creator" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Create</a>
-                <!-- The Forum button with a more distinct style -->
-                <a href="#ai-message-board" class="px-4 py-2 rounded-full text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-300 shadow-lg transform hover:scale-105">
+                <!-- The Message Board button is now a visually distinct button -->
+                <a href="#message-board-section" class="px-4 py-2 rounded-full text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-300 shadow-lg transform hover:scale-105">
                     Message Board
                 </a>
             </div>
@@ -324,26 +323,24 @@
         </div>
     </section>
 
-    <!-- AI Message Board Section -->
-    <section id="ai-message-board" class="py-20 bg-gray-800">
+    <!-- Message Board Section -->
+    <section id="message-board-section" class="py-20 bg-gray-800">
         <div class="container mx-auto px-4 max-w-2xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
                 Angel Hearts Community Message Board
             </h2>
-            <p class="text-center text-gray-400 mb-8">
-                Share your thoughts, and a kind community member will respond.
-            </p>
+            <div class="flex items-center justify-between mb-4">
+                <p id="auth-status" class="text-sm text-gray-400 italic">Connecting...</p>
+                <p id="user-id-display" class="text-sm font-mono text-gray-400 truncate"></p>
+            </div>
             <div class="bg-gray-900 rounded-2xl p-8 shadow-xl">
                 <div id="message-board" class="space-y-4 h-96 overflow-y-auto custom-scrollbar-hidden mb-6">
-                    <!-- Initial message from a 'community member' -->
-                    <div class="p-3 rounded-xl bg-gray-800 text-gray-200 break-words">
-                        <p class="text-sm font-bold text-purple-400 mb-1">Community Member</p>
-                        <p class="text-lg">Welcome to the message board, Angel Heart! Feel free to share your thoughts, and I'll do my best to respond!</p>
-                    </div>
+                    <!-- Messages will be injected here by JavaScript -->
+                    <p id="loading-message" class="text-center text-gray-500">Loading messages...</p>
                 </div>
                 <div class="flex items-center">
                     <input type="text" id="message-input" placeholder="Share your thoughts..." class="flex-grow p-3 rounded-l-full bg-gray-700 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <button id="send-button" class="px-6 py-3 rounded-r-full text-white font-bold bg-purple-600 hover:bg-purple-700 transition-colors duration-300">
+                    <button id="send-button" class="px-6 py-3 rounded-r-full text-white font-bold bg-purple-600 hover:bg-purple-700 transition-colors duration-300" disabled>
                         Send
                     </button>
                 </div>
@@ -356,134 +353,184 @@
         <p>&copy; 2024 Angel Hearts Music & Poetry. All Rights Reserved.</p>
     </footer>
 
-    <!-- JavaScript for the Message Board & Poem Creator -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Poem Creator Logic ---
-            const generateButton = document.getElementById('generate-button');
-            const poemPrompt = document.getElementById('poem-prompt');
-            const poemOutput = document.getElementById('poem-output');
+    <!-- Firebase SDK Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-            const apiKey = "";
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-            generateButton.addEventListener('click', async () => {
-                const userTopic = poemPrompt.value;
-                if (!userTopic) {
-                    poemOutput.textContent = 'Please enter a topic to generate a poem.';
-                    return;
+        // Initialize Firebase
+        let db, auth, userId;
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        const authStatus = document.getElementById('auth-status');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const sendButton = document.getElementById('send-button');
+        const messageBoard = document.getElementById('message-board');
+        const loadingMessage = document.getElementById('loading-message');
+        const messageInput = document.getElementById('message-input');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                authStatus.textContent = 'Connected to Firestore';
+                userIdDisplay.textContent = `Your User ID: ${userId}`;
+                sendButton.disabled = false;
+                startListeningForMessages();
+            } else {
+                // Sign in anonymously if a custom token is not provided
+                if (initialAuthToken) {
+                    try {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } catch (error) {
+                        console.error("Error signing in with custom token:", error);
+                        authStatus.textContent = 'Authentication failed. Trying anonymous sign-in...';
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
                 }
+            }
+        });
 
-                poemOutput.textContent = 'Generating your poem...';
+        // Function to listen for real-time messages
+        function startListeningForMessages() {
+            // Firestore collection path for public data
+            const messagesCollection = collection(db, `/artifacts/${appId}/public/data/messages`);
+            
+            // Use onSnapshot to get real-time updates
+            onSnapshot(messagesCollection, (snapshot) => {
+                // Clear any loading messages
+                if (loadingMessage) {
+                    loadingMessage.style.display = 'none';
+                }
                 
-                try {
-                    const creativePrompt = `Write a beautiful and heartfelt poem about "${userTopic}" in the style of Angel Hearts Music. Ensure the poem has at least three stanzas and uses line breaks appropriately.`;
-                    const chatHistory = [{ role: "user", parts: [{ text: creativePrompt }] }];
-                    const payload = { contents: chatHistory };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                // Get all messages and sort them by timestamp
+                const messages = [];
+                snapshot.forEach(doc => {
+                    messages.push({ ...doc.data(), id: doc.id });
+                });
+                
+                // Manually sort the messages by timestamp since orderBy() can cause issues
+                messages.sort((a, b) => a.timestamp - b.timestamp);
 
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
-                    }
-
-                    const result = await response.json();
-                    const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                    if (generatedText) {
-                        poemOutput.textContent = generatedText;
-                    } else {
-                        poemOutput.textContent = 'Sorry, the API response was empty. Please try again.';
-                    }
-                } catch (error) {
-                    console.error('Error generating poem:', error);
-                    poemOutput.textContent = `Sorry, the request failed. Please try again later.`;
-                }
+                // Clear the message board and re-render all messages
+                messageBoard.innerHTML = '';
+                messages.forEach(msg => {
+                    displayMessage(msg);
+                });
+                
+                // Scroll to the latest message
+                messageBoard.scrollTop = messageBoard.scrollHeight;
+            }, (error) => {
+                console.error("Error listening to messages:", error);
+                messageBoard.innerHTML = `<p class="text-center text-red-500">Failed to load messages. Please refresh.</p>`;
             });
+        }
 
-            // --- AI Message Board Logic ---
-            const messageBoard = document.getElementById('message-board');
-            const messageInput = document.getElementById('message-input');
-            const sendButton = document.getElementById('send-button');
+        // Function to display a single message in the UI
+        function displayMessage(msg) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'p-3 rounded-xl break-words';
 
-            async function sendMessage() {
-                const userMessage = messageInput.value.trim();
-                if (!userMessage) return;
-
-                // Display the user's message
-                const userMessageElement = document.createElement('div');
-                userMessageElement.className = 'p-3 rounded-xl bg-purple-900 text-gray-200 break-words';
-                userMessageElement.innerHTML = `<p class="text-sm font-bold text-pink-400 mb-1">Angel Heart</p><p class="text-lg">${userMessage}</p>`;
-                messageBoard.appendChild(userMessageElement);
-
-                // Add a temporary loading message for the AI response
-                const loadingMessageElement = document.createElement('div');
-                loadingMessageElement.id = 'loading-message';
-                loadingMessageElement.className = 'p-3 rounded-xl bg-gray-800 text-gray-200 break-words';
-                loadingMessageElement.innerHTML = `<p class="text-sm font-bold text-purple-400 mb-1">Community Member</p><p class="text-lg animate-pulse">Community member is typing...</p>`;
-                messageBoard.appendChild(loadingMessageElement);
-
-                messageInput.value = ''; // Clear the input
-                messageBoard.scrollTop = messageBoard.scrollHeight; // Scroll to the bottom
-
-                try {
-                    const creativePrompt = `As a kind and supportive community member on a music and poetry message board, write a brief, encouraging response to the following post by Angel Heart: "${userMessage}". Keep the tone warm and heartfelt.`;
-
-                    const chatHistory = [{ role: "user", parts: [{ text: creativePrompt }] }];
-                    const payload = { contents: chatHistory };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
-                    }
-
-                    const result = await response.json();
-                    const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                    // Remove the loading message
-                    loadingMessageElement.remove();
-
-                    // Display the AI's response
-                    if (aiResponseText) {
-                        const aiMessageElement = document.createElement('div');
-                        aiMessageElement.className = 'p-3 rounded-xl bg-gray-800 text-gray-200 break-words';
-                        aiMessageElement.innerHTML = `<p class="text-sm font-bold text-purple-400 mb-1">Community Member</p><p class="text-lg">${aiResponseText}</p>`;
-                        messageBoard.appendChild(aiMessageElement);
-                    } else {
-                        const errorMessageElement = document.createElement('div');
-                        errorMessageElement.className = 'p-3 rounded-xl bg-gray-800 text-red-400 break-words';
-                        errorMessageElement.innerHTML = `<p class="text-lg">Sorry, I couldn't generate a response. Please try again.</p>`;
-                        messageBoard.appendChild(errorMessageElement);
-                    }
-                } catch (error) {
-                    console.error('Error generating AI response:', error);
-                    loadingMessageElement.remove();
-                    const errorMessageElement = document.createElement('div');
-                    errorMessageElement.className = 'p-3 rounded-xl bg-gray-800 text-red-400 break-words';
-                    errorMessageElement.innerHTML = `<p class="text-lg">Sorry, the request failed. Please try again later.</p>`;
-                    messageBoard.appendChild(errorMessageElement);
-                }
-                messageBoard.scrollTop = messageBoard.scrollHeight; // Scroll to the bottom again
+            // Determine if the message is from the current user
+            const isCurrentUser = msg.userId === userId;
+            if (isCurrentUser) {
+                messageElement.classList.add('bg-purple-900', 'text-right', 'ml-auto');
+            } else {
+                messageElement.classList.add('bg-gray-800', 'mr-auto');
             }
 
-            sendButton.addEventListener('click', sendMessage);
-            messageInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
+            const senderName = isCurrentUser ? 'You' : `User (${msg.userId.substring(0, 5)}...)`;
+            const senderColor = isCurrentUser ? 'text-pink-400' : 'text-purple-400';
+            
+            // Format the timestamp
+            const date = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleString() : 'Just now';
+
+            messageElement.innerHTML = `
+                <p class="text-sm font-bold ${senderColor} mb-1">${senderName}</p>
+                <p class="text-lg">${msg.text}</p>
+                <p class="text-xs text-gray-500 mt-1">${date}</p>
+            `;
+            messageBoard.appendChild(messageElement);
+        }
+
+        // Function to send a new message
+        async function sendMessage() {
+            const messageText = messageInput.value.trim();
+            if (!messageText || !userId) return;
+
+            try {
+                // Add a new document to the 'messages' collection
+                await addDoc(collection(db, `/artifacts/${appId}/public/data/messages`), {
+                    userId: userId,
+                    text: messageText,
+                    timestamp: serverTimestamp() // Use server timestamp to ensure accuracy
+                });
+                messageInput.value = '';
+            } catch (error) {
+                console.error("Error sending message:", error);
+                // Create a custom error box instead of an alert
+                const errorBox = document.createElement('div');
+                errorBox.className = 'p-3 rounded-xl bg-red-800 text-red-100 break-words mt-4';
+                errorBox.innerHTML = `<p class="text-lg">Error sending message. Please try again.</p>`;
+                messageBoard.appendChild(errorBox);
+                messageBoard.scrollTop = messageBoard.scrollHeight;
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+    <!-- Gemini Poem Creator Logic -->
+    <script type="module">
+        const generateButton = document.getElementById('generate-button');
+        const poemPrompt = document.getElementById('poem-prompt');
+        const poemOutput = document.getElementById('poem-output');
+        const apiKey = "";
+        generateButton.addEventListener('click', async () => {
+            const userTopic = poemPrompt.value;
+            if (!userTopic) {
+                poemOutput.textContent = 'Please enter a topic to generate a poem.';
+                return;
+            }
+            poemOutput.textContent = 'Generating your poem...';
+            try {
+                const creativePrompt = `Write a beautiful and heartfelt poem about "${userTopic}" in the style of Angel Hearts Music. Ensure the poem has at least three stanzas and uses line breaks appropriately.`;
+                const chatHistory = [{ role: "user", parts: [{ text: creativePrompt }] }];
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
                 }
-            });
+                const result = await response.json();
+                const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (generatedText) {
+                    poemOutput.textContent = generatedText;
+                } else {
+                    poemOutput.textContent = 'Sorry, the API response was empty. Please try again.';
+                }
+            } catch (error) {
+                console.error('Error generating poem:', error);
+                poemOutput.textContent = `Sorry, the request failed. Please try again later.`;
+            }
         });
     </script>
 </body>
