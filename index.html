@@ -353,6 +353,7 @@
                 poemOutput.textContent = 'Generating your poem...';
                 
                 try {
+                    console.log('Sending request to Gemini API with prompt:', userPrompt);
                     const chatHistory = [{ role: "user", parts: [{ text: userPrompt }] }];
                     const payload = {
                         contents: chatHistory,
@@ -366,26 +367,33 @@
                         body: JSON.stringify(payload)
                     });
 
+                    console.log('Received response:', response);
+
                     if (!response.ok) {
                         const errorData = await response.json();
+                        console.error('API Error details:', errorData);
                         throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
                     }
 
                     const result = await response.json();
+                    console.log('Received result:', result);
+                    
                     const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                     if (generatedText) {
                         poemOutput.textContent = generatedText;
                     } else {
                         poemOutput.textContent = 'Sorry, the API response was empty. Please try again.';
+                        console.error('API response had no generated text.');
                     }
                 } catch (error) {
-                    console.error('Error generating poem:', error);
-                    poemOutput.textContent = `Sorry, the request failed. This could be due to a network issue or a temporary service problem. Please check your connection and try again later.`;
+                    console.error('An unexpected error occurred:', error);
+                    poemOutput.textContent = `Sorry, the request failed. Please check the browser's console for more details and try again later.`;
                 }
             });
         });
     </script>
+
 
 <!DOCTYPE html>
 <html lang="en">
