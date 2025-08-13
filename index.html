@@ -343,6 +343,14 @@
             const poemPrompt = document.getElementById('poem-prompt');
             const poemOutput = document.getElementById('poem-output');
 
+            // ----------------------------------------------------------------------
+            // PASTE YOUR API KEY HERE
+            // This is the API key you provided. Copy and paste it here.
+            // Do not share this key with anyone.
+            // ----------------------------------------------------------------------
+            const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
+            // ----------------------------------------------------------------------
+
             generateButton.addEventListener('click', async () => {
                 const userPrompt = poemPrompt.value;
                 if (!userPrompt) {
@@ -353,12 +361,10 @@
                 poemOutput.textContent = 'Generating your poem...';
                 
                 try {
-                    console.log('Sending request to Gemini API with prompt:', userPrompt);
                     const chatHistory = [{ role: "user", parts: [{ text: userPrompt }] }];
                     const payload = {
                         contents: chatHistory,
                     };
-                    const apiKey = "";
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
                     const response = await fetch(apiUrl, {
@@ -367,32 +373,29 @@
                         body: JSON.stringify(payload)
                     });
 
-                    console.log('Received response:', response);
-
                     if (!response.ok) {
                         const errorData = await response.json();
-                        console.error('API Error details:', errorData);
                         throw new Error(`API Error: ${response.status} - ${JSON.stringify(errorData)}`);
                     }
 
                     const result = await response.json();
-                    console.log('Received result:', result);
-                    
                     const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                     if (generatedText) {
                         poemOutput.textContent = generatedText;
                     } else {
                         poemOutput.textContent = 'Sorry, the API response was empty. Please try again.';
-                        console.error('API response had no generated text.');
                     }
                 } catch (error) {
-                    console.error('An unexpected error occurred:', error);
-                    poemOutput.textContent = `Sorry, the request failed. Please check the browser's console for more details and try again later.`;
+                    console.error('Error generating poem:', error);
+                    poemOutput.textContent = `Sorry, the request failed. This could be due to an invalid API key, network issues, or a temporary service problem. Please check your key and try again later.`;
                 }
             });
         });
     </script>
+</body>
+</html>
+
 
 
 <!DOCTYPE html>
