@@ -610,9 +610,7 @@
         function updateMainContent() {
             const mainContentDiv = document.getElementById('main-content');
             
-            // Check if Firebase is initialized
-            if (db) {
-                // If connected, show the chat interface
+            if (db && userId) {
                 mainContentDiv.innerHTML = `
                     <div class="space-y-4">
                         <div class="connection-status connected-icon">
@@ -637,14 +635,10 @@
                     </div>
                 `;
                 
-                // Add event listener for the chat form
                 document.getElementById('chat-form').addEventListener('submit', handleSendMessage);
-                
-                // Start listening for messages
                 listenForMessages();
 
             } else {
-                // If not connected, show the configuration form
                 mainContentDiv.innerHTML = `
                     <form id="config-form" class="space-y-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
                         <h2 class="text-xl font-semibold text-center text-gray-700">Paste Firebase Configuration</h2>
@@ -659,33 +653,62 @@
                             Connect to Forum
                         </button>
                         <div id="status-display" class="connection-status">
-                            <span class="connecting-icon">&#x231B;</span>
-                            <span>Connecting...</span>
+                            <span class="text-sm text-gray-500">Awaiting configuration...</span>
                         </div>
                     </form>
                 `;
 
-                // Add event listener for the config form
                 document.getElementById('config-form').addEventListener('submit', handleConfigSubmit);
-                
-                // Update the initial status display
-                document.getElementById('status-display').innerHTML = `
-                    <span class="text-sm text-gray-500">Awaiting configuration...</span>
-                `;
             }
         }
         
-        // Handle form submission for the Firebase configuration JSON
+        async function connectToFirebase(firebaseConfig) {
+            const statusDisplay = document.getElementById('status-display');
+            
+            statusDisplay.innerHTML = `
+                <span class="connecting-icon" style="color:#6b7280;">&#x231B;</span>
+                <span style="color:#6b7280;">Connecting...</span>
+            `;
+
+            try {
+                // Initialize Firebase services
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Explicitly handle sign-in first, then update UI
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                // Get the user ID after successful sign-in
+                userId = auth.currentUser.uid;
+                
+                // Update the UI to show the chat
+                updateMainContent();
+            } catch (error) {
+                // Handle connection errors and display them to the user
+                let errorMessage = `A Firebase error occurred. Please check your configuration and try again. Error: ${error.message}`;
+                statusDisplay.innerHTML = `
+                    <span class="error-icon">&#x2716;</span>
+                    <div style="text-align:center;">
+                        <span style="color:#ef4444; font-weight:600;">Connection failed.</span>
+                        <p class="text-sm text-gray-500">${errorMessage}</p>
+                    </div>
+                `;
+                console.error("Firebase connection error:", error);
+            }
+        }
+        
         async function handleConfigSubmit(e) {
             e.preventDefault();
             const statusDisplay = document.getElementById('status-display');
             const configInput = document.getElementById('config-json');
             let firebaseConfig;
-
-            statusDisplay.innerHTML = `
-                <span class="connecting-icon" style="color:#6b7280;">&#x231B;</span>
-                <span style="color:#6b7280;">Connecting...</span>
-            `;
 
             try {
                 // Use a more robust regex to find key-value pairs
@@ -703,9 +726,6 @@
                     firebaseConfig[key] = value;
                 });
                 
-                // Special handling for the appId, which can be an integer
-                // The regex above correctly extracts it as a string
-                
                 if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
                     throw new Error('Missing essential Firebase keys (apiKey or projectId).');
                 }
@@ -714,7 +734,7 @@
                 if (error.message.includes('Missing essential Firebase keys')) {
                     errorMessage = "The configuration is missing the 'apiKey' or 'projectId' fields. Please copy the full JSON object from Firebase.";
                 } else if (error.message.includes('Invalid or empty configuration format')) {
-                    errorMessage = "The format is incorrect. Please make sure to copy the full configuration object, starting with an opening curly brace '{' and ending with a closing one '}'."
+                    errorMessage = "The format is incorrect. Please make sure to copy the full configuration object, starting with an opening curly brace '{' and ending with a closing one '}'.";
                 }
                 
                 statusDisplay.innerHTML = `
@@ -727,36 +747,9 @@
                 console.error("Configuration error:", error);
                 return;
             }
-
-            try {
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        updateMainContent();
-                    } else {
-                        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    }
-                });
-
-            } catch (error) {
-                statusDisplay.innerHTML = `
-                    <span class="error-icon">&#x2716;</span>
-                    <div style="text-align:center;">
-                        <span style="color:#ef4444; font-weight:600;">Connection failed.</span>
-                        <p class="text-sm text-gray-500">A Firebase error occurred. Please check your configuration and try again. Error: ${error.message}</p>
-                    </div>
-                `;
-                console.error("Firebase connection error:", error);
-            }
+            
+            // Call the new, more direct connection function
+            connectToFirebase(firebaseConfig);
         }
         
         // Listen for messages in real-time
@@ -839,6 +832,5 @@
         document.addEventListener('DOMContentLoaded', renderUI);
     </script>
 </body>
-</html>
-</body>
+</html></body>
 </html>
