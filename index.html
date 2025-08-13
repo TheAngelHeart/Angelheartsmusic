@@ -688,24 +688,33 @@
             `;
 
             try {
-                const rawConfig = configInput.value.trim();
+                // Use a more robust regex to find key-value pairs
+                const rawConfig = configInput.value.trim().replace(/;\s*$/, '');
+                const pairs = [...rawConfig.matchAll(/(\w+):\s*(".*?"|\d+)/g)];
                 
-                // --- Start of new, more forgiving JSON parsing logic ---
-                // Add double quotes around keys and remove trailing semicolons.
-                const cleanedConfig = rawConfig
-                    .replace(/(\w+):/g, '"$1":') // Add double quotes to unquoted keys
-                    .replace(/;\s*$/, ''); // Remove trailing semicolon
-
-                firebaseConfig = JSON.parse(cleanedConfig);
-                // --- End of new logic ---
-
+                firebaseConfig = {};
+                if (pairs.length === 0) {
+                    throw new Error('Invalid or empty configuration format.');
+                }
+                
+                pairs.forEach(match => {
+                    const key = match[1];
+                    const value = match[2].startsWith('"') ? match[2].slice(1, -1) : match[2];
+                    firebaseConfig[key] = value;
+                });
+                
+                // Special handling for the appId, which can be an integer
+                // The regex above correctly extracts it as a string
+                
                 if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
                     throw new Error('Missing essential Firebase keys (apiKey or projectId).');
                 }
             } catch (error) {
-                let errorMessage = "Please check the JSON format for errors like missing commas or quotes.";
+                let errorMessage = "The format is incorrect. Please ensure you are copying the full code snippet, including the curly braces {} and that keys and values are correct.";
                 if (error.message.includes('Missing essential Firebase keys')) {
                     errorMessage = "The configuration is missing the 'apiKey' or 'projectId' fields. Please copy the full JSON object from Firebase.";
+                } else if (error.message.includes('Invalid or empty configuration format')) {
+                    errorMessage = "The format is incorrect. Please make sure to copy the full configuration object, starting with an opening curly brace '{' and ending with a closing one '}'."
                 }
                 
                 statusDisplay.innerHTML = `
