@@ -83,7 +83,6 @@
                     Buy My CD's
                 </a>
             </div>
-
         </div>
     </section>
 
@@ -329,12 +328,19 @@
     <section id="forum" class="py-20 bg-gray-800">
         <div class="container mx-auto px-4 max-w-2xl">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
-                MusicPoetryCreateForum
+                Community Forum
             </h2>
             <div class="bg-gray-900 rounded-2xl p-8 shadow-xl">
-                <p class="text-center text-gray-400">
-                    Welcome to the forum, Angel Heart.
-                </p>
+                <div id="message-list" class="space-y-4 h-96 overflow-y-auto custom-scrollbar-hidden mb-6">
+                    <!-- Messages will be injected here -->
+                </div>
+                <div class="flex items-center">
+                    <input type="text" id="forum-message-input" placeholder="Write a message..." class="flex-grow p-3 rounded-l-full bg-gray-700 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <button id="send-message-button" class="px-6 py-3 rounded-r-full text-white font-bold bg-purple-600 hover:bg-purple-700 transition-colors duration-300">
+                        Send
+                    </button>
+                </div>
+                <p id="user-info" class="text-sm text-gray-500 mt-4 text-center"></p>
             </div>
         </div>
     </section>
@@ -344,6 +350,127 @@
         <p>&copy; 2024 Angel Hearts Music & Poetry. All Rights Reserved.</p>
     </footer>
 
+    <!-- Firebase CDN Links -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Use global variables for configuration and token.
+        // This is how the environment securely provides the Firebase configuration.
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
+        let app, db, auth;
+        let userId;
+
+        const messageList = document.getElementById('message-list');
+        const messageInput = document.getElementById('forum-message-input');
+        const sendButton = document.getElementById('send-message-button');
+        const userInfoDisplay = document.getElementById('user-info');
+        
+        // Function to safely initialize Firebase and listen for auth state changes.
+        async function initializeFirebase() {
+            if (!firebaseConfig) {
+                console.error("Firebase config not available. Forum functionality disabled.");
+                return;
+            }
+
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // Sign in the user using the provided token or anonymously
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userInfoDisplay.textContent = `You are signed in as: ${userId}`;
+                        // Once authenticated, load the messages
+                        loadForumMessages();
+                    } else {
+                        // User is signed out.
+                        userInfoDisplay.textContent = 'Please sign in to use the forum.';
+                    }
+                });
+
+                sendButton.addEventListener('click', sendMessage);
+                messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+                
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
+        }
+        
+        // Load messages from Firestore in real-time
+        function loadForumMessages() {
+            // Using a public collection path for a shared forum
+            const messagesCollection = collection(db, `artifacts/${appId}/public/data/forum-messages`);
+            
+            onSnapshot(messagesCollection, (snapshot) => {
+                messageList.innerHTML = '';
+                const messages = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    messages.push(data);
+                });
+                
+                // Sort messages by timestamp to ensure correct order
+                messages.sort((a, b) => a.timestamp?.toMillis() - b.timestamp?.toMillis());
+                
+                messages.forEach(msg => {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'p-3 rounded-xl bg-gray-800 text-gray-200 break-words';
+                    const timestamp = msg.timestamp?.toDate().toLocaleString() || 'just now';
+                    messageElement.innerHTML = `
+                        <p class="text-sm font-bold text-purple-400 mb-1">${msg.userId}</p>
+                        <p class="text-lg">${msg.message}</p>
+                        <span class="text-xs text-gray-500 mt-1 block">${timestamp}</span>
+                    `;
+                    messageList.appendChild(messageElement);
+                });
+
+                // Scroll to the bottom of the message list
+                messageList.scrollTop = messageList.scrollHeight;
+            });
+        }
+        
+        // Send a new message to Firestore
+        async function sendMessage() {
+            const messageText = messageInput.value.trim();
+            if (messageText === "" || !userId) {
+                return;
+            }
+            
+            try {
+                const messagesCollection = collection(db, `artifacts/${appId}/public/data/forum-messages`);
+                await addDoc(messagesCollection, {
+                    userId: userId,
+                    message: messageText,
+                    timestamp: serverTimestamp()
+                });
+                messageInput.value = ''; // Clear input field
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+        }
+        
+        // Call the initialization function when the page loads
+        initializeFirebase();
+
+    </script>
+    
     <!-- JavaScript for the Poem Creator section -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -404,381 +531,5 @@
             });
         });
     </script>
-</body>
-</html>
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Angel Hearts Forum</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f3f4f6; /* Light gray background */
-            line-height: 1.5;
-        }
-        #app {
-            width: 100%;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
-        }
-        .container-card {
-            max-width: 48rem;
-            width: 100%;
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        .text-center { text-align: center; }
-        .text-3xl { font-size: 1.875rem; }
-        .font-bold { font-weight: 700; }
-        .text-gray-800 { color: #1f2937; }
-        .text-gray-600 { color: #4b5563; }
-        .text-xl { font-size: 1.25rem; }
-        .font-semibold { font-weight: 600; }
-        .text-gray-700 { color: #374151; }
-        .text-sm { font-size: 0.875rem; }
-        .text-gray-500 { color: #6b7280; }
-        .space-y-4 > * + * { margin-top: 1rem; }
-        .p-6 { padding: 1.5rem; }
-        .bg-gray-50 { background-color: #f9fafb; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .border { border-width: 1px; }
-        .border-gray-200 { border-color: #e5e7eb; }
-        .w-full { width: 100%; }
-        .h-40 { height: 10rem; }
-        .p-3 { padding: 0.75rem; }
-        .border-gray-300 { border-color: #d1d5db; }
-        .focus-ring-blue { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 3px #bfdbfe; }
-        .connect-button {
-            width: 100%;
-            padding: 0.75rem;
-            background: linear-gradient(to right, #8b5cf6, #4f46e5);
-            color: white;
-            font-weight: bold;
-            border-radius: 0.5rem;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.3s, background 0.3s;
-        }
-        .connect-button:hover {
-            transform: scale(1.05);
-            background: linear-gradient(to right, #7c3aed, #4338ca);
-        }
-        .connection-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-size: 1rem;
-            flex-direction: column;
-            color: #6b7280;
-        }
-        .connecting-icon {
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .connected-icon { color: #10b981; }
-        .error-icon { color: #ef4444; }
-        .chat-container {
-            width: 100%;
-            background-color: #f9fafb;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            gap: 1rem;
-            border: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-        }
-        .messages-list {
-            height: 16rem;
-            overflow-y: auto;
-            padding: 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            background-color: white;
-        }
-        .message {
-            padding: 0.5rem;
-            margin: 0.5rem 0;
-            border-radius: 0.5rem;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-        .message-me {
-            background-color: #f3e8ff;
-            text-align: right;
-            margin-left: auto;
-        }
-        .message-other {
-            background-color: #e5e7eb;
-            text-align: left;
-            margin-right: auto;
-        }
-        .message-user-id {
-            font-weight: 500;
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-bottom: 0.25rem;
-        }
-        .message-text {
-            color: #1f2937;
-        }
-        .chat-form {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .chat-input {
-            flex-grow: 1;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            border: 1px solid #d1d5db;
-            outline: none;
-        }
-        .send-button {
-            padding: 0.75rem;
-            background: linear-gradient(to right, #8b5cf6, #4f46e5);
-            color: white;
-            border-radius: 0.5rem;
-            border: none;
-            cursor: pointer;
-        }
-        .user-id-display {
-            background-color: #f3f4f6;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            width: 100%;
-            text-align: center;
-            font-size: 0.875rem;
-            word-break: break-all;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .user-id-copy-btn {
-            color: #9ca3af;
-            border: none;
-            background: none;
-            cursor: pointer;
-            padding: 0.25rem;
-        }
-        .error-message {
-            color: #ef4444;
-            font-size: 0.875rem;
-            text-align: center;
-            margin-top: 1rem;
-        }
-    </style>
-</head>
-
-    <div id="app"></div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global variables for Firebase
-        let app, auth, db;
-        let userId = null;
-        let unsubscribeFromMessages = null;
-        
-        // Render the main UI based on connection state
-        function renderUI() {
-            const appDiv = document.getElementById('app');
-            let content;
-            if (db && userId) {
-                // Render the chat forum if connected
-                content = `
-                    <div class="space-y-4">
-                        <div class="connection-status connected-icon">
-                            <span>&#x2714;</span>
-                            <span>Connected successfully!</span>
-                        </div>
-                        <div class="user-id-display">
-                            <p class="text-gray-700" style="font-weight: 500; margin-bottom: 0.5rem;">Your User ID:</p>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <code style="color: #6b7280; font-size: 0.875rem;">${userId}</code>
-                                <button onclick="copyUserId()" class="user-id-copy-btn">&#x2398;</button>
-                            </div>
-                        </div>
-                        <div class="chat-container">
-                            <h3 class="text-xl font-semibold text-center text-gray-700">Messages</h3>
-                            <div class="messages-list" id="messages-list"></div>
-                            <form id="chat-form" class="chat-form">
-                                <input type="text" id="chat-input" class="chat-input" placeholder="Write your message..." required />
-                                <button type="submit" class="send-button">&#x27a4;</button>
-                            </form>
-                        </div>
-                    </div>
-                `;
-            } else {
-                // Render the connection form if not connected
-                content = `
-                    <div class="space-y-4">
-                        <h2 class="text-xl font-semibold text-center text-gray-700">Connect to Your Firebase Project</h2>
-                        <form id="connection-form" class="space-y-4">
-                            <div class="space-y-2">
-                                <label for="firebase-config" class="text-sm font-medium text-gray-700">
-                                    Paste your Firebase configuration JSON here:
-                                </label>
-                                <textarea id="firebase-config" class="w-full h-40 p-3 border rounded-lg border-gray-300 focus:ring-blue" placeholder="e.g., { 'apiKey': '...', 'authDomain': '...' }"></textarea>
-                            </div>
-                            <button type="submit" class="connect-button">Connect</button>
-                            <div id="status-message" class="connection-status" style="display: none;"></div>
-                        </form>
-                    </div>
-                `;
-            }
-
-            appDiv.innerHTML = `
-                <div class="container-card">
-                    <h1 class="text-3xl font-bold text-center text-gray-800">Angel Hearts Forum</h1>
-                    <p class="text-center text-gray-600">Sharing our music and poems.</p>
-                    <div id="main-content">
-                        ${content}
-                    </div>
-                </div>
-            `;
-            
-            // Add event listeners after the content is rendered
-            if (db && userId) {
-                document.getElementById('chat-form').addEventListener('submit', handleSendMessage);
-                listenForMessages();
-            } else {
-                document.getElementById('connection-form').addEventListener('submit', handleConnect);
-            }
-        }
-        
-        async function handleConnect(event) {
-            event.preventDefault();
-            const configText = document.getElementById('firebase-config').value;
-            const statusMessageDiv = document.getElementById('status-message');
-            statusMessageDiv.style.display = 'flex';
-            statusMessageDiv.innerHTML = `<span class="connecting-icon">&#x231B;</span><span>Connecting...</span>`;
-
-            try {
-                const firebaseConfig = JSON.parse(configText);
-
-                // Use the provided Firebase config to initialize the app
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                
-                userId = auth.currentUser.uid;
-                renderUI(); // Re-render to show chat forum
-            } catch (error) {
-                console.error("Firebase connection error:", error);
-                statusMessageDiv.innerHTML = `<span class="error-icon">&#x2716;</span><span>Connection failed. Please check your configuration.</span><p class="error-message">${error.message}</p>`;
-            }
-        }
-        
-        // Listen for messages in real-time
-        function listenForMessages() {
-            if (unsubscribeFromMessages) {
-                unsubscribeFromMessages();
-            }
-
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
-            const q = query(messagesCollectionRef);
-
-            unsubscribeFromMessages = onSnapshot(q, (querySnapshot) => {
-                const messagesList = document.getElementById('messages-list');
-                messagesList.innerHTML = '';
-                const fetchedMessages = [];
-                querySnapshot.forEach((doc) => {
-                    fetchedMessages.push({ id: doc.id, ...doc.data() });
-                });
-
-                fetchedMessages.sort((a, b) => (a.timestamp ? a.timestamp.toMillis() : 0) - (b.timestamp ? b.timestamp.toMillis() : 0));
-
-                if (fetchedMessages.length === 0) {
-                    messagesList.innerHTML = `<p class="text-center text-gray-500" style="margin-top: 2.5rem;">No messages yet. Be the first to share!</p>`;
-                } else {
-                    fetchedMessages.forEach(message => {
-                        const messageDiv = document.createElement('div');
-                        const isMe = message.userId === userId;
-                        messageDiv.className = `message ${isMe ? 'message-me' : 'message-other'}`;
-                        messageDiv.innerHTML = `
-                            <p class="message-user-id">${isMe ? 'You' : `User: ${message.userId.substring(0, 8)}...`}</p>
-                            <p class="message-text">${message.text}</p>
-                        `;
-                        messagesList.appendChild(messageDiv);
-                    });
-                    messagesList.scrollTop = messagesList.scrollHeight;
-                }
-            }, (error) => {
-                console.error("Error fetching messages: ", error);
-            });
-        }
-        
-        // Handle sending new messages
-        async function handleSendMessage(e) {
-            e.preventDefault();
-            const chatInput = document.getElementById('chat-input');
-            const newMessage = chatInput.value.trim();
-
-            if (newMessage === '' || !db || !userId) return;
-
-            try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
-                await addDoc(messagesCollectionRef, {
-                    text: newMessage,
-                    userId: userId,
-                    timestamp: serverTimestamp(),
-                });
-                chatInput.value = '';
-            } catch (error) {
-                console.error("Error adding document: ", error);
-            }
-        }
-
-        // Utility to copy user ID
-        function copyUserId() {
-            try {
-                navigator.clipboard.writeText(userId);
-            } catch (error) {
-                const el = document.createElement('textarea');
-                el.value = userId;
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand('copy');
-                document.body.removeChild(el);
-            }
-        }
-        
-        // Initial render on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            renderUI();
-        });
-    </script>
-</body>
-</html>
-
 </body>
 </html>
