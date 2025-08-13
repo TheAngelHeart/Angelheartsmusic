@@ -717,30 +717,25 @@
             let firebaseConfig;
 
             try {
-                // Use a more robust regex to find key-value pairs
-                const rawConfig = configInput.value.trim().replace(/;\s*$/, '');
-                const pairs = [...rawConfig.matchAll(/(\w+):\s*(".*?"|\d+)/g)];
-                
-                firebaseConfig = {};
-                if (pairs.length === 0) {
-                    throw new Error('Invalid or empty configuration format.');
+                const configText = configInput.value.trim();
+                // Check if the input starts and ends with curly braces, indicating a JSON object
+                if (!configText.startsWith('{') || !configText.endsWith('}')) {
+                    throw new Error('Invalid JSON format. Please ensure you are copying the full JSON object, including the curly braces {}.');
                 }
                 
-                pairs.forEach(match => {
-                    const key = match[1];
-                    const value = match[2].startsWith('"') ? match[2].slice(1, -1) : match[2];
-                    firebaseConfig[key] = value;
-                });
+                firebaseConfig = JSON.parse(configText);
                 
                 if (!firebaseConfig.apiKey || !firebaseConfig.projectId || !firebaseConfig.authDomain) {
-                    throw new Error('Missing essential Firebase keys (apiKey, projectId, or authDomain).');
+                    throw new Error('Missing essential Firebase keys (apiKey, projectId, or authDomain). Please copy the full JSON object from Firebase.');
                 }
             } catch (error) {
                 let errorMessage;
                 if (error.message.includes('Missing essential Firebase keys')) {
                     errorMessage = "The configuration is missing required fields like 'apiKey', 'projectId', or 'authDomain'. Please copy the full JSON object from Firebase.";
+                } else if (error.message.includes('Invalid JSON format')) {
+                    errorMessage = "The format is incorrect. Please ensure you are copying the full code snippet, including the curly braces {} and that keys and string values are surrounded by double quotes.";
                 } else {
-                    errorMessage = "The format is incorrect. Please ensure you are copying the full code snippet, including the curly braces {} and that keys and values are correct.";
+                    errorMessage = `A configuration error occurred. Details: ${error.message}`;
                 }
                 
                 statusDisplay.innerHTML = `
@@ -754,7 +749,6 @@
                 return;
             }
             
-            // Call the new, more direct connection function
             connectToFirebase(firebaseConfig);
         }
         
