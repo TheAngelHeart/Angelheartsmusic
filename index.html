@@ -484,6 +484,7 @@
             justify-content: center;
             gap: 0.5rem;
             font-size: 1rem;
+            flex-direction: column;
         }
         .connecting-icon {
             animation: spin 1s linear infinite;
@@ -583,7 +584,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables for Firebase
@@ -692,7 +693,12 @@
                 updateMainContent();
             } catch (error) {
                 // Handle connection errors and display them to the user
-                let errorMessage = `A Firebase error occurred. Please check your configuration and try again. Error: ${error.message}`;
+                let errorMessage;
+                if (error.message.includes('auth/configuration-not-found')) {
+                    errorMessage = "The 'authDomain' property is missing from your Firebase configuration. Please copy the complete configuration block from your Firebase project settings.";
+                } else {
+                    errorMessage = `A Firebase error occurred. Please check your configuration and try again. Error: ${error.message}`;
+                }
                 statusDisplay.innerHTML = `
                     <span class="error-icon">&#x2716;</span>
                     <div style="text-align:center;">
@@ -726,15 +732,15 @@
                     firebaseConfig[key] = value;
                 });
                 
-                if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-                    throw new Error('Missing essential Firebase keys (apiKey or projectId).');
+                if (!firebaseConfig.apiKey || !firebaseConfig.projectId || !firebaseConfig.authDomain) {
+                    throw new Error('Missing essential Firebase keys (apiKey, projectId, or authDomain).');
                 }
             } catch (error) {
-                let errorMessage = "The format is incorrect. Please ensure you are copying the full code snippet, including the curly braces {} and that keys and values are correct.";
+                let errorMessage;
                 if (error.message.includes('Missing essential Firebase keys')) {
-                    errorMessage = "The configuration is missing the 'apiKey' or 'projectId' fields. Please copy the full JSON object from Firebase.";
-                } else if (error.message.includes('Invalid or empty configuration format')) {
-                    errorMessage = "The format is incorrect. Please make sure to copy the full configuration object, starting with an opening curly brace '{' and ending with a closing one '}'.";
+                    errorMessage = "The configuration is missing required fields like 'apiKey', 'projectId', or 'authDomain'. Please copy the full JSON object from Firebase.";
+                } else {
+                    errorMessage = "The format is incorrect. Please ensure you are copying the full code snippet, including the curly braces {} and that keys and values are correct.";
                 }
                 
                 statusDisplay.innerHTML = `
@@ -832,5 +838,6 @@
         document.addEventListener('DOMContentLoaded', renderUI);
     </script>
 </body>
-</html></body>
+</html>
+</body>
 </html>
