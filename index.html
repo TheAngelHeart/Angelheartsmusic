@@ -688,11 +688,17 @@
             `;
 
             try {
-                // Remove any surrounding whitespace or comments
-                const rawConfig = configInput.value.trim().replace(/^(var firebaseConfig = )/, '');
-                firebaseConfig = JSON.parse(rawConfig);
+                const rawConfig = configInput.value.trim();
                 
-                // Validate that essential keys exist
+                // --- Start of new, more forgiving JSON parsing logic ---
+                // Add double quotes around keys and remove trailing semicolons.
+                const cleanedConfig = rawConfig
+                    .replace(/(\w+):/g, '"$1":') // Add double quotes to unquoted keys
+                    .replace(/;\s*$/, ''); // Remove trailing semicolon
+
+                firebaseConfig = JSON.parse(cleanedConfig);
+                // --- End of new logic ---
+
                 if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
                     throw new Error('Missing essential Firebase keys (apiKey or projectId).');
                 }
