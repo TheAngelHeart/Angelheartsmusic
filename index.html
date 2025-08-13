@@ -362,23 +362,21 @@
         // Global variables provided by the Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // Firebase configuration provided by the user
-        const firebaseConfig = {
-            "apiKey": "AIzaSyDIp2Gsbr8y8Zeqnf69RJ2VRS8nmsUjO24",
-            "authDomain": "theangelheart-8c3d4.firebaseapp.com",
-            "projectId": "theangelheart-8c3d4",
-            "storageBucket": "theangelheart-8c3d4.firebasestorage.app",
-            "messagingSenderId": "1037239430431",
-            "appId": "1:1037239430431:web:9e8ae59a2ca61ef17bd42a",
-            "measurementId": "G-Z2YJXCBN09"
-        };
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
 
         // Initialize Firebase
-        let db, auth, userId;
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
+        let db, auth, userId, isAuthReady = false;
+        let app, messagesCollection;
+
+        if (Object.keys(firebaseConfig).length > 0) {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            messagesCollection = collection(db, `/artifacts/${appId}/public/data/messages`);
+        } else {
+            console.error("Firebase config is missing. The message board will not function.");
+            document.getElementById('auth-status').textContent = 'Firebase config not available.';
+        }
 
         const authStatus = document.getElementById('auth-status');
         const userIdDisplay = document.getElementById('user-id-display');
@@ -386,26 +384,11 @@
         const messageBoard = document.getElementById('message-board');
         const loadingMessage = document.getElementById('loading-message');
         const messageInput = document.getElementById('message-input');
-        
-        async function initFirebase() {
-            try {
-                // Try to sign in with the custom token if available
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                    console.log("Signed in with custom token.");
-                } else {
-                    // Fallback to anonymous sign-in
-                    await signInAnonymously(auth);
-                    console.log("Signed in anonymously.");
-                }
-            } catch (error) {
-                console.error("Error during Firebase sign-in:", error);
-                authStatus.textContent = 'Authentication failed. Please refresh the page.';
-                return;
-            }
 
-            // Set up the listener for auth state changes
+        // Set up the authentication listener first
+        if (auth) {
             onAuthStateChanged(auth, (user) => {
+                isAuthReady = true;
                 if (user) {
                     userId = user.uid;
                     authStatus.textContent = 'Connected to Firestore';
@@ -414,18 +397,38 @@
                     startListeningForMessages();
                 } else {
                     console.log("User is signed out.");
+                    userId = null;
                     authStatus.textContent = 'Disconnected. Please refresh.';
                     sendButton.disabled = true;
                 }
             });
         }
+
+        // Handle sign-in process
+        async function signInUser() {
+            try {
+                if (auth) {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    }
+                }
+            } catch (error) {
+                console.error("Error during Firebase sign-in:", error);
+                authStatus.textContent = 'Authentication failed. Please refresh the page.';
+            }
+        }
         
         // Function to listen for real-time messages
         function startListeningForMessages() {
-            // Firestore collection path for public data
-            const messagesCollection = collection(db, `/artifacts/${appId}/public/data/messages`);
+            if (!isAuthReady || !db || !messagesCollection) {
+                console.error("Cannot start listening: Firebase not initialized or user not authenticated.");
+                return;
+            }
 
-            // Use onSnapshot to get real-time updates
             onSnapshot(messagesCollection, (snapshot) => {
                 if (loadingMessage) {
                     loadingMessage.style.display = 'none';
@@ -436,7 +439,7 @@
                     messages.push({ ...doc.data(), id: doc.id });
                 });
 
-                // Manually sort the messages by timestamp since orderBy() can cause issues
+                // Manually sort the messages by timestamp
                 messages.sort((a, b) => {
                     if (!a.timestamp) return -1;
                     if (!b.timestamp) return 1;
@@ -489,7 +492,7 @@
             }
 
             try {
-                await addDoc(collection(db, `/artifacts/${appId}/public/data/messages`), {
+                await addDoc(messagesCollection, {
                     userId: userId,
                     text: messageText,
                     timestamp: serverTimestamp()
@@ -513,8 +516,8 @@
             }
         });
 
-        // Start the Firebase initialization process
-        initFirebase();
+        // Start the Firebase initialization and authentication process
+        signInUser();
     </script>
     <!-- Gemini Poem Creator Logic -->
     <script type="module">
