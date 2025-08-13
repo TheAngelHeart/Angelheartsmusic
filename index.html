@@ -421,8 +421,9 @@
     <style>
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f3f4f6; /* Light gray background */
+            line-height: 1.5;
         }
         #app {
             width: 100%;
@@ -486,6 +487,7 @@
             gap: 0.5rem;
             font-size: 1rem;
             flex-direction: column;
+            color: #6b7280;
         }
         .connecting-icon {
             animation: spin 1s linear infinite;
@@ -578,6 +580,12 @@
             cursor: pointer;
             padding: 0.25rem;
         }
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -592,28 +600,14 @@
         let app, auth, db;
         let userId = null;
         let unsubscribeFromMessages = null;
-
-        // Render the main UI
+        
+        // Render the main UI based on connection state
         function renderUI() {
             const appDiv = document.getElementById('app');
-            appDiv.innerHTML = `
-                <div class="container-card">
-                    <h1 class="text-3xl font-bold text-center text-gray-800">Angel Hearts Forum</h1>
-                    <p class="text-center text-gray-600">
-                        Sharing our music and poems.
-                    </p>
-                    <div id="main-content"></div>
-                </div>
-            `;
-            updateMainContent();
-        }
-
-        // Update the content based on connection status
-        function updateMainContent() {
-            const mainContentDiv = document.getElementById('main-content');
-            
+            let content;
             if (db && userId) {
-                mainContentDiv.innerHTML = `
+                // Render the chat forum if connected
+                content = `
                     <div class="space-y-4">
                         <div class="connection-status connected-icon">
                             <span>&#x2714;</span>
@@ -636,26 +630,55 @@
                         </div>
                     </div>
                 `;
-                
-                document.getElementById('chat-form').addEventListener('submit', handleSendMessage);
-                listenForMessages();
-
             } else {
-                 mainContentDiv.innerHTML = `
+                // Render the connection form if not connected
+                content = `
                     <div class="space-y-4">
-                        <div class="connection-status">
-                            <span class="connecting-icon" style="color:#6b7280;">&#x231B;</span>
-                            <span style="color:#6b7280;">Connecting...</span>
-                        </div>
+                        <h2 class="text-xl font-semibold text-center text-gray-700">Connect to Your Firebase Project</h2>
+                        <form id="connection-form" class="space-y-4">
+                            <div class="space-y-2">
+                                <label for="firebase-config" class="text-sm font-medium text-gray-700">
+                                    Paste your Firebase configuration JSON here:
+                                </label>
+                                <textarea id="firebase-config" class="w-full h-40 p-3 border rounded-lg border-gray-300 focus:ring-blue" placeholder="e.g., { 'apiKey': '...', 'authDomain': '...' }"></textarea>
+                            </div>
+                            <button type="submit" class="connect-button">Connect</button>
+                            <div id="status-message" class="connection-status" style="display: none;"></div>
+                        </form>
                     </div>
                 `;
             }
+
+            appDiv.innerHTML = `
+                <div class="container-card">
+                    <h1 class="text-3xl font-bold text-center text-gray-800">Angel Hearts Forum</h1>
+                    <p class="text-center text-gray-600">Sharing our music and poems.</p>
+                    <div id="main-content">
+                        ${content}
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners after the content is rendered
+            if (db && userId) {
+                document.getElementById('chat-form').addEventListener('submit', handleSendMessage);
+                listenForMessages();
+            } else {
+                document.getElementById('connection-form').addEventListener('submit', handleConnect);
+            }
         }
         
-        async function connectToFirebase() {
+        async function handleConnect(event) {
+            event.preventDefault();
+            const configText = document.getElementById('firebase-config').value;
+            const statusMessageDiv = document.getElementById('status-message');
+            statusMessageDiv.style.display = 'flex';
+            statusMessageDiv.innerHTML = `<span class="connecting-icon">&#x231B;</span><span>Connecting...</span>`;
+
             try {
-                // Use the built-in Firebase configuration provided by the platform
-                const firebaseConfig = JSON.parse(__firebase_config);
+                const firebaseConfig = JSON.parse(configText);
+
+                // Use the provided Firebase config to initialize the app
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
@@ -669,18 +692,10 @@
                 }
                 
                 userId = auth.currentUser.uid;
-                updateMainContent();
+                renderUI(); // Re-render to show chat forum
             } catch (error) {
-                // This catch block is for unexpected errors, but with the new approach, it should be stable.
-                const mainContentDiv = document.getElementById('main-content');
-                mainContentDiv.innerHTML = `
-                    <div class="connection-status error-icon">
-                        <span>&#x2716;</span>
-                        <span>Connection failed due to an unexpected error.</span>
-                        <p class="text-sm text-gray-500">${error.message}</p>
-                    </div>
-                `;
                 console.error("Firebase connection error:", error);
+                statusMessageDiv.innerHTML = `<span class="error-icon">&#x2716;</span><span>Connection failed. Please check your configuration.</span><p class="error-message">${error.message}</p>`;
             }
         }
         
@@ -760,10 +775,9 @@
             }
         }
         
-        // Initial render and connection on page load
+        // Initial render on page load
         document.addEventListener('DOMContentLoaded', () => {
             renderUI();
-            connectToFirebase();
         });
     </script>
 </body>
