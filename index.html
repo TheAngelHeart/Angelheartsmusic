@@ -469,8 +469,14 @@
 
         generateAndPlayButton.addEventListener('click', async () => {
             const lyrics = lyricsInput.value.trim();
+            const MAX_LENGTH = 250; // The maximum character limit for the lyrics
             if (!lyrics) {
                 statusMessage.textContent = 'Please paste some lyrics to convert to a song.';
+                return;
+            }
+
+            if (lyrics.length > MAX_LENGTH) {
+                statusMessage.textContent = `Sorry, the lyrics are too long. Please try a shorter poem (under ${MAX_LENGTH} characters).`;
                 return;
             }
 
@@ -489,8 +495,7 @@
                                 prebuiltVoiceConfig: { voiceName: "Kore" }
                             }
                         }
-                    },
-                    model: "gemini-2.5-flash-preview-tts"
+                    }
                 };
 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
