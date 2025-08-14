@@ -356,11 +356,12 @@
         const generateButton = document.getElementById('generate-button');
         const poemPrompt = document.getElementById('poem-prompt');
         const poemOutput = document.getElementById('poem-output');
-        
-        // This variable is now set by the platform at runtime, so we leave it as an empty string.
-        const apiKey = "";
 
-        // Exponential backoff retry function
+        // IMPORTANT: Please paste your API key here to get the poem generator working.
+        // It should look something like "AIzaSyC_xxxxxxxxxxxxxxxxxxxxxxxxxx"
+        const apiKey = "YOUR_API_KEY_HERE";
+
+        // Exponential backoff retry function to handle network issues
         const fetchWithRetry = async (url, options, retries = 5, delay = 1000) => {
             try {
                 const response = await fetch(url, options);
@@ -370,7 +371,8 @@
                     return fetchWithRetry(url, options, retries - 1, delay * 2);
                 }
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    // Throw an error with the status for better debugging
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 return response;
             } catch (error) {
@@ -413,7 +415,7 @@
                 }
             } catch (error) {
                 console.error('Error generating poem:', error);
-                poemOutput.textContent = `Sorry, the request failed. There was a network or other technical issue. Please try again later.`;
+                poemOutput.textContent = `Sorry, the request failed. There was a network or other technical issue. Please check the browser console for details: ${error.message}`;
             } finally {
                 generateButton.disabled = false;
             }
@@ -421,4 +423,3 @@
     </script>
 </body>
 </html>
-
