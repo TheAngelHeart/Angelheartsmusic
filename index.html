@@ -35,6 +35,7 @@
             </h1>
             <div class="flex space-x-6 items-center">
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
+                <a href="#mp3-player" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Player</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
                 <a href="#tiktok-videos" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">TikTok</a>
                 <a href="#contact" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Contact Me</a>
@@ -88,15 +89,57 @@
         </div>
     </section>
 
+    <!-- MP3 Player Section -->
+    <section id="mp3-player" class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4 max-w-2xl">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
+                MP3 Music Player
+            </h2>
+            <p class="text-center text-gray-400 mb-8">
+                Listen to a playlist of my songs.
+            </p>
+            <div class="bg-gray-900 rounded-2xl p-8 shadow-xl">
+                <!-- Current song title display -->
+                <div class="text-center mb-4">
+                    <h3 id="current-song-title" class="text-xl font-semibold text-pink-400"></h3>
+                </div>
+
+                <!-- Audio element -->
+                <audio id="audio-player" class="w-full rounded-xl" controls></audio>
+
+                <!-- Player controls -->
+                <div class="flex justify-center items-center space-x-4 mt-6">
+                    <button id="prev-btn" class="text-purple-400 hover:text-purple-500 transition-colors duration-300">
+                        <i class="fas fa-backward fa-2x"></i>
+                    </button>
+                    <button id="play-pause-btn" class="text-pink-400 hover:text-pink-500 transition-colors duration-300">
+                        <i class="fas fa-play fa-3x"></i>
+                    </button>
+                    <button id="next-btn" class="text-purple-400 hover:text-purple-500 transition-colors duration-300">
+                        <i class="fas fa-forward fa-2x"></i>
+                    </button>
+                </div>
+
+                <!-- Playlist display -->
+                <div class="mt-8">
+                    <h4 class="text-lg font-bold text-gray-400 mb-4">Playlist</h4>
+                    <ul id="playlist" class="list-disc pl-5 space-y-2 text-gray-300">
+                        <!-- Playlist items will be injected here by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Poetry Section -->
-    <section id="poetry" class="py-20 bg-gray-800">
+    <section id="poetry" class="py-20 bg-gray-900">
         <div class="container mx-auto px-4">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">
                 My Poetry
             </h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Poetry Card 1 - All The Queens -->
-                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
+                <div class="bg-gray-800 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
                     <h3 class="text-2xl font-bold text-purple-400 mb-2">All The Queens</h3>
                     <p class="text-gray-400 text-sm mb-4">
                         Newest Lyrics.
@@ -166,7 +209,7 @@
                 </div>
 
                 <!-- Poetry Card 2 - All Those Queens -->
-                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
+                <div class="bg-gray-800 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
                     <h3 class="text-2xl font-bold text-purple-400 mb-2">All Those Queen</h3>
                     <p class="text-gray-400 text-sm mb-4">
                         New Lyrics.
@@ -232,7 +275,7 @@
                 </div>
 
                 <!-- Poetry Card 3 - Oh Angel Rise Up -->
-                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
+                <div class="bg-gray-800 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
                     <h3 class="text-2xl font-bold text-purple-400 mb-2">Oh Angel Rise Up</h3>
                     <p class="text-gray-400 text-sm mb-4">
                         New Lyrics.
@@ -350,5 +393,101 @@
         </div>
         <p>&copy; 2024 Angel Hearts Music & Poetry. All Rights Reserved.</p>
     </footer>
+
+    <!-- MP3 Player Logic -->
+    <script>
+        const audioPlayer = document.getElementById('audio-player');
+        const prevBtn = document.getElementById('prev-btn');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentSongTitle = document.getElementById('current-song-title');
+        const playlistEl = document.getElementById('playlist');
+
+        // IMPORTANT: Replace the placeholder URLs below with the URLs to your own MP3 files.
+        const playlist = [
+            { title: 'Relaxing Music', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+            { title: 'Upbeat Music', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
+            { title: 'Chill Music', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
+            { title: 'Instrumental Music', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' }
+        ];
+
+        let currentSongIndex = 0;
+        let isPlaying = false;
+
+        function loadSong(songIndex) {
+            const song = playlist[songIndex];
+            audioPlayer.src = song.url;
+            currentSongTitle.textContent = song.title;
+
+            // Update playlist highlighting
+            document.querySelectorAll('#playlist li').forEach((item, index) => {
+                if (index === songIndex) {
+                    item.classList.add('text-pink-400', 'font-bold');
+                    item.classList.remove('text-gray-300');
+                } else {
+                    item.classList.remove('text-pink-400', 'font-bold');
+                    item.classList.add('text-gray-300');
+                }
+            });
+        }
+
+        function playSong() {
+            audioPlayer.play();
+            playPauseBtn.innerHTML = '<i class="fas fa-pause fa-3x"></i>';
+            isPlaying = true;
+        }
+
+        function pauseSong() {
+            audioPlayer.pause();
+            playPauseBtn.innerHTML = '<i class="fas fa-play fa-3x"></i>';
+            isPlaying = false;
+        }
+
+        function nextSong() {
+            currentSongIndex = (currentSongIndex + 1) % playlist.length;
+            loadSong(currentSongIndex);
+            playSong();
+        }
+
+        function prevSong() {
+            currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
+            loadSong(currentSongIndex);
+            playSong();
+        }
+
+        // Event listeners
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                pauseSong();
+            } else {
+                playSong();
+            }
+        });
+
+        nextBtn.addEventListener('click', nextSong);
+        prevBtn.addEventListener('click', prevSong);
+        audioPlayer.addEventListener('ended', nextSong);
+
+        // Build the playlist list in the UI
+        function buildPlaylist() {
+            playlist.forEach((song, index) => {
+                const li = document.createElement('li');
+                li.textContent = song.title;
+                li.className = 'cursor-pointer hover:text-pink-400 transition-colors duration-300';
+                li.addEventListener('click', () => {
+                    currentSongIndex = index;
+                    loadSong(currentSongIndex);
+                    playSong();
+                });
+                playlistEl.appendChild(li);
+            });
+        }
+
+        // Initialize the player on page load
+        window.onload = () => {
+            buildPlaylist();
+            loadSong(currentSongIndex);
+        };
+    </script>
 </body>
 </html>
