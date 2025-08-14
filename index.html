@@ -200,7 +200,7 @@
                             All of those Queens
                             Faced the darkness of the day
                             Until they found their path of light
-                            All of those Queens they shine so bright
+                            All of those Queens shall find their way
 
                             They tried to break your mind
                             Break that heart that beat of love
@@ -424,7 +424,8 @@
                 const creativePrompt = `Write a beautiful and heartfelt poem about "${userTopic}" in the style of Angel Hearts Music. Ensure the poem has at least three stanzas and uses line breaks appropriately.`;
                 const chatHistory = [{ role: "user", parts: [{ text: creativePrompt }] }];
                 const payload = { contents: chatHistory };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                // Using a more stable model that should avoid the 403 error
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
 
                 // Make the API call to generate the poem
                 const response = await fetch(apiUrl, {
