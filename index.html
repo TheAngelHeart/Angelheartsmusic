@@ -6,6 +6,8 @@
     <title>Angel Hearts Music & Poetry</title>
     <!-- Tailwind CSS CDN for easy styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for social media icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* Use the Inter font from Google Fonts */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -26,6 +28,7 @@
 <body class="bg-gray-900 text-gray-200">
 
     <!-- Header & Navigation -->
+    <!-- A sticky header that stays at the top of the page with navigation links -->
     <header class="sticky top-0 z-50 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-md">
         <nav class="container mx-auto p-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600">
@@ -43,6 +46,7 @@
     </header>
 
     <!-- Hero Section -->
+    <!-- The main banner of the website with a call-to-action button -->
     <section class="min-h-screen flex items-center justify-center p-8 text-center bg-gray-800">
         <div class="max-w-2xl">
             <h2 class="text-5xl md:text-7xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600">
@@ -59,6 +63,7 @@
     </section>
 
     <!-- Music Section -->
+    <!-- A section to display music from Spotify embeds -->
     <section id="music" class="py-20 bg-gray-900">
         <div class="container mx-auto px-4">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">
@@ -85,6 +90,7 @@
     </section>
 
     <!-- Poetry Section -->
+    <!-- A section to display your poetry and lyrics -->
     <section id="poetry" class="py-20 bg-gray-800">
         <div class="container mx-auto px-4">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">
@@ -341,10 +347,11 @@
     </footer>
 
     <!-- Gemini Poem Creator Logic -->
-    <script type="module">
+    <script>
         const generateButton = document.getElementById('generate-button');
         const poemPrompt = document.getElementById('poem-prompt');
         const poemOutput = document.getElementById('poem-output');
+        // This key has been added directly as requested.
         const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
 
         generateButton.addEventListener('click', async () => {
@@ -369,7 +376,8 @@
                 if (!response.ok) {
                     const errorData = await response.json();
                     console.error("API Error details:", errorData);
-                    poemOutput.textContent = `API Error: ${response.status}. Please check the browser console for details.`;
+                    // Provide a more specific error message to the user
+                    poemOutput.textContent = `API Error: There was a problem with the API request. Status code: ${response.status}. Please try again later.`;
                     return;
                 }
 
@@ -383,12 +391,11 @@
                 }
             } catch (error) {
                 console.error('Error generating poem:', error);
-                poemOutput.textContent = `Sorry, the request failed. There was a network or other technical issue. Please try again later.`;
+                // Provide a more specific error message for network issues
+                poemOutput.textContent = `Sorry, the request failed. There was a network or other technical issue. Please check your connection and try again.`;
             }
         });
     </script>
 </body>
 </html>
-
-
 
