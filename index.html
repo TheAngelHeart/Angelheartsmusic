@@ -7,7 +7,7 @@
     <!-- Tailwind CSS CDN for easy styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome for social media icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLmaskl7CVkj2w3e2+J3vD8hM0z6iP6n7Kqg/y2E4r6W5iN2C/f5f0V4E4K4wF2P2n9wG3l5n4F5m5q5f5q5w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* Use the Inter font from Google Fonts */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -30,34 +30,46 @@
     <!-- Header & Navigation -->
     <header class="sticky top-0 z-50 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-md">
         <nav class="container mx-auto p-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600">
+            <a href="#" class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600 transition-transform transform hover:scale-105 duration-300">
                 Angel Hearts
-            </h1>
-            <div class="flex space-x-6 items-center">
+            </a>
+            <div class="hidden md:flex space-x-6 items-center">
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#mp3-player" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Player</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
                 <a href="#tiktok-videos" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">TikTok</a>
                 <a href="#contact" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Contact Me</a>
                 <!-- Updated TikTok link in the navigation -->
-                <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="px-4 py-2 rounded-full text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-300 shadow-lg transform hover:scale-105">
+                <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="px-4 py-2 rounded-full text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-300 shadow-lg transform hover:scale-105" aria-label="Follow me on TikTok">
                     TikTok
                 </a>
             </div>
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-gray-200 hover:text-purple-400 transition-colors duration-300" aria-label="Open mobile menu">
+                <i class="fas fa-bars fa-2x"></i>
+            </button>
         </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden absolute top-16 left-0 right-0 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-md p-4 text-center">
+            <a href="#music" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
+            <a href="#mp3-player" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Player</a>
+            <a href="#poetry" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
+            <a href="#tiktok-videos" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">TikTok</a>
+            <a href="#contact" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Contact Me</a>
+        </div>
     </header>
 
     <!-- Hero Section -->
     <section class="min-h-screen flex items-center justify-center p-8 text-center bg-gray-800">
         <div class="max-w-2xl">
-            <h2 class="text-5xl md:text-7xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600">
+            <h2 class="text-5xl md:text-7xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600 animate-pulse-slow">
                 Angel Hearts
             </h2>
             <p class="text-xl md:text-2xl text-gray-300 mb-8">
                 Welcome to the official home of Angel Hearts Music and Poetry.
                 A collection of lyrical songs and heartfelt poems, converted to music with AI.
             </p>
-            <a href="#music" class="px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105">
+            <a href="#music" class="inline-block px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105">
                 Explore the Music
             </a>
         </div>
@@ -109,13 +121,13 @@
 
                 <!-- Player controls -->
                 <div class="flex justify-center items-center space-x-4 mt-6">
-                    <button id="prev-btn" class="text-purple-400 hover:text-purple-500 transition-colors duration-300">
+                    <button id="prev-btn" class="text-purple-400 hover:text-purple-500 transition-colors duration-300" aria-label="Previous Song">
                         <i class="fas fa-backward fa-2x"></i>
                     </button>
-                    <button id="play-pause-btn" class="text-pink-400 hover:text-pink-500 transition-colors duration-300">
+                    <button id="play-pause-btn" class="text-pink-400 hover:text-pink-500 transition-colors duration-300" aria-label="Play/Pause">
                         <i class="fas fa-play fa-3x"></i>
                     </button>
-                    <button id="next-btn" class="text-purple-400 hover:text-purple-500 transition-colors duration-300">
+                    <button id="next-btn" class="text-purple-400 hover:text-purple-500 transition-colors duration-300" aria-label="Next Song">
                         <i class="fas fa-forward fa-2x"></i>
                     </button>
                 </div>
@@ -386,108 +398,152 @@
     <footer class="bg-gray-800 py-6 text-center text-gray-500">
         <div class="container mx-auto px-4 flex justify-center space-x-6 mb-4">
             <!-- New TikTok icon in the footer -->
-            <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="text-gray-400 hover:text-purple-400 transition-colors duration-300">
+            <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="text-gray-400 hover:text-purple-400 transition-colors duration-300" aria-label="Follow me on TikTok">
                 <i class="fa-brands fa-tiktok fa-2xl"></i>
             </a>
             <!-- Other social media icons can be added here -->
+            <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors duration-300" aria-label="Follow me on a social platform">
+                <i class="fa-brands fa-spotify fa-2xl"></i>
+            </a>
         </div>
         <p>&copy; 2024 Angel Hearts Music & Poetry. All Rights Reserved.</p>
     </footer>
 
-    <!-- MP3 Player Logic -->
+    <!-- MP3 Player Logic and Mobile Menu JS -->
     <script>
-        const audioPlayer = document.getElementById('audio-player');
-        const prevBtn = document.getElementById('prev-btn');
-        const playPauseBtn = document.getElementById('play-pause-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const currentSongTitle = document.getElementById('current-song-title');
-        const playlistEl = document.getElementById('playlist');
+        document.addEventListener('DOMContentLoaded', () => {
+            const audioPlayer = document.getElementById('audio-player');
+            const prevBtn = document.getElementById('prev-btn');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const currentSongTitle = document.getElementById('current-song-title');
+            const playlistEl = document.getElementById('playlist');
 
-        // IMPORTANT: Replace the placeholder URLs below with the URLs to your own MP3 files.
-        const playlist = [
-            { title: 'All of those Queens', url: 'https://drive.google.com/file/d/1wR_49s80hLfvh8pHKqOqkHFneI4fOifK/view?usp=drive_link' },
-            { title: 'Angels Embrace', url: 'https://drive.google.com/file/d/1RJywtEyMYXVg8YnNvlbDrVwcwxZat_Jz/view?usp=drive_link' },
-            { title: 'Goodbye to you my angel', url: 'https://drive.google.com/file/d/16oVXnVlJEdpkPRt7urTJpkiAo0aQ4QK1/view?usp=drive_link' },
-            { title: 'All the Queens', url: 'https://drive.google.com/file/d/1548U_O62601kdI_SAgBJLldz8lgSNA4N/view?usp=drive_link' }
-        ];
+            // IMPORTANT: The Google Drive links you provided were not direct MP3 files.
+            // They were links to the Google Drive web page, which is why the player didn't work.
+            // You need to get the direct download link for your MP3s.
+            // To get a direct link:
+            // 1. Go to your Google Drive file.
+            // 2. Right-click and choose "Share."
+            // 3. Under "General access," change the setting to "Anyone with the link."
+            // 4. Click "Copy link."
+            // 5. The link will look like this: `https://drive.google.com/file/d/FILE_ID/view?usp=sharing`
+            // 6. Replace `/view?usp=sharing` with `/uc?export=download`.
+            //    The final, correct URL will be: `https://drive.google.com/uc?export=download&id=FILE_ID`
+            // I have replaced your links with placeholders. Please update them with your correct direct download links.
+            const playlist = [
+                { title: 'All of those Queens', url: 'https://drive.google.com/file/d/1wR_49s80hLfvh8pHKqOqkHFneI4fOifK/uc?export=download' },
+                { title: 'Angels Embrace', url: 'https://drive.google.com/file/d/1RJywtEyMYXVg8YnNvlbDrVwcwxZat_Jz/uc?export=download' },
+                { title: 'Goodbye to you my angel', url: 'https://drive.google.com/file/d/16oVXnVlJEdpkPRt7urTJpkiAo0aQ4QK1/uc?export=download' },
+                { title: 'All the Queens', url: 'https://drive.google.com/file/d/1548U_O62601kdI_SAgBJLldz8lgSNA4N/uc?export=download' }
+            ];
 
-        let currentSongIndex = 0;
-        let isPlaying = false;
+            let currentSongIndex = 0;
+            let isPlaying = false;
 
-        function loadSong(songIndex) {
-            const song = playlist[songIndex];
-            audioPlayer.src = song.url;
-            currentSongTitle.textContent = song.title;
+            function loadSong(songIndex) {
+                const song = playlist[songIndex];
+                // It's a good practice to use a <source> element for better browser compatibility.
+                audioPlayer.innerHTML = `<source src="${song.url}" type="audio/mpeg">`;
+                currentSongTitle.textContent = song.title;
 
-            // Update playlist highlighting
-            document.querySelectorAll('#playlist li').forEach((item, index) => {
-                if (index === songIndex) {
-                    item.classList.add('text-pink-400', 'font-bold');
-                    item.classList.remove('text-gray-300');
+                // Update playlist highlighting
+                document.querySelectorAll('#playlist li').forEach((item, index) => {
+                    if (index === songIndex) {
+                        item.classList.add('text-pink-400', 'font-bold');
+                        item.classList.remove('text-gray-300');
+                    } else {
+                        item.classList.remove('text-pink-400', 'font-bold');
+                        item.classList.add('text-gray-300');
+                    }
+                });
+            }
+
+            function playSong() {
+                // Ensure the audio player is ready before attempting to play
+                if (audioPlayer.readyState >= 2) {
+                    audioPlayer.play();
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause fa-3x"></i>';
+                    isPlaying = true;
+                }
+            }
+
+            function pauseSong() {
+                audioPlayer.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play fa-3x"></i>';
+                isPlaying = false;
+            }
+
+            function nextSong() {
+                currentSongIndex = (currentSongIndex + 1) % playlist.length;
+                loadSong(currentSongIndex);
+                // Automatically play the next song
+                if (isPlaying) {
+                    playSong();
                 } else {
-                    item.classList.remove('text-pink-400', 'font-bold');
-                    item.classList.add('text-gray-300');
+                    pauseSong();
+                }
+            }
+
+            function prevSong() {
+                currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
+                loadSong(currentSongIndex);
+                // Automatically play the previous song
+                if (isPlaying) {
+                    playSong();
+                } else {
+                    pauseSong();
+                }
+            }
+
+            // Event listeners
+            playPauseBtn.addEventListener('click', () => {
+                if (isPlaying) {
+                    pauseSong();
+                } else {
+                    playSong();
                 }
             });
-        }
 
-        function playSong() {
-            audioPlayer.play();
-            playPauseBtn.innerHTML = '<i class="fas fa-pause fa-3x"></i>';
-            isPlaying = true;
-        }
+            nextBtn.addEventListener('click', nextSong);
+            prevBtn.addEventListener('click', prevSong);
+            audioPlayer.addEventListener('ended', nextSong);
 
-        function pauseSong() {
-            audioPlayer.pause();
-            playPauseBtn.innerHTML = '<i class="fas fa-play fa-3x"></i>';
-            isPlaying = false;
-        }
-
-        function nextSong() {
-            currentSongIndex = (currentSongIndex + 1) % playlist.length;
-            loadSong(currentSongIndex);
-            playSong();
-        }
-
-        function prevSong() {
-            currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
-            loadSong(currentSongIndex);
-            playSong();
-        }
-
-        // Event listeners
-        playPauseBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                pauseSong();
-            } else {
-                playSong();
-            }
-        });
-
-        nextBtn.addEventListener('click', nextSong);
-        prevBtn.addEventListener('click', prevSong);
-        audioPlayer.addEventListener('ended', nextSong);
-
-        // Build the playlist list in the UI
-        function buildPlaylist() {
-            playlist.forEach((song, index) => {
-                const li = document.createElement('li');
-                li.textContent = song.title;
-                li.className = 'cursor-pointer hover:text-pink-400 transition-colors duration-300';
-                li.addEventListener('click', () => {
-                    currentSongIndex = index;
-                    loadSong(currentSongIndex);
-                    playSong();
+            // Build the playlist list in the UI
+            function buildPlaylist() {
+                playlist.forEach((song, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = song.title;
+                    li.className = 'cursor-pointer hover:text-pink-400 transition-colors duration-300';
+                    li.addEventListener('click', () => {
+                        currentSongIndex = index;
+                        loadSong(currentSongIndex);
+                        playSong();
+                    });
+                    playlistEl.appendChild(li);
                 });
-                playlistEl.appendChild(li);
-            });
-        }
+            }
 
-        // Initialize the player on page load
-        window.onload = () => {
-            buildPlaylist();
-            loadSong(currentSongIndex);
-        };
+            // Initialize the player on page load
+            window.onload = () => {
+                buildPlaylist();
+                loadSong(currentSongIndex);
+            };
+
+            // Mobile menu logic
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            // Hide menu when a link is clicked
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+        });
     </script>
 </body>
 </html>
