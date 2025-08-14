@@ -19,91 +19,355 @@
         .custom-scrollbar-hidden::-webkit-scrollbar {
             display: none;
         }
+        .custom-scrollbar-hidden {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-900 text-gray-200">
 
-    <!-- Header Section -->
-    <header class="bg-white shadow-lg rounded-b-3xl p-6 md:p-8">
-        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-blue-600 mb-4 md:mb-0">
-                Angel Hearts Music
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-md">
+        <nav class="container mx-auto p-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600">
+                Angel Hearts
             </h1>
-            <!-- Social Media & Buy CD Links -->
-            <div class="flex items-center space-x-4">
-                <!-- TikTok Link (New) -->
-                <a href="https://www.tiktok.com/@yourprofile" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-blue-500 transition-colors">
-                    <i class="fab fa-tiktok text-3xl"></i>
-                </a>
-                <!-- YouTube Link -->
-                <a href="https://www.youtube.com/@yourprofile" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-blue-500 transition-colors">
-                    <i class="fab fa-youtube text-3xl"></i>
-                </a>
-                <!-- Facebook Link -->
-                <a href="https://www.facebook.com/yourprofile" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-blue-500 transition-colors">
-                    <i class="fab fa-facebook-f text-3xl"></i>
-                </a>
-                <!-- Instagram Link -->
-                <a href="https://www.instagram.com/yourprofile" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-blue-500 transition-colors">
-                    <i class="fab fa-instagram text-3xl"></i>
-                </a>
-                <!-- "Buy My CD" Button (New) -->
-                <a href="#" target="_blank" rel="noopener noreferrer" class="bg-purple-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-purple-700 transition-transform transform hover:scale-105">
-                    Buy My CD
+            <div class="flex space-x-6 items-center">
+                <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
+                <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
+                <a href="#poem-creator" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Create</a>
+                <a href="#contact" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Contact Me</a>
+                <!-- Updated TikTok link in the navigation -->
+                <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="px-4 py-2 rounded-full text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-300 shadow-lg transform hover:scale-105">
+                    TikTok
                 </a>
             </div>
-        </div>
+        </nav>
     </header>
 
-    <!-- Main Content - Poem Generator Section -->
-    <main class="container mx-auto my-8 p-6 md:p-8">
-        <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-xl p-8 space-y-6">
-
-            <!-- Poem Input Form -->
-            <div class="text-center">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Create Your Poem</h2>
-                <p class="text-gray-600">Enter a few keywords or a theme, and I'll write a new poem for you.</p>
-            </div>
-
-            <form id="poemForm" class="space-y-4">
-                <textarea id="poemPrompt" rows="4" class="w-full p-4 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" placeholder="e.g., 'Angel hearts, hope, love, peace'"></textarea>
-                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors">Generate Poem</button>
-            </form>
-
-            <!-- Poem Output Display -->
-            <div class="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300 text-gray-700 custom-scrollbar-hidden overflow-y-auto max-h-[500px] leading-relaxed">
-                <p id="poemOutput" class="text-center italic">Your generated poem will appear here...</p>
-            </div>
-
+    <!-- Hero Section -->
+    <section class="min-h-screen flex items-center justify-center p-8 text-center bg-gray-800">
+        <div class="max-w-2xl">
+            <h2 class="text-5xl md:text-7xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600">
+                Angel Hearts
+            </h2>
+            <p class="text-xl md:text-2xl text-gray-300 mb-8">
+                Welcome to the official home of Angel Hearts Music and Poetry.
+                A collection of lyrical songs and heartfelt poems, converted to music with AI.
+            </p>
+            <a href="#music" class="px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105">
+                Explore the Music
+            </a>
         </div>
-    </main>
+    </section>
 
-    <!-- Footer Section -->
-    <footer class="bg-white shadow-inner rounded-t-3xl p-4 md:p-6 text-center text-sm text-gray-500">
-        <p>&copy; 2024 Angel Hearts Music. All rights reserved.</p>
+    <!-- Music Section -->
+    <section id="music" class="py-20 bg-gray-900">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">
+                My Music
+            </h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Music Card 1 - All The Queens -->
+                <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/album/37GNWNnDIYwvpSPCy71X8l?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+                <!-- Music Card 2 - All Those Queens -->
+                <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/album/7dHpJnb6dKDcoYe6NpmmQv?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+                <!-- Music Card 3 - Oh Angel Rise Up -->
+                <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/album/5manuqpSneaBiEdpfuYTxs?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            </div>
+
+            <!-- New link to the store for buying CDs, now with the real URL -->
+            <div class="text-center mt-12">
+                <a href="https://elasticstage.com/theangelheart" class="inline-block px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105" target="_blank">
+                    Buy My CD's
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Poetry Section -->
+    <section id="poetry" class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">
+                My Poetry
+            </h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Poetry Card 1 - All The Queens -->
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
+                    <h3 class="text-2xl font-bold text-purple-400 mb-2">All The Queens</h3>
+                    <p class="text-gray-400 text-sm mb-4">
+                        Newest Lyrics.
+                    </p>
+                    <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
+                        <p class="text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                            I've played the card game of life
+                            The joker knows my name
+                            Never giving up a inch
+                            I've been lost upon my way
+                            Each card i drew i lost
+                            Until i found a card of light
+                            This card i hold close to my heart
+                            Up until this very night
+
+                            I've known the Queen of diamonds
+                            Had nights out with the Queen of clubs
+                            I've known the sadness of the Queen of Spades
+                            Felt the Queen of hearts love
+
+                            All the Queens they shine so bright
+                            Though only one shone within my light
+                            The Queen of hearts my little star
+                            Changed my world for she saw my heart
+                            All the Queens they shine so bright
+                            The Queen of Hearts i held so tight
+                            All the Queens meant the world to me
+                            Though only the Queen of hearts
+                            Give me the gift to see
+
+                            I won the card game of life
+                            When the card i drew was yours
+                            My little angel heart of love
+                            My Queen of hearts was born
+                            I love my little angel so
+                            For her heart it is my light
+                            She touched my soul with kindness
+                            Gifting me the truth of sight
+
+                            I've known the Queen of diamonds
+                            Had nights out with the Queen of clubs
+                            I've known the sadness of the Queen of Spades
+                            Felt the Queen of hearts love
+
+                            All the Queens they shine so bright
+                            Though only one shone within my light
+                            The Queen of hearts my little star
+                            Changed my world for she saw my heart
+                            All the Queens they shine so bright
+                            The Queen of Hearts i held so tight
+                            All the Queens meant the world to me
+                            Though only the Queen of hearts
+                            Give me the gift to see
+
+                            My Queen of Hearts
+                            Sadness fills my heart
+                            Knowing I had to say goodbye
+                            To my existing deck of cards
+                            Upon this road of rainbow dreams
+                            You were my baby and my friend
+                            I'll fight against the darkness
+                            Crawl along this road of night
+                            For there within the distance
+                            I see an angels light
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Poetry Card 2 - All Those Queens -->
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
+                    <h3 class="text-2xl font-bold text-purple-400 mb-2">All Those Queen</h3>
+                    <p class="text-gray-400 text-sm mb-4">
+                        New Lyrics.
+                    </p>
+                    <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
+                        <p class="text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                            So many tried to hold you down
+                            Within the darkness of the night
+                            Hearts so filled with hatred
+                            Souls that have lost the light
+                            They forced you to your knees
+                            Broken within their sight
+                            Yet within your heart that beats i side
+                            A rainbow shone of love
+
+                            You fought your way back to your feet
+                            like you have done all your life
+                            Not one soul there to help you
+                            To pick you up in your darkest night
+
+                            All of those Queens
+                            Standing tall within the night
+                            Rainbow colours shine within their eyes
+                            Destinies path glows bright
+                            All of those Queens
+                            Faced the darkness of the day
+                            Until they found their path of light
+                            All of those Queens they shine so bright
+
+                            They tried to break your mind
+                            Break that heart that beat of love
+                            They called you names and put you down
+                            Saying you will never be enough
+                            Yet you saw that rainbow in the sky
+                            A unity of the heart
+                            It gave you the strength inside you need
+                            To fight for who you are
+
+                            You fought your way back to your feet
+                            like you have done all your life
+                            Not one soul there to help you
+                            To pick you up in your darkest night
+
+                            All of those Queens
+                            Standing tall within the night
+                            Rainbow colours shine within their eyes
+                            Destinies path glows bright
+                            All of those Queens
+                            Faced the darkness of the day
+                            Until they found their path of light
+                            All of those Queens shall find their way
+
+                            Darkness to the rainbows end
+                            The rising of our newfound friends
+                            That shine I colours born of love
+                            Like the rainbow that glows so high above
+                            Each heart has felt the touch of night
+                            Found inner strength to win their fight
+                            Now the fallen have scaled those walls
+                            For all those Queens are standing tall
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Poetry Card 3 - Oh Angel Rise Up -->
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
+                    <h3 class="text-2xl font-bold text-purple-400 mb-2">Oh Angel Rise Up</h3>
+                    <p class="text-gray-400 text-sm mb-4">
+                        New Lyrics.
+                    </p>
+                    <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
+                        <p class="text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                            I walk this road in solitude
+                            With a heart broken in two
+                            The ultimate price i pain in life
+                            Its the cost of losing you
+                            Yet still I walk this road of hope
+                            That I may feel your heartbeat again
+                            Sometimes I fall upon my knees
+                            Though it's that moment I remember when
+
+                            An angel always walked with me
+                            Thought the shadows of my life
+                            Never turning away from love
+                            Her heart it beat with mine
+
+                            Oh angel rise up
+                            Be the light that I need
+                            Protect my heart from darkness
+                            Won't you be a friend to me
+                            Oh angel rise up
+                            Be a shield in this void of night
+                            Protect my heart from breaking
+                            Oh angel gave me sight
+
+                            I walk this road with hope
+                            That I'll find you once again
+                            Upon this road of rainbow dreams
+                            You were my baby and my friend
+                            I'll fight against the darkness
+                            Crawl along this road of night
+                            For there within the distance
+                            I see an angels light
+
+                            An angel always walked with me
+                            Thought the shadows of my life
+                            Never turning away from love
+                            Her heart it beat with mine
+
+                            Oh angel rise up
+                            Be the light that I need
+                            Protect my heart from darkness
+                            Won't you be a friend to me
+                            Oh angel rise up
+                            Be a shield in this void of night
+                            Protect my heart from breaking
+                            Oh angel gave me sight
+
+                            You were the beating of my heart
+                            The light within my eyes
+                            You gave me the strength of an angel
+                            Kindness was your light
+                            You were the greatest soul I've ever known
+                            The promise of a gift of hope
+                            Though most of all you were my friend
+                            The heart i needed most
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gemini Poem Creator Section -->
+    <section id="poem-creator" class="py-20 bg-gray-900">
+        <div class="container mx-auto px-4 max-w-2xl">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
+                Create Your Own Poem with Gemini
+            </h2>
+            <p class="text-center text-gray-400 mb-8">
+                Enter a topic below, and Gemini will craft a unique poem for you.
+            </p>
+            <div class="bg-gray-800 rounded-2xl p-8 shadow-xl">
+                <textarea
+                    id="poem-prompt"
+                    class="w-full h-32 p-4 bg-gray-700 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                    placeholder="e.g., 'a peaceful forest at sunset' or 'a journey through the stars'"
+                ></textarea>
+                <button
+                    id="generate-button"
+                    class="mt-6 w-full px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105"
+                >
+                    Generate Poem
+                </button>
+                <div id="poem-output" class="mt-8 text-gray-300 text-lg whitespace-pre-line"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Me Section -->
+    <section id="contact" class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4 max-w-2xl text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">Contact Me</h2>
+            <p class="text-xl text-gray-300 mb-8">
+                Have a question or just want to say hello? Send me a message!
+            </p>
+            <a href="mailto:Garyneuk@hotmail.com?subject=Hello from the Angel Hearts Website" class="inline-block px-8 py-4 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105">
+                Send Me an Email
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-6 text-center text-gray-500">
+        <div class="container mx-auto px-4 flex justify-center space-x-6 mb-4">
+            <!-- New TikTok icon in the footer -->
+            <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="text-gray-400 hover:text-purple-400 transition-colors duration-300">
+                <i class="fa-brands fa-tiktok fa-2xl"></i>
+            </a>
+            <!-- Other social media icons can be added here -->
+        </div>
+        <p>&copy; 2024 Angel Hearts Music & Poetry. All Rights Reserved.</p>
     </footer>
 
-    <!-- JavaScript for Poem Generation -->
-    <script>
-        const form = document.getElementById('poemForm');
-        const poemPromptInput = document.getElementById('poemPrompt');
-        const poemOutput = document.getElementById('poemOutput');
-        const apiKey = ""; // API key will be provided at runtime by the Canvas environment
+    <!-- Gemini Poem Creator Logic -->
+    <script type="module">
+        const generateButton = document.getElementById('generate-button');
+        const poemPrompt = document.getElementById('poem-prompt');
+        const poemOutput = document.getElementById('poem-output');
+        const apiKey = "AIzaSyC2g421qvk6a22_v1oRhcp9TBU78yMOA24";
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const prompt = poemPromptInput.value.trim();
-            if (!prompt) {
-                poemOutput.textContent = 'Please enter a prompt to generate a poem.';
+        generateButton.addEventListener('click', async () => {
+            const userTopic = poemPrompt.value;
+            if (!userTopic) {
+                poemOutput.textContent = 'Please enter a topic to generate a poem.';
                 return;
             }
-
             poemOutput.textContent = 'Generating your poem...';
-
             try {
-                // The API call to generate the poem
-                let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: `Generate a short, uplifting poem about the following themes: ${prompt}` }] });
+                const creativePrompt = `Write a beautiful and heartfelt poem about "${userTopic}" in the style of Angel Hearts Music. Ensure the poem has at least three stanzas and uses line breaks appropriately.`;
+                const chatHistory = [{ role: "user", parts: [{ text: creativePrompt }] }];
                 const payload = { contents: chatHistory };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
@@ -136,4 +400,3 @@
     </script>
 </body>
 </html>
-
