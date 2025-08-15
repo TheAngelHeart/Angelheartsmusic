@@ -437,3 +437,841 @@
     </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angel Hearts Card Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom styles for the card game */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #1a202c; /* Equivalent to bg-gray-900 */
+            color: #e2e8f0; /* Equivalent to text-gray-200 */
+            padding: 1rem;
+        }
+
+        .card-hand {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            min-height: 120px;
+        }
+
+        .card-back {
+            background-color: #7f1d1d; /* Dark red for card back */
+            background-image: repeating-linear-gradient(45deg, #a51d1d 25%, transparent 25%, transparent 75%, #a51d1d 75%, #a51d1d),
+                              repeating-linear-gradient(45deg, #a51d1d 25%, transparent 25%, transparent 75%, #a51d1d 75%, #a51d1d);
+            background-size: 10px 10px;
+            background-position: 0 0, 5px 5px;
+        }
+
+        .card {
+            width: 80px;
+            height: 110px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5px;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: bold;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: pointer;
+            color: #f8fafc; /* light text color for better contrast on colored backgrounds */
+            position: relative;
+        }
+        
+        .card.can-discard {
+            box-shadow: 0 0 15px 5px #fde047; /* yellow-300 glow for discardable cards */
+            transform: translateY(-5px);
+        }
+
+        .card.can-steal {
+            box-shadow: 0 0 15px 5px #38bdf8; /* sky-400 glow for stealable cards */
+            transform: scale(1.05);
+            cursor: grab;
+        }
+
+        /* Card background colors and text colors based on suit */
+        .card.red-bg {
+            background-color: #ef4444; /* red-500 */
+        }
+
+        .card.black-bg {
+            background-color: #1f2937; /* gray-800 */
+        }
+        
+        .card.joker-bg {
+            background-color: #4b5563; /* gray-600 */
+        }
+
+        .card-suit.red-suit {
+            color: #f8fafc; /* white */
+        }
+
+        .card-suit.black-suit {
+            color: #f8fafc; /* white */
+        }
+        
+        .card-corner {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        .card-center {
+            font-size: 2.5rem;
+            text-align: center;
+            line-height: 1;
+            /* Using a different color for the suit icon for visual interest */
+            color: #d1d5db; /* gray-400 */
+        }
+
+        .game-deck, .discard-pile-container {
+            width: 80px;
+            height: 110px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 1rem;
+            display: flex; /* Ensures content is centered */
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .discard-pile {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        /* Pulse animation for turn indicator */
+        .pulse-once {
+            animation: pulse-once 1.5s ease-out;
+        }
+
+        @keyframes pulse-once {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #2d3748; /* gray-800 */
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <!-- Main Game Container -->
+    <div class="game-container">
+        <h1 class="text-4xl md:text-5xl font-bold mb-8">The Angel Hearts Card Game</h1>
+        <div class="w-full text-center mb-4">
+            <h2 class="text-2xl font-semibold mb-2">Opponent's Hand</h2>
+            <div id="opponent-hand" class="card-hand">
+                <!-- Opponent's cards will be rendered here -->
+            </div>
+        </div>
+
+        <div class="flex items-center justify-center gap-8">
+            <div id="deck" class="game-deck card-back cursor-pointer transition-transform duration-300 hover:scale-105"></div>
+            <div id="discard-pile-container" class="discard-pile-container bg-gray-700">
+                <div id="discard-pile" class="discard-pile">
+                    <!-- The top card of the discard pile will be revealed here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full text-center mt-4">
+            <h2 class="text-2xl font-semibold mb-2">Your Hand</h2>
+            <div id="player-hand" class="card-hand">
+                <!-- Player's cards will be rendered here -->
+            </div>
+        </div>
+        <div id="game-message" class="text-lg font-semibold h-8 my-4 text-center"></div>
+        <div class="button-group">
+            <button id="deal-button" class="px-6 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105">
+                Deal Cards
+            </button>
+            <button id="restart-button" class="hidden px-6 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 transition-all duration-300 shadow-lg transform hover:scale-105">
+                Restart Game
+            </button>
+            <button id="rules-button" class="px-6 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 transition-all duration-300 shadow-lg transform hover:scale-105">
+                Show Rules
+            </button>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div id="rules-modal" class="modal hidden">
+        <div class="modal-content">
+            <span id="close-modal" class="close-button">&times;</span>
+            <h3 class="text-2xl font-bold mb-4">Game Rules</h3>
+            <ul class="list-disc list-inside space-y-2">
+                <li>The goal is to be the first to get rid of all your cards.</li>
+                <li>Each player is dealt 5 cards to start.</li>
+                <li>On your turn, draw one card from either the main deck or the discard pile.</li>
+                <li>If the card you drew matches a card in your hand (same suit and value), you can discard both. This ends your turn.</li>
+                <li>If there is no match, you must discard any single card from your hand to end your turn.</li>
+                <li>When the main deck runs out, the discard pile is shuffled and becomes the new deck.</li>
+                <li>The game ends when a player has no cards left in their hand.</li>
+            </ul>
+            <h3 class="text-xl font-bold mt-6 mb-2">Special Card Perks & Punishments</h3>
+            <ul class="list-disc list-inside space-y-2">
+                <li><span class="font-bold text-red-400">Pair of Aces:</span> You get to steal one card from your opponent's hand.</li>
+                <li><span class="font-bold text-red-400">Pair of Queen of Hearts:</span> You instantly win the game!</li>
+                <li><span class="font-bold text-red-400">Pair of Jokers:</span> You get to draw another card and take an extra turn.</li>
+                <li><span class="font-bold text-red-400">Pair of Queen of Spades:</span> You must draw two cards from the deck.</li>
+                <li><span class="font-bold text-red-400">Pair of Queen of Diamonds:</span> You can discard an extra card.</li>
+                <li><span class="font-bold text-red-400">Pair of Queen of Clubs:</span> You lose your next turn.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let deck = [];
+        let playerHand = [];
+        let opponentHand = [];
+        let discardPile = [];
+        let outOfPlayPile = []; // New array for cards removed from play
+        let isPlayerTurn = false;
+        let hasDrawn = false;
+        let canDiscardExtra = false;
+        let isDealing = false;
+        let isStealing = false; // New state to track if player is in the "stealing" phase
+
+        // DOM Elements
+        const playerHandEl = document.getElementById('player-hand');
+        const opponentHandEl = document.getElementById('opponent-hand');
+        const deckEl = document.getElementById('deck');
+        const discardPileEl = document.getElementById('discard-pile');
+        const dealButton = document.getElementById('deal-button');
+        const restartButton = document.getElementById('restart-button');
+        const rulesButton = document.getElementById('rules-button');
+        const gameMessageEl = document.getElementById('game-message');
+        const rulesModal = document.getElementById('rules-modal');
+        const closeModalButton = document.getElementById('close-modal');
+
+        // Card Suits and Values
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+        /**
+         * Creates two full 54-card decks including four jokers.
+         * @returns {object[]} An array of card objects.
+         */
+        function createDeck() {
+            let newDeck = [];
+            // Create two standard decks
+            for (let i = 0; i < 2; i++) {
+                for (let suit of suits) {
+                    for (let value of values) {
+                        const isRed = (suit === '♥' || suit === '♦');
+                        newDeck.push({ value, suit, isRed });
+                    }
+                }
+            }
+            // Add four jokers
+            newDeck.push({ value: 'Joker', suit: '', isRed: true });
+            newDeck.push({ value: 'Joker', suit: '', isRed: false });
+            newDeck.push({ value: 'Joker', suit: '', isRed: true });
+            newDeck.push({ value: 'Joker', suit: '', isRed: false });
+            return newDeck;
+        }
+
+        /**
+         * Shuffles the deck using the Fisher-Yates algorithm.
+         * @param {object[]} deckArray The array to shuffle.
+         * @returns {object[]} The shuffled array.
+         */
+        function shuffleDeck(deckArray) {
+            for (let i = deckArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deckArray[i], deckArray[j]] = [deckArray[j], deckArray[i]];
+            }
+            return deckArray;
+        }
+
+        /**
+         * Renders a single card element.
+         * @param {object} card The card object to render.
+         * @param {boolean} isFaceUp True if the card should be shown, false for card back.
+         * @returns {HTMLElement} The created card element.
+         */
+        function createCardElement(card, isFaceUp = true) {
+            const cardEl = document.createElement('div');
+            cardEl.classList.add('card', 'rounded-xl', 'shadow-lg', 'transition-all');
+            
+            if (isFaceUp) {
+                // Determine card background color and suit icon color
+                let bgClass = '';
+                let suitClass = '';
+                if (card.value === 'Joker') {
+                    bgClass = 'joker-bg';
+                    suitClass = 'black-suit';
+                } else {
+                    bgClass = card.isRed ? 'red-bg' : 'black-bg';
+                    suitClass = card.isRed ? 'red-suit' : 'black-suit';
+                }
+                cardEl.classList.add(bgClass);
+
+                const suitDisplay = (card.value === 'Joker') ? 'JOKER' : card.suit;
+                cardEl.innerHTML = `
+                    <div class="card-corner ${suitClass}">
+                        ${card.value}<br>${suitDisplay}
+                    </div>
+                    <div class="card-center text-center">
+                        ${suitDisplay}
+                    </div>
+                    <div class="card-corner self-end transform rotate-180 ${suitClass}">
+                        ${card.value}<br>${suitDisplay}
+                    </div>
+                `;
+            } else {
+                cardEl.classList.add('card-back');
+            }
+            return cardEl;
+        }
+
+        /**
+         * Renders the entire game board.
+         */
+        function renderBoard() {
+            playerHandEl.innerHTML = '';
+            opponentHandEl.innerHTML = '';
+            discardPileEl.innerHTML = '';
+
+            // Render player's hand
+            playerHand.forEach((card, index) => {
+                const cardEl = createCardElement(card, true);
+                cardEl.dataset.index = index;
+                // Add event listener only if not in a stealing state
+                if (!isStealing) {
+                    cardEl.addEventListener('click', handlePlayerDiscard);
+                }
+                playerHandEl.appendChild(cardEl);
+            });
+
+            // Render opponent's hand (face up)
+            opponentHand.forEach((card, index) => {
+                const cardEl = createCardElement(card, true);
+                cardEl.dataset.index = index;
+                // Add event listener if in a stealing state
+                if (isStealing) {
+                    cardEl.classList.add('can-steal');
+                    cardEl.addEventListener('click', handleOpponentCardClick);
+                }
+                opponentHandEl.appendChild(cardEl);
+            });
+            
+            // Render the top of the discard pile
+            if (discardPile.length > 0) {
+                const upCard = discardPile[discardPile.length - 1];
+                discardPileEl.appendChild(createCardElement(upCard, true));
+            }
+        }
+        
+        /**
+         * Checks if a newly drawn card matches an existing card in the player's hand.
+         * @param {object} drawnCard The card that was just drawn.
+         * @returns {number} The index of the matching card, or -1 if no match is found.
+         */
+        function findMatchingCardIndex(drawnCard) {
+            // A match is a card with the same value and suit
+            return playerHand.findIndex(card => 
+                card.value === drawnCard.value && card.suit === drawnCard.suit
+            );
+        }
+        
+        /**
+         * Ends the game and displays the final message.
+         * @param {string} message The winning or losing message to display.
+         */
+        function endGame(message) {
+            isPlayerTurn = false;
+            hasDrawn = false;
+            canDiscardExtra = false;
+            isDealing = false;
+            isStealing = false;
+            gameMessageEl.textContent = message;
+            dealButton.classList.add('hidden');
+            restartButton.classList.remove('hidden');
+            deckEl.style.cursor = 'default';
+            discardPileEl.style.cursor = 'default';
+        }
+
+        /**
+         * Checks for the two win conditions after a turn.
+         */
+        function checkForWin() {
+            // Win condition 1: Player has an empty hand
+            if (playerHand.length === 0) {
+                endGame("Congratulations, Angel Heart! You've successfully cleared your hand and won the game!");
+                return true;
+            }
+            // Win condition 2: Opponent has an empty hand
+            if (opponentHand.length === 0) {
+                endGame("Your opponent has cleared their hand and won the game!");
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Handles drawing a card from the main deck.
+         */
+        function handleDeckDraw() {
+            if (!isPlayerTurn || hasDrawn || isDealing || isStealing) return;
+            if (deck.length === 0) {
+                gameMessageEl.textContent = 'The deck is empty! Restart the game to continue.';
+                return;
+            }
+            const drawnCard = deck.pop();
+            playerHand.push(drawnCard);
+            
+            checkAndDiscardMatch();
+        }
+
+        /**
+         * Handles drawing a card from the discard pile.
+         */
+        function handleDiscardPileDraw() {
+            if (!isPlayerTurn || hasDrawn || isDealing || isStealing) return;
+            if (discardPile.length === 0) {
+                gameMessageEl.textContent = 'The discard pile is empty!';
+                return;
+            }
+            const drawnCard = discardPile.pop();
+            playerHand.push(drawnCard);
+            
+            checkAndDiscardMatch();
+        }
+
+        /**
+         * Checks for a match after a card has been drawn and applies special effects.
+         */
+        function checkAndDiscardMatch() {
+            const drawnCard = playerHand[playerHand.length - 1];
+            const matchIndex = findMatchingCardIndex(drawnCard);
+            
+            // Re-render hand with new card to show the match
+            renderBoard(); 
+            
+            if (matchIndex !== -1 && matchIndex !== playerHand.length - 1) { // A match was found
+                
+                // New rule: Ace match allows stealing a card
+                if (drawnCard.value === 'A') {
+                    // Remove both Aces from the player's hand
+                    const matchedCard = playerHand.splice(matchIndex, 1)[0];
+                    playerHand.pop(); 
+                    outOfPlayPile.push(drawnCard, matchedCard);
+                    
+                    if (checkForWin()) {
+                        return;
+                    }
+                    
+                    if (opponentHand.length > 0) {
+                        isStealing = true;
+                        gameMessageEl.textContent = "You matched two Aces! Click on one of your opponent's cards to steal it.";
+                        renderBoard(); // Re-render to show opponent's cards as stealable
+                        return; // Exit the function, player turn continues until a card is stolen
+                    } else {
+                        gameMessageEl.textContent = "You matched two Aces, but your opponent has no cards to steal!";
+                        // Proceed to end turn normally
+                    }
+                }
+                
+                // Other special rules for specific card matches
+                else if (drawnCard.value === 'Q' && drawnCard.suit === '♥') {
+                    endGame("Incredible! You've found the matching Queen of Hearts! You win!");
+                    return; // End the game immediately
+                }
+                else if (drawnCard.value === 'Joker') {
+                    gameMessageEl.textContent = "You matched a Joker! You get to draw another card and take an extra turn!";
+                    // Remove both Jokers from hand
+                    const matchedCard = playerHand.splice(matchIndex, 1)[0];
+                    playerHand.pop();
+                    outOfPlayPile.push(drawnCard, matchedCard); // Push matched joker to out of play pile
+                    renderBoard();
+                    hasDrawn = false; // Reset state to allow drawing again
+                    // Player's turn continues
+                    return;
+                } else if (drawnCard.value === 'Q' && drawnCard.suit === '♠') {
+                    gameMessageEl.textContent = "Oh no, you matched the Queen of Spades! You must draw two cards from the deck.";
+                    // Remove both Queens of Spades from hand
+                    const matchedCard = playerHand.splice(matchIndex, 1)[0];
+                    playerHand.pop();
+                    outOfPlayPile.push(drawnCard, matchedCard); // Push matched queen of spades to out of play pile
+                    
+                    // Draw two cards as punishment
+                    for(let i = 0; i < 2 && deck.length > 0; i++) {
+                        playerHand.push(deck.pop());
+                    }
+                    renderBoard();
+                    
+                    if (checkForWin()) {
+                        return;
+                    }
+
+                    isPlayerTurn = false;
+                    hasDrawn = false;
+                    // End the turn and proceed to the opponent's turn
+                    setTimeout(() => {
+                        gameMessageEl.textContent = 'Opponent\'s turn...';
+                        setTimeout(opponentTurn, 1500);
+                    }, 2000);
+                    return;
+                } else if (drawnCard.value === 'Q' && drawnCard.suit === '♦') {
+                    gameMessageEl.textContent = "Great! You matched the Queen of Diamonds! Discard an extra card.";
+                    const matchedCard = playerHand.splice(matchIndex, 1)[0];
+                    playerHand.pop();
+                    outOfPlayPile.push(drawnCard, matchedCard);
+                    renderBoard();
+                    canDiscardExtra = true;
+                    hasDrawn = true;
+                    highlightDiscardableCards();
+                    // Turn does not end yet, player gets to discard an extra card.
+                    return;
+                } else if (drawnCard.value === 'Q' && drawnCard.suit === '♣') {
+                    gameMessageEl.textContent = "Ouch! You matched the Queen of Clubs. You lose your next turn!";
+                    const matchedCard = playerHand.splice(matchIndex, 1)[0];
+                    playerHand.pop();
+                    outOfPlayPile.push(drawnCard, matchedCard);
+                    renderBoard();
+
+                    if (checkForWin()) {
+                        return;
+                    }
+                    
+                    isPlayerTurn = false;
+                    hasDrawn = false;
+                    setTimeout(() => {
+                        gameMessageEl.textContent = 'Opponent takes two turns...';
+                        setTimeout(opponentTurn, 1500);
+                    }, 1500);
+                    return;
+                } else {
+                    // Regular match, remove both cards
+                    gameMessageEl.textContent = `A perfect match! You've discarded a pair of ${drawnCard.value}${drawnCard.suit}. Your turn ends.`;
+                    
+                    const matchedCard = playerHand.splice(matchIndex, 1)[0];
+                    playerHand.pop(); // Remove the newly drawn card
+                    outOfPlayPile.push(drawnCard, matchedCard);
+                    
+                    renderBoard(); // Re-render hand without the pair
+                }
+            } else {
+                // No match, proceed with regular turn
+                hasDrawn = true;
+                gameMessageEl.textContent = 'You drew a card. Now, click on a card in your hand to discard it.';
+                highlightDiscardableCards();
+            }
+            
+            if (checkForWin()) {
+                return;
+            }
+            
+            // If the turn hasn't been ended by a special rule, end it now.
+            if (isPlayerTurn && hasDrawn && !canDiscardExtra && !isStealing) {
+                // End of turn logic
+                isPlayerTurn = false;
+                hasDrawn = false;
+                setTimeout(() => {
+                    gameMessageEl.textContent = 'Opponent\'s turn...';
+                    setTimeout(opponentTurn, 1500);
+                }, 500);
+            }
+        }
+        
+        /**
+         * Handles the player clicking on an opponent's card to steal it.
+         * @param {Event} event The click event.
+         */
+        function handleOpponentCardClick(event) {
+            if (!isStealing) return;
+            
+            const cardEl = event.currentTarget;
+            const index = parseInt(cardEl.dataset.index);
+            const stolenCard = opponentHand.splice(index, 1)[0];
+            playerHand.push(stolenCard);
+            
+            isStealing = false;
+            gameMessageEl.textContent = 'You stole a card! Your turn ends now.';
+            
+            renderBoard();
+            
+            if (checkForWin()) {
+                return;
+            }
+            
+            // End turn and start opponent's turn
+            isPlayerTurn = false;
+            hasDrawn = false;
+            setTimeout(() => {
+                gameMessageEl.textContent = 'Opponent\'s turn...';
+                setTimeout(opponentTurn, 1500);
+            }, 500);
+        }
+
+        /**
+         * Handles a player discarding a card from their hand.
+         * @param {Event} event The click event.
+         */
+        function handlePlayerDiscard(event) {
+            if (!isPlayerTurn || !hasDrawn || isDealing || isStealing) return;
+            const cardEl = event.currentTarget;
+            const index = parseInt(cardEl.dataset.index);
+            const discardedCard = playerHand.splice(index, 1)[0];
+            
+            if (canDiscardExtra) {
+                discardPile.push(discardedCard);
+                canDiscardExtra = false;
+                hasDrawn = true; // Stay in the discarding phase
+                gameMessageEl.textContent = 'You discarded one. Discard a second card for your Queen of Diamonds perk!';
+                renderBoard();
+                if (checkForWin()) {
+                    return;
+                }
+            } else {
+                discardPile.push(discardedCard);
+                isPlayerTurn = false;
+                hasDrawn = false;
+                gameMessageEl.textContent = 'You discarded a card.';
+                renderBoard();
+                
+                if (checkForWin()) {
+                    return;
+                }
+
+                // Wait a moment for visual feedback, then start opponent's turn
+                setTimeout(() => {
+                    gameMessageEl.textContent = 'Opponent\'s turn...';
+                    setTimeout(opponentTurn, 1500);
+                }, 500);
+            }
+        }
+
+        /**
+         * Highlights the cards in the player's hand to indicate they can be discarded.
+         */
+        function highlightDiscardableCards() {
+            playerHandEl.querySelectorAll('.card').forEach(cardEl => {
+                cardEl.classList.add('can-discard');
+            });
+        }
+        
+        /**
+         * Opponent's simple turn logic.
+         */
+        function opponentTurn() {
+            if (deck.length > 0) {
+                // Opponent's logic to draw a card
+                let drawnCard;
+                // Simple AI: 50% chance to draw from discard, 50% from deck
+                if (Math.random() < 0.5 && discardPile.length > 0) {
+                    drawnCard = discardPile.pop();
+                } else {
+                    drawnCard = deck.pop();
+                }
+                opponentHand.push(drawnCard);
+
+                // Opponent's logic to check for a match and discard
+                const matchIndex = opponentHand.findIndex(card => 
+                    card.value === drawnCard.value && card.suit === drawnCard.suit
+                );
+
+                if (matchIndex !== -1 && matchIndex !== opponentHand.length - 1) {
+                    // Match found, discard both
+                    const matchedCard = opponentHand.splice(matchIndex, 1)[0];
+                    opponentHand.pop();
+                    outOfPlayPile.push(drawnCard, matchedCard);
+                    gameMessageEl.textContent = 'Opponent found a pair and discarded them!';
+                } else {
+                    // No match, discard a random card
+                    const randomIndex = Math.floor(Math.random() * opponentHand.length);
+                    const discardedCard = opponentHand.splice(randomIndex, 1)[0];
+                    discardPile.push(discardedCard);
+                    gameMessageEl.textContent = 'Opponent finished their turn.';
+                }
+                
+                renderBoard();
+
+                if (checkForWin()) {
+                    return;
+                }
+                
+                // If opponent just matched the Queen of Clubs, they get another turn.
+                if (drawnCard && drawnCard.value === 'Q' && drawnCard.suit === '♣' && matchIndex !== -1) {
+                    setTimeout(() => {
+                        gameMessageEl.textContent = 'Opponent takes an extra turn...';
+                        setTimeout(opponentTurn, 1500);
+                    }, 1500);
+                } else {
+                    setTimeout(startPlayerTurn, 1500); // Wait and then start player's turn
+                }
+            } else {
+                gameMessageEl.textContent = 'Game Over: The deck is empty!';
+            }
+        }
+
+        /**
+         * Starts the player's turn.
+         */
+        function startPlayerTurn() {
+            isPlayerTurn = true;
+            hasDrawn = false;
+            canDiscardExtra = false;
+            isStealing = false;
+            gameMessageEl.textContent = 'Your turn! Click the deck or discard pile to draw a card.';
+            gameMessageEl.classList.add('pulse-once');
+            setTimeout(() => gameMessageEl.classList.remove('pulse-once'), 1500);
+            // Disable discard highlighting from previous turns
+            playerHandEl.querySelectorAll('.card').forEach(cardEl => {
+                cardEl.classList.remove('can-discard');
+            });
+            opponentHandEl.querySelectorAll('.card').forEach(cardEl => {
+                cardEl.classList.remove('can-steal');
+                cardEl.removeEventListener('click', handleOpponentCardClick);
+            });
+        }
+
+        /**
+         * Deals the initial five cards to each player and reveals the top deck card.
+         */
+        function dealInitialCards() {
+            if (deck.length < 11 || isDealing) { // 10 for players + 1 for up-card
+                gameMessageEl.textContent = 'Not enough cards to deal. Reshuffling the deck...';
+                initGame();
+                return;
+            }
+            isDealing = true;
+            gameMessageEl.textContent = 'Dealing 5 cards each...';
+            
+            // Deal cards with a short delay for a visual effect
+            let cardsDealt = 0;
+            const dealInterval = setInterval(() => {
+                if (cardsDealt < 5) {
+                    playerHand.push(deck.pop());
+                    opponentHand.push(deck.pop());
+                    renderBoard();
+                    cardsDealt++;
+                } else {
+                    clearInterval(dealInterval);
+                    // Reveal the first up-card
+                    const upCard = deck.pop();
+                    discardPile.push(upCard);
+                    renderBoard();
+                    isDealing = false;
+                    dealButton.classList.add('hidden');
+                    restartButton.classList.remove('hidden');
+                    startPlayerTurn();
+                }
+            }, 150);
+        }
+
+        /**
+         * Initializes the game state.
+         */
+        function initGame() {
+            deck = shuffleDeck(createDeck());
+            playerHand = [];
+            opponentHand = [];
+            discardPile = [];
+            outOfPlayPile = [];
+            isPlayerTurn = false;
+            hasDrawn = false;
+            canDiscardExtra = false;
+            isDealing = false;
+            isStealing = false;
+            renderBoard();
+            gameMessageEl.textContent = 'A new deck is ready. Click "Deal Cards" to begin.';
+            dealButton.classList.remove('hidden');
+            restartButton.classList.add('hidden');
+            deckEl.style.cursor = 'pointer';
+            discardPileEl.style.cursor = 'pointer';
+        }
+
+        // Event Listeners for rules modal
+        rulesButton.addEventListener('click', () => {
+            rulesModal.classList.remove('hidden');
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            rulesModal.classList.add('hidden');
+        });
+
+        // Close the modal if the user clicks outside of it
+        window.addEventListener('click', (event) => {
+            if (event.target === rulesModal) {
+                rulesModal.classList.add('hidden');
+            }
+        });
+
+        // Event Listeners for the game
+        dealButton.addEventListener('click', dealInitialCards);
+        restartButton.addEventListener('click', initGame);
+        deckEl.addEventListener('click', handleDeckDraw);
+        discardPileEl.addEventListener('click', handleDiscardPileDraw);
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
