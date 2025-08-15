@@ -30,20 +30,18 @@
     <!-- Header & Navigation -->
     <header class="sticky top-0 z-50 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-md">
         <nav class="container mx-auto p-4 flex justify-between items-center">
-            <a href="#" class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600 transition-transform transform hover:scale-105 duration-300">
-                Angel Hearts
+            <!-- New: Using a canvas element for the title to guarantee the image effect -->
+            <a href="#" class="inline-block transition-transform transform hover:scale-105 duration-300" aria-label="Home">
+                <canvas id="navCanvas" width="220" height="40"></canvas>
             </a>
             <div class="hidden md:flex space-x-6 items-center">
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <!-- Link to the new Suno song section -->
                 <a href="#suno-song" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Suno Song</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
-                <a href="#tiktok-videos" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">TikTok</a>
                 <a href="#contact" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Contact Me</a>
-                <!-- Updated TikTok link in the navigation -->
-                <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="px-4 py-2 rounded-full text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-300 shadow-lg transform hover:scale-105" aria-label="Follow me on TikTok">
-                    TikTok
-                </a>
+                <!-- NEW: Added TikTok link to the desktop navigation -->
+                <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="text-gray-200 hover:text-purple-400 transition-colors duration-300" aria-label="Visit my TikTok page">TikTok</a>
             </div>
             <!-- Mobile Menu Button -->
             <button id="mobile-menu-btn" class="md:hidden text-gray-200 hover:text-purple-400 transition-colors duration-300" aria-label="Open mobile menu">
@@ -55,17 +53,17 @@
             <a href="#music" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
             <a href="#suno-song" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Suno Song</a>
             <a href="#poetry" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
-            <a href="#tiktok-videos" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">TikTok</a>
             <a href="#contact" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Contact Me</a>
+            <!-- NEW: Added TikTok link to the mobile menu -->
+            <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300" aria-label="Visit my TikTok page">TikTok</a>
         </div>
     </header>
 
     <!-- Hero Section -->
     <section class="min-h-screen flex items-center justify-center p-8 text-center bg-gray-800">
         <div class="max-w-2xl">
-            <h2 class="text-5xl md:text-7xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600 animate-pulse-slow">
-                Angel Hearts
-            </h2>
+            <!-- New: Using a canvas element for the hero title -->
+            <canvas id="heroCanvas" class="animate-pulse-slow" width="600" height="150"></canvas>
             <p class="text-xl md:text-2xl text-gray-300 mb-8">
                 Welcome to the official home of Angel Hearts Music and Poetry.
                 A collection of lyrical songs and heartfelt poems, converted to music with AI.
@@ -344,32 +342,6 @@
         </div>
     </section>
 
-    <!-- TikTok Videos Section -->
-    <section id="tiktok-videos" class="py-20 bg-gray-900">
-        <div class="container mx-auto px-4">
-            <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">
-                My TikToks
-            </h2>
-            <p class="text-center text-gray-400 mb-8 max-w-2xl mx-auto">
-                Discover the latest videos from the Angel Hearts Music TikTok channel.
-            </p>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Example TikTok Embeds - Replace these with your specific video embed code -->
-                <div class="bg-gray-800 rounded-xl overflow-hidden shadow-xl">
-                    <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@theangelheartsmusic/video/7279317578500242721" data-video-id="7279317578500242721" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@theangelheartsmusic" href="https://www.tiktok.com/@theangelheartsmusic?refer=embed">@theangelheartsmusic</a> <a title="love" target="_blank" href="https://www.tiktok.com/tag/love?refer=embed">#love</a> <a title="poem" target="_blank" href="https://www.tiktok.com/tag/poem?refer=embed">#poem</a> <a title="poetry" target="_blank" href="https://www.tiktok.com/tag/poetry?refer=embed">#poetry</a> <a title="angelheartsmusic" target="_blank" href="https://www.tiktok.com/tag/angelheartsmusic?refer=embed">#angelheartsmusic</a> <a title="gary" target="_blank" href="https://www.tiktok.com/tag/gary?refer=embed">#gary</a> <a title="angelhearts" target="_blank" href="https://www.tiktok.com/tag/angelhearts?refer=embed">#angelhearts</a> </section> </blockquote>
-                </div>
-                <div class="bg-gray-800 rounded-xl overflow-hidden shadow-xl">
-                    <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@theangelheartsmusic/video/7272825703714243872" data-video-id="7272825703714243872" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@theangelheartsmusic" href="https://www.tiktok.com/@theangelheartsmusic?refer=embed">@theangelheartsmusic</a> <a title="sad" target="_blank" href="https://www.tiktok.com/tag/sad?refer=embed">#sad</a> <a title="sadness" target="_blank" href="https://www.tiktok.com/tag/sadness?refer=embed">#sadness</a> <a title="love" target="_blank" href="https://www.tiktok.com/tag/love?refer=embed">#love</a> <a title="gary" target="_blank" href="https://www.tiktok.com/tag/gary?refer=embed">#gary</a> <a title="poem" target="_blank" href="https://www.tiktok.com/tag/poem?refer=embed">#poem</a> <a title="poetry" target="_blank" href="https://www.tiktok.com/tag/poetry?refer=embed">#poetry</a> <a title="angelheartsmusic" target="_blank" href="https://www.tiktok.com/tag/angelheartsmusic?refer=embed">#angelheartsmusic</a> </section> </blockquote>
-                </div>
-                <div class="bg-gray-800 rounded-xl overflow-hidden shadow-xl">
-                    <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@theangelheartsmusic/video/7279317578500242721" data-video-id="7279317578500242721" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@theangelheartsmusic" href="https://www.tiktok.com/@theangelheartsmusic?refer=embed">@theangelheartsmusic</a> <a title="love" target="_blank" href="https://www.tiktok.com/tag/love?refer=embed">#love</a> <a title="poem" target="_blank" href="https://www.tiktok.com/tag/poem?refer=embed">#poem</a> <a title="poetry" target="_blank" href="https://www.tiktok.com/tag/poetry?refer=embed">#poetry</a> <a title="angelheartsmusic" target="_blank" href="https://www.tiktok.com/tag/angelheartsmusic?refer=embed">#angelheartsmusic</a> <a title="gary" target="_blank" href="https://www.tiktok.com/tag/gary?refer=embed">#gary</a> <a title="angelhearts" target="_blank" href="https://www.tiktok.com/tag/angelhearts?refer=embed">#angelhearts</a> </section> </blockquote>
-                </div>
-            </div>
-            <!-- TikTok embed script -->
-            <script async src="https://www.tiktok.com/embed.js"></script>
-        </div>
-    </section>
-
     <!-- Contact Me Section -->
     <section id="contact" class="py-20 bg-gray-900">
         <div class="container mx-auto px-4 max-w-2xl text-center">
@@ -412,6 +384,46 @@
                 link.addEventListener('click', () => {
                     mobileMenu.classList.add('hidden');
                 });
+            });
+        });
+    </script>
+    <!-- Canvas JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navCanvas = document.getElementById('navCanvas');
+            const heroCanvas = document.getElementById('heroCanvas');
+
+            const image = new Image();
+            // Using a new, more artistic placeholder image
+            image.src = "https://picsum.photos/seed/angel/600/150/?blur=5";
+            
+            image.onload = () => {
+                drawCanvas(navCanvas, image, 'Angel Hearts', '40px Inter');
+                drawCanvas(heroCanvas, image, 'Angel Hearts', '100px Inter');
+            };
+
+            function drawCanvas(canvas, img, text, font) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+                ctx.font = font;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                // First, draw the image
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // Second, set the text as a mask
+                ctx.globalCompositeOperation = 'destination-in';
+                ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+                ctx.globalCompositeOperation = 'source-over';
+            }
+
+            // Handle window resize to redraw the canvas if needed
+            window.addEventListener('resize', () => {
+                drawCanvas(navCanvas, image, 'Angel Hearts', '40px Inter');
+                drawCanvas(heroCanvas, image, 'Angel Hearts', '100px Inter');
             });
         });
     </script>
