@@ -9,10 +9,9 @@
     <!-- Font Awesome for social media icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* Use the Inter font from Google Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
-
+        /* Use the Inter and Roboto Mono fonts from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap');
+        
         body {
             font-family: 'Inter', sans-serif;
             scroll-behavior: smooth;
@@ -25,189 +24,32 @@
             -ms-overflow-style: none; /* IE and Edge */
             scrollbar-width: none; /* Firefox */
         }
-        
-        /* --- Custom styles for the card game (New Section) --- */
-        .game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: #1a202c; /* Equivalent to bg-gray-900 */
-            color: #e2e8f0; /* Equivalent to text-gray-200 */
-            padding: 1rem;
-        }
-        
-        .card-hand {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin: 1rem 0;
-            min-height: 120px;
-        }
 
-        .card-back {
-            background-color: #7f1d1d; /* Dark red for card back */
-            background-image: repeating-linear-gradient(45deg, #a51d1d 25%, transparent 25%, transparent 75%, #a51d1d 75%, #a51d1d),
-                              repeating-linear-gradient(45deg, #a51d1d 25%, transparent 25%, transparent 75%, #a51d1d 75%, #a51d1d);
-            background-size: 10px 10px;
-            background-position: 0 0, 5px 5px;
-        }
-
-        .card {
-            width: 80px;
-            height: 110px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 5px;
-            font-family: 'Roboto Mono', monospace;
-            font-weight: bold;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            cursor: pointer;
-            color: #f8fafc; /* light text color for better contrast on colored backgrounds */
-            position: relative;
-        }
-        
-        .card.can-discard {
-            box-shadow: 0 0 15px 5px #fde047; /* yellow-300 glow for discardable cards */
-            transform: translateY(-5px);
-        }
-
-        .card.can-steal {
-            box-shadow: 0 0 15px 5px #38bdf8; /* sky-400 glow for stealable cards */
-            transform: scale(1.05);
-            cursor: grab;
-        }
-
-        /* Card background colors and text colors based on suit */
-        .card.red-bg {
-            background-color: #ef4444; /* red-500 */
-        }
-
-        .card.black-bg {
-            background-color: #1f2937; /* gray-800 */
-        }
-        
-        .card.joker-bg {
-            background-color: #4b5563; /* gray-600 */
-        }
-
-        .card-suit.red-suit {
-            color: #f8fafc; /* white */
-        }
-
-        .card-suit.black-suit {
-            color: #f8fafc; /* white */
-        }
-        
-        .card-corner {
-            font-size: 1.25rem;
-            line-height: 1;
-        }
-
-        .card-center {
-            font-size: 2.5rem;
-            text-align: center;
-            line-height: 1;
-            /* Using a different color for the suit icon for visual interest */
-            color: #d1d5db; /* gray-400 */
-        }
-
-        .game-deck, .discard-pile-container {
-            width: 80px;
-            height: 110px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin: 1rem;
-            display: flex; /* Ensures content is centered */
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .discard-pile {
-            position: absolute;
-            top: 0;
-            left: 0;
+        /* Set a consistent aspect ratio for the hero canvas */
+        .hero-canvas-container {
             width: 100%;
-            height: 100%;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            flex-wrap: wrap;
-            justify-content: center;
+            max-width: 600px;
+            aspect-ratio: 4 / 1; /* Sets a 4:1 width-to-height ratio */
         }
         
-        /* Pulse animation for turn indicator */
-        .pulse-once {
-            animation: pulse-once 1.5s ease-out;
-        }
-
-        @keyframes pulse-once {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        
-        /* Modal styles */
-        .modal {
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #2d3748; /* gray-800 */
-            padding: 2rem;
-            border-radius: 10px;
-            max-width: 90%;
-            max-height: 80%;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .close-button {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
 
     <!-- Header & Navigation -->
     <header class="sticky top-0 z-50 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-md">
-        <nav class="container mx-auto p-4 flex justify-between items-center">
-            <!-- New: Using a canvas element for the title to guarantee the image effect -->
+        <nav class="container max-w-7xl mx-auto p-4 flex justify-between items-center">
+            <!-- Canvas element for the title with a dynamic image effect -->
+            <!-- We've updated the canvas to use Tailwind classes for responsive sizing -->
             <a href="#" class="inline-block transition-transform transform hover:scale-105 duration-300" aria-label="Home">
-                <canvas id="navCanvas" width="220" height="40"></canvas>
+                <canvas id="navCanvas" class="w-[220px] h-10"></canvas>
             </a>
             <div class="hidden md:flex space-x-6 items-center">
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
-                <!-- Link to the new Suno song section -->
                 <a href="#suno-song" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Suno Song</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
-                <a href="#game-section" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Game</a>
                 <a href="#contact" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Contact Me</a>
-                <!-- NEW: Added TikTok link to the desktop navigation -->
+                <!-- TikTok link -->
                 <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="text-gray-200 hover:text-purple-400 transition-colors duration-300" aria-label="Visit my TikTok page">TikTok</a>
             </div>
             <!-- Mobile Menu Button -->
@@ -220,18 +62,21 @@
             <a href="#music" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
             <a href="#suno-song" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Suno Song</a>
             <a href="#poetry" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
-            <a href="#game-section" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Game</a>
             <a href="#contact" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Contact Me</a>
-            <!-- NEW: Added TikTok link to the mobile menu -->
+            <!-- TikTok link -->
             <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300" aria-label="Visit my TikTok page">TikTok</a>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="min-h-screen flex items-center justify-center p-8 text-center bg-gray-800">
-        <div class="max-w-2xl">
-            <!-- New: Using a canvas element for the hero title -->
-            <canvas id="heroCanvas" class="animate-pulse-slow" width="600" height="150"></canvas>
+    <section class="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-gray-800">
+        <div class="max-w-2xl w-full">
+            <!-- Canvas element for the hero title -->
+            <!-- The aspect-ratio class helps the canvas maintain its shape while being responsive -->
+            <div class="hero-canvas-container mx-auto">
+                <canvas id="heroCanvas" class="animate-pulse-slow w-full h-full"></canvas>
+            </div>
+            
             <p class="text-xl md:text-2xl text-gray-300 mb-8">
                 Welcome to the official home of Angel Hearts Music and Poetry.
                 A collection of lyrical songs and heartfelt poems, converted to music with AI.
@@ -244,7 +89,7 @@
 
     <!-- Music Section (Spotify) -->
     <section id="music" class="py-20 bg-gray-900">
-        <div class="container mx-auto px-4">
+        <div class="container max-w-7xl mx-auto px-4">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">
                 My Music
             </h2>
@@ -259,7 +104,7 @@
                 <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/album/5manuqpSneaBiEdpfuYTxs?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
             </div>
 
-            <!-- New link to the store for buying CDs, now with the real URL -->
+            <!-- Link to the store for buying CDs -->
             <div class="text-center mt-12">
                 <a href="https://elasticstage.com/theangelheart" class="inline-block px-8 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105" target="_blank">
                     Buy My CD's
@@ -270,7 +115,7 @@
 
     <!-- Suno Song Section -->
     <section id="suno-song" class="py-20 bg-gray-800">
-        <div class="container mx-auto px-4 max-w-2xl text-center">
+        <div class="container max-w-7xl mx-auto px-4 max-w-2xl text-center">
             <h2 class="text-4xl md:text-5xl font-bold mb-6">
                 My Suno Creations
             </h2>
@@ -298,7 +143,7 @@
                 <div class="bg-gray-900 rounded-2xl p-8 shadow-xl">
                     <iframe src="https://suno.com/embed/463cdb67-f96f-4ca6-bc37-2b9eabbb9cc9" width="100%" height="150" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
                 </div>
-                <!-- NEW: Suno embed code for the latest song -->
+                <!-- Suno embed code for the latest song -->
                 <div class="bg-gray-900 rounded-2xl p-8 shadow-xl">
                     <iframe src="https://suno.com/embed/2f023d58-a11f-4c3c-b550-2201170c8cd7" width="100%" height="150" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
                 </div>
@@ -308,287 +153,20 @@
 
     <!-- Poetry Section -->
     <section id="poetry" class="py-20 bg-gray-900">
-        <div class="container mx-auto px-4">
+        <div class="container max-w-7xl mx-auto px-4">
             <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">
                 My Poetry
             </h2>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Poetry Card 1 - All The Queens -->
-                <div class="bg-gray-800 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
-                    <h3 class="text-2xl font-bold text-purple-400 mb-2">All The Queens</h3>
-                    <p class="text-gray-400 text-sm mb-4">
-                        Newest Lyrics.
-                    </p>
-                    <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
-                        <p class="text-gray-300 leading-relaxed text-lg whitespace-pre-line">
-                            I've played the card game of life
-                            The joker knows my name
-                            Never giving up a inch
-                            I've been lost upon my way
-                            Each card i drew i lost
-                            Until i found a card of light
-                            This card i hold close to my heart
-                            Up until this very night
-
-                            I've known the Queen of diamonds
-                            Had nights out with the Queen of clubs
-                            I've known the sadness of the Queen of Spades
-                            Felt the Queen of hearts love
-
-                            All the Queens they shine so bright
-                            Though only one shone within my light
-                            The Queen of hearts my little star
-                            Changed my world for she saw my heart
-                            All the Queens they shine so bright
-                            The Queen of Hearts i held so tight
-                            All the Queens meant the world to me
-                            Though only the Queen of hearts
-                            Give me the gift to see
-
-                            I won the card game of life
-                            When the card i drew was yours
-                            My little angel heart of love
-                            My Queen of hearts was born
-                            I love my little angel so
-                            For her heart it is my light
-                            She touched my soul with kindness
-                            Gifting me the truth of sight
-
-                            I've known the Queen of diamonds
-                            Had nights out with the Queen of clubs
-                            I've known the sadness of the Queen of Spades
-                            Felt the Queen of hearts love
-
-                            All the Queens they shine so bright
-                            Though only one shone within my light
-                            The Queen of hearts my little star
-                            Changed my world for she saw my heart
-                            All the Queens they shine so bright
-                            The Queen of Hearts i held so tight
-                            All the Queens meant the world to me
-                            Though only the Queen of hearts
-                            Give me the gift to see
-
-                            My Queen of Hearts
-                            Sadness fills my heart
-                            Knowing I had to say goodbye
-                            To my existing deck of cards
-                            Upon this road of rainbow dreams
-                            You were my baby and my friend
-                            I'll fight against the darkness
-                            Crawl along this road of night
-                            For there within the distance
-                            I see an angels light
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Poetry Card 2 - All Those Queens -->
-                <div class="bg-gray-800 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
-                    <h3 class="text-2xl font-bold text-purple-400 mb-2">All Those Queen</h3>
-                    <p class="text-gray-400 text-sm mb-4">
-                        New Lyrics.
-                    </p>
-                    <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
-                        <p class="text-gray-300 leading-relaxed text-lg whitespace-pre-line">
-                            So many tried to hold you down
-                            Within the darkness of the night
-                            Hearts so filled with hatred
-                            Souls that have lost the light
-                            They forced you to your knees
-                            Broken within their sight
-                            Yet within your heart that beats i side
-                            A rainbow shone of love
-
-                            You fought your way back to your feet
-                            like you have done all your life
-                            Not one soul there to help you
-                            To pick you up in your darkest night
-
-                            All of those Queens
-                            Standing tall within the night
-                            Rainbow colours shine within their eyes
-                            Destinies path glows bright
-                            All of those Queens
-                            Faced the darkness of the day
-                            Until they found their path of light
-                            All of those Queens shall find their way
-
-                            They tried to break your mind
-                            Break that heart that beat of love
-                            They called you names and put you down
-                            Saying you will never be enough
-                            Yet you saw that rainbow in the sky
-                            A unity of the heart
-                            It gave you the strength inside you need
-                            To fight for who you are
-
-                            You fought your way back to your feet
-                            like you have done all your life
-                            Not one soul there to help you
-                            To pick you up in your darkest night
-
-                            All of those Queens
-                            Standing tall within the night
-                            Rainbow colours shine within their eyes
-                            Destinies path glows bright
-                            All of those Queens
-                            Faced the darkness of the day
-                            Until they found their path of light
-                            All of those Queens shall find their way
-
-                            Darkness to the rainbows end
-                            The rising of our newfound friends
-                            That shine I colours born of love
-                            Like the rainbow that glows so high above
-                            Each heart has felt the touch of night
-                            Found inner strength to win their fight
-                            Now the fallen have scaled those walls
-                            For all those Queens are standing tall
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Poetry Card 3 - Oh Angel Rise Up -->
-                <div class="bg-gray-800 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
-                    <h3 class="text-2xl font-bold text-purple-400 mb-2">Oh Angel Rise Up</h3>
-                    <p class="text-gray-400 text-sm mb-4">
-                        New Lyrics.
-                    </p>
-                    <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
-                        <p class="text-gray-300 leading-relaxed text-lg whitespace-pre-line">
-                            I walk this road in solitude
-                            With a heart broken in two
-                            The ultimate price i pain in life
-                            Its the cost of losing you
-                            Yet still I walk this road of hope
-                            That I may feel your heartbeat again
-                            Sometimes I fall upon my knees
-                            Though it's that moment I remember when
-
-                            An angel always walked with me
-                            Thought the shadows of my life
-                            Never turning away from love
-                            Her heart it beat with mine
-
-                            Oh angel rise up
-                            Be the light that I need
-                            Protect my heart from darkness
-                            Won't you be a friend to me
-                            Oh angel rise up
-                            Be a shield in this void of night
-                            Protect my heart from breaking
-                            Oh angel gave me sight
-
-                            I walk this road with hope
-                            That I'll find you once again
-                            Upon this road of rainbow dreams
-                            You were my baby and my friend
-                            I'll fight against the darkness
-                            Crawl along this road of night
-                            For there within the distance
-                            I see an angels light
-
-                            An angel always walked with me
-                            Thought the shadows of my life
-                            Never turning away from love
-                            Her heart it beat with mine
-
-                            Oh angel rise up
-                            Be the light that I need
-                            Protect my heart from darkness
-                            Won't you be a friend to me
-                            Oh angel rise up
-                            Be a shield in this void of night
-                            Protect my heart from breaking
-                            Oh angel gave me sight
-
-                            You were the beating of my heart
-                            The light within my eyes
-                            You gave me the strength of an angel
-                            Kindness was your light
-                            You were the greatest soul I've ever known
-                            The promise of a gift of hope
-                            Though most of all you were my friend
-                            The heart i needed most
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- The Card Game Section -->
-    <section id="game-section" class="py-20 bg-gray-800">
-        <!-- Main Game Container -->
-        <div class="game-container">
-            <h1 class="text-4xl md:text-5xl font-bold mb-8">The Angel Hearts Card Game</h1>
-            <div class="w-full text-center mb-4">
-                <h2 class="text-2xl font-semibold mb-2">Opponent's Hand</h2>
-                <div id="opponent-hand" class="card-hand">
-                    <!-- Opponent's cards will be rendered here -->
-                </div>
-            </div>
-            
-            <div class="flex items-center justify-center gap-8">
-                <div id="deck" class="game-deck card-back cursor-pointer transition-transform duration-300 hover:scale-105"></div>
-                <div id="discard-pile-container" class="discard-pile-container bg-gray-700">
-                    <div id="discard-pile" class="discard-pile">
-                        <!-- The top card of the discard pile will be revealed here -->
-                    </div>
-                </div>
-            </div>
-            
-            <div class="w-full text-center mt-4">
-                <h2 class="text-2xl font-semibold mb-2">Your Hand</h2>
-                <div id="player-hand" class="card-hand">
-                    <!-- Player's cards will be rendered here -->
-                </div>
-            </div>
-            <div id="game-message" class="text-lg font-semibold h-8 my-4 text-center"></div>
-            <div class="button-group">
-                <button id="deal-button" class="px-6 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105">
-                    Deal Cards
-                </button>
-                <button id="restart-button" class="hidden px-6 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 transition-all duration-300 shadow-lg transform hover:scale-105">
-                    Restart Game
-                </button>
-                <button id="rules-button" class="px-6 py-3 rounded-full text-lg font-bold text-white bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 transition-all duration-300 shadow-lg transform hover:scale-105">
-                    Show Rules
-                </button>
-            </div>
-        </div>
-
-        <!-- Rules Modal -->
-        <div id="rules-modal" class="modal hidden">
-            <div class="modal-content">
-                <span id="close-modal" class="close-button">&times;</span>
-                <h3 class="text-2xl font-bold mb-4">Game Rules</h3>
-                <ul class="list-disc list-inside space-y-2">
-                    <li>The goal is to be the first to get rid of all your cards.</li>
-                    <li>Each player is dealt 5 cards to start.</li>
-                    <li>On your turn, draw one card from either the main deck or the discard pile.</li>
-                    <li>If the card you drew matches a card in your hand (same suit and value), you can discard both. This ends your turn.</li>
-                    <li>If there is no match, you must discard any single card from your hand to end your turn.</li>
-                    <li>When the main deck runs out, the discard pile is shuffled and becomes the new deck.</li>
-                    <li>The game ends when a player has no cards left in their hand.</li>
-                </ul>
-                <h3 class="text-xl font-bold mt-6 mb-2">Special Card Perks & Punishments</h3>
-                <ul class="list-disc list-inside space-y-2">
-                    <li><span class="font-bold text-red-400">Pair of Aces:</span> You get to steal one card from your opponent's hand.</li>
-                    <li><span class="font-bold text-red-400">Pair of Queen of Hearts:</span> You instantly win the game!</li>
-                    <li><span class="font-bold text-red-400">Pair of Jokers:</span> You get to draw another card and take an extra turn.</li>
-                    <li><span class="font-bold text-red-400">Pair of Queen of Spades:</span> You must draw two cards from the deck.</li>
-                    <li><span class="font-bold text-red-400">Pair of Queen of Diamonds:</span> You can discard an extra card.</li>
-                    <li><span class="font-bold text-red-400">Pair of Queen of Clubs:</span> You lose your next turn.</li>
-                </ul>
+            <!-- This container will be populated dynamically by JavaScript -->
+            <div id="poetry-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Poetry cards will be inserted here -->
             </div>
         </div>
     </section>
 
     <!-- Contact Me Section -->
     <section id="contact" class="py-20 bg-gray-900">
-        <div class="container mx-auto px-4 max-w-2xl text-center">
+        <div class="container max-w-7xl mx-auto px-4 max-w-2xl text-center">
             <h2 class="text-4xl md:text-5xl font-bold mb-6">Contact Me</h2>
             <p class="text-xl text-gray-300 mb-8">
                 Have a question or just want to say hello? Send me a message!
@@ -602,7 +180,7 @@
     <!-- Footer -->
     <footer class="bg-gray-800 py-6 text-center text-gray-500">
         <div class="container mx-auto px-4 flex justify-center space-x-6 mb-4">
-            <!-- New TikTok icon in the footer -->
+            <!-- TikTok icon in the footer -->
             <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="text-gray-400 hover:text-purple-400 transition-colors duration-300" aria-label="Follow me on TikTok">
                 <i class="fa-brands fa-tiktok fa-2xl"></i>
             </a>
@@ -614,592 +192,273 @@
         <p>&copy; 2024 Angel Hearts Music & Poetry. All Rights Reserved.</p>
     </footer>
 
-    <!-- Mobile Menu JS -->
+    <!-- All JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Mobile Menu Toggle Logic ---
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
 
             mobileMenuBtn.addEventListener('click', () => {
                 mobileMenu.classList.toggle('hidden');
             });
+
             // Hide menu when a link is clicked
             document.querySelectorAll('#mobile-menu a').forEach(link => {
                 link.addEventListener('click', () => {
                     mobileMenu.classList.add('hidden');
                 });
             });
-        });
-    </script>
-    <!-- Canvas JS -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const navCanvas = document.getElementById('navCanvas');
-            const heroCanvas = document.getElementById('heroCanvas');
 
-            const image = new Image();
-            // Using a new, more artistic placeholder image
-            image.src = "https://picsum.photos/seed/angel/600/150/?blur=5";
-            
-            image.onload = () => {
-                drawCanvas(navCanvas, image, 'Angel Hearts', '40px Inter');
-                drawCanvas(heroCanvas, image, 'Angel Hearts', '100px Inter');
+
+            // --- Dynamic Poetry Loading Logic ---
+            // A JavaScript array containing all the poem data
+            const poems = [
+                {
+                    title: "All The Queens",
+                    description: "Newest Lyrics.",
+                    lyrics: `I've played the card game of life
+The joker knows my name
+Never giving up a inch
+I've been lost upon my way
+Each card i drew i lost
+Until i found a card of light
+This card i hold close to my heart
+Up until this very night
+
+I've known the Queen of diamonds
+Had nights out with the Queen of clubs
+I've known the sadness of the Queen of Spades
+Felt the Queen of hearts love
+
+All the Queens they shine so bright
+Though only one shone within my light
+The Queen of hearts my little star
+Changed my world for she saw my heart
+All the Queens they shine so bright
+The Queen of Hearts i held so tight
+All the Queens meant the world to me
+Though only the Queen of hearts
+Give me the gift to see
+
+I won the card game of life
+When the card i drew was yours
+My little angel heart of love
+My Queen of hearts was born
+I love my little angel so
+For her heart it is my light
+She touched my soul with kindness
+Gifting me the truth of sight
+
+I've known the Queen of diamonds
+Had nights out with the Queen of clubs
+I've known the sadness of the Queen of Spades
+Felt the Queen of hearts love
+
+All the Queens they shine so bright
+Though only one shone within my light
+The Queen of hearts my little star
+Changed my world for she saw my heart
+All the Queens they shine so bright
+The Queen of Hearts i held so tight
+All the Queens meant the world to me
+Though only the Queen of hearts
+Give me the gift to see
+
+My Queen of Hearts
+Sadness fills my heart
+Knowing I had to say goodbye
+To my existing deck of cards
+Upon this road of rainbow dreams
+You were my baby and my friend
+I'll fight against the darkness
+Crawl along this road of night
+For there within the distance
+I see an angels light`
+                },
+                {
+                    title: "All Those Queen",
+                    description: "New Lyrics.",
+                    lyrics: `So many tried to hold you down
+Within the darkness of the night
+Hearts so filled with hatred
+Souls that have lost the light
+They forced you to your knees
+Broken within their sight
+Yet within your heart that beats i side
+A rainbow shone of love
+
+You fought your way back to your feet
+like you have done all your life
+Not one soul there to help you
+To pick you up in your darkest night
+
+All of those Queens
+Standing tall within the night
+Rainbow colours shine within their eyes
+Destinies path glows bright
+All of those Queens
+Faced the darkness of the day
+Until they found their path of light
+All of those Queens shall find their way
+
+They tried to break your mind
+Break that heart that beat of love
+They called you names and put you down
+Saying you will never be enough
+Yet you saw that rainbow in the sky
+A unity of the heart
+It gave you the strength inside you need
+To fight for who you are
+
+You fought your way back to your feet
+like you have done all your life
+Not one soul there to help you
+To pick you up in your darkest night
+
+All of those Queens
+Standing tall within the night
+Rainbow colours shine within their eyes
+Destinies path glows bright
+All of those Queens
+Faced the darkness of the day
+Until they found their path of light
+All of those Queens shall find their way
+
+Darkness to the rainbows end
+The rising of our newfound friends
+That shine I colours born of love
+Like the rainbow that glows so high above
+Each heart has felt the touch of night
+Found inner strength to win their fight
+Now the fallen have scaled those walls
+For all those Queens are standing tall`
+                },
+                {
+                    title: "Oh Angel Rise Up",
+                    description: "New Lyrics.",
+                    lyrics: `I walk this road in solitude
+With a heart broken in two
+The ultimate price i pain in life
+Its the cost of losing you
+Yet still I walk this road of hope
+That I may feel your heartbeat again
+Sometimes I fall upon my knees
+Though it's that moment I remember when
+
+An angel always walked with me
+Thought the shadows of my life
+Never turning away from love
+Her heart it beat with mine
+
+Oh angel rise up
+Be the light that I need
+Protect my heart from darkness
+Won't you be a friend to me
+Oh angel rise up
+Be a shield in this void of night
+Protect my heart from breaking
+Oh angel gave me sight
+
+I walk this road with hope
+That I'll find you once again
+Upon this road of rainbow dreams
+You were my baby and my friend
+I'll fight against the darkness
+Crawl along this road of night
+For there within the distance
+I see an angels light
+
+An angel always walked with me
+Thought the shadows of my life
+Never turning away from love
+Her heart it beat with mine
+
+Oh angel rise up
+Be the light that I need
+Protect my heart from darkness
+Won't you be a friend to me
+Oh angel rise up
+Be a shield in this void of night
+Protect my heart from breaking
+Oh angel gave me sight
+
+You were the beating of my heart
+The light within my eyes
+You gave me the strength of an angel
+Kindness was your light
+You were the greatest soul I've ever known
+The promise of a gift of hope
+Though most of all you were my friend
+The heart i needed most`
+                }
+            ];
+
+            // Function to generate and render poetry cards
+            const renderPoetry = () => {
+                const poetryContainer = document.getElementById('poetry-container');
+                poetryContainer.innerHTML = ''; // Clear existing content
+
+                poems.forEach(poem => {
+                    const cardHtml = `
+                        <div class="bg-gray-800 rounded-2xl p-6 shadow-xl transition-transform transform hover:scale-105 duration-300">
+                            <h3 class="text-2xl font-bold text-purple-400 mb-2">${poem.title}</h3>
+                            <p class="text-gray-400 text-sm mb-4">
+                                ${poem.description}
+                            </p>
+                            <div class="h-48 overflow-y-auto custom-scrollbar-hidden">
+                                <p class="text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                                    ${poem.lyrics}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    poetryContainer.insertAdjacentHTML('beforeend', cardHtml);
+                });
             };
 
-            function drawCanvas(canvas, img, text, font) {
+            // --- Canvas Drawing Logic ---
+            const navCanvas = document.getElementById('navCanvas');
+            const heroCanvas = document.getElementById('heroCanvas');
+            
+            // This function now draws text with a gradient, which is more reliable
+            function drawCanvas(canvas, text, baseFontSize) {
                 const ctx = canvas.getContext('2d');
+                // Use the canvas's actual size from the CSS to make the drawing responsive
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
                 ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
 
-                ctx.font = font;
+                // Calculate a responsive font size based on the new canvas dimensions
+                const fontSize = Math.min(baseFontSize, canvas.width / (text.length * 0.5));
+                ctx.font = `bold ${fontSize}px Inter`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
 
-                // First, draw the image
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                // Create a linear gradient for the text fill
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+                gradient.addColorStop(0, '#ec4899'); // Pink
+                gradient.addColorStop(1, '#a855f7'); // Purple
+                ctx.fillStyle = gradient;
 
-                // Second, set the text as a mask
-                ctx.globalCompositeOperation = 'destination-in';
+                // Draw the text
                 ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-
-                ctx.globalCompositeOperation = 'source-over';
             }
 
             // Handle window resize to redraw the canvas if needed
             window.addEventListener('resize', () => {
-                drawCanvas(navCanvas, image, 'Angel Hearts', '40px Inter');
-                drawCanvas(heroCanvas, image, 'Angel Hearts', '100px Inter');
-            });
-        });
-    </script>
-    <!-- --- Card Game Logic (New Section) --- -->
-    <script>
-        // Game State
-        let deck = [];
-        let playerHand = [];
-        let opponentHand = [];
-        let discardPile = [];
-        let outOfPlayPile = []; // New array for cards removed from play
-        let isPlayerTurn = false;
-        let hasDrawn = false;
-        let canDiscardExtra = false;
-        let isDealing = false;
-        let isStealing = false; // New state to track if player is in the "stealing" phase
-        let opponentTurnSkipped = false;
-
-        // DOM Elements
-        const playerHandEl = document.getElementById('player-hand');
-        const opponentHandEl = document.getElementById('opponent-hand');
-        const deckEl = document.getElementById('deck');
-        const discardPileEl = document.getElementById('discard-pile');
-        const dealButton = document.getElementById('deal-button');
-        const restartButton = document.getElementById('restart-button');
-        const rulesButton = document.getElementById('rules-button');
-        const gameMessageEl = document.getElementById('game-message');
-        const rulesModal = document.getElementById('rules-modal');
-        const closeModalButton = document.getElementById('close-modal');
-
-        // Card Suits and Values
-        const suits = ['♠', '♥', '♦', '♣'];
-        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-
-        /**
-         * Creates two full 54-card decks including four jokers.
-         * @returns {object[]} An array of card objects.
-         */
-        function createDeck() {
-            let newDeck = [];
-            // Create two standard decks
-            for (let i = 0; i < 2; i++) {
-                for (let suit of suits) {
-                    for (let value of values) {
-                        const isRed = (suit === '♥' || suit === '♦');
-                        newDeck.push({ value, suit, isRed });
-                    }
-                }
-            }
-            // Add four jokers
-            newDeck.push({ value: 'Joker', suit: '', isRed: true });
-            newDeck.push({ value: 'Joker', suit: '', isRed: false });
-            newDeck.push({ value: 'Joker', suit: '', isRed: true });
-            newDeck.push({ value: 'Joker', suit: '', isRed: false });
-            return newDeck;
-        }
-
-        /**
-         * Shuffles the deck using the Fisher-Yates algorithm.
-         * @param {object[]} deckArray The array to shuffle.
-         * @returns {object[]} The shuffled array.
-         */
-        function shuffleDeck(deckArray) {
-            for (let i = deckArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [deckArray[i], deckArray[j]] = [deckArray[j], deckArray[i]];
-            }
-            return deckArray;
-        }
-
-        /**
-         * Renders a single card element.
-         * @param {object} card The card object to render.
-         * @param {boolean} isFaceUp True if the card should be shown, false for card back.
-         * @returns {HTMLElement} The created card element.
-         */
-        function createCardElement(card, isFaceUp = true) {
-            const cardEl = document.createElement('div');
-            cardEl.classList.add('card', 'rounded-xl', 'shadow-lg', 'transition-all');
-            
-            if (isFaceUp) {
-                // Determine card background color and suit icon color
-                let bgClass = '';
-                let suitClass = '';
-                if (card.value === 'Joker') {
-                    bgClass = 'joker-bg';
-                    suitClass = 'black-suit';
-                } else {
-                    bgClass = card.isRed ? 'red-bg' : 'black-bg';
-                    suitClass = card.isRed ? 'red-suit' : 'black-suit';
-                }
-                cardEl.classList.add(bgClass);
-
-                const suitDisplay = (card.value === 'Joker') ? 'JOKER' : card.suit;
-                cardEl.innerHTML = `
-                    <div class="card-corner ${suitClass}">
-                        ${card.value}<br>${suitDisplay}
-                    </div>
-                    <div class="card-center text-center">
-                        ${suitDisplay}
-                    </div>
-                    <div class="card-corner self-end transform rotate-180 ${suitClass}">
-                        ${card.value}<br>${suitDisplay}
-                    </div>
-                `;
-            } else {
-                cardEl.classList.add('card-back');
-            }
-            return cardEl;
-        }
-
-        /**
-         * Renders the entire game board.
-         */
-        function renderBoard() {
-            playerHandEl.innerHTML = '';
-            opponentHandEl.innerHTML = '';
-            discardPileEl.innerHTML = '';
-
-            // Render player's hand
-            playerHand.forEach((card, index) => {
-                const cardEl = createCardElement(card, true);
-                cardEl.dataset.index = index;
-                // Add event listener only if not in a stealing state
-                if (!isStealing) {
-                    cardEl.addEventListener('click', handlePlayerDiscard);
-                }
-                playerHandEl.appendChild(cardEl);
+                drawCanvas(navCanvas, 'Angel Hearts', 40);
+                drawCanvas(heroCanvas, 'Angel Hearts', 100);
             });
 
-            // Render opponent's hand (face up)
-            opponentHand.forEach((card, index) => {
-                const cardEl = createCardElement(card, true);
-                cardEl.dataset.index = index;
-                // Add event listener if in a stealing state
-                if (isStealing) {
-                    cardEl.classList.add('can-steal');
-                    cardEl.addEventListener('click', handleOpponentCardClick);
-                }
-                opponentHandEl.appendChild(cardEl);
-            });
-
-            // Render the top of the discard pile
-            if (discardPile.length > 0) {
-                const upCard = discardPile[discardPile.length - 1];
-                discardPileEl.appendChild(createCardElement(upCard, true));
-            }
-        }
-
-        /**
-         * Checks if a newly drawn card matches an existing card in the player's hand.
-         * @param {object} drawnCard The card that was just drawn.
-         * @returns {number} The index of the matching card, or -1 if no match is found.
-         */
-        function findMatchingCardIndex(drawnCard, hand) {
-            // A match is a card with the same value and suit
-            return hand.findIndex(card => card.value === drawnCard.value && card.suit === drawnCard.suit );
-        }
-
-        /**
-         * Ends the game and displays the final message.
-         * @param {string} message The winning or losing message to display.
-         */
-        function endGame(message) {
-            isPlayerTurn = false;
-            hasDrawn = false;
-            canDiscardExtra = false;
-            isDealing = false;
-            isStealing = false;
-            opponentTurnSkipped = false;
-            gameMessageEl.textContent = message;
-            dealButton.classList.add('hidden');
-            restartButton.classList.remove('hidden');
-            deckEl.style.cursor = 'default';
-            discardPileEl.style.cursor = 'default';
-        }
-
-        /**
-         * Checks for the two win conditions after a turn.
-         */
-        function checkForWin() {
-            // Win condition 1: Player has an empty hand
-            if (playerHand.length === 0) {
-                endGame("Congratulations, Angel Heart! You've successfully cleared your hand and won the game!");
-                return true;
-            }
-            // Win condition 2: Opponent has an empty hand
-            if (opponentHand.length === 0) {
-                endGame("Your opponent has cleared their hand and won the game!");
-                return true;
-            }
-            return false;
-        }
-
-        /**
-         * Handles drawing a card from the main deck.
-         */
-        function handleDeckDraw() {
-            if (!isPlayerTurn || hasDrawn || isDealing || isStealing) return;
-            if (deck.length === 0) {
-                gameMessageEl.textContent = 'The deck is empty! Shuffling the discard pile to create a new deck.';
-                // If deck is empty, shuffle the discard pile and make it the new deck
-                deck = shuffleDeck(discardPile.slice(0, discardPile.length - 1));
-                discardPile = [discardPile[discardPile.length - 1]]; // Keep the top card
-                if (deck.length === 0) {
-                     gameMessageEl.textContent = 'No cards left to draw! Restart the game.';
-                     return;
-                }
-            }
-            const drawnCard = deck.pop();
-            playerHand.push(drawnCard);
-            checkAndDiscardMatch();
-        }
-
-        /**
-         * Handles drawing a card from the discard pile.
-         */
-        function handleDiscardPileDraw() {
-            if (!isPlayerTurn || hasDrawn || isDealing || isStealing) return;
-            if (discardPile.length === 0) {
-                gameMessageEl.textContent = 'The discard pile is empty!';
-                return;
-            }
-            const drawnCard = discardPile.pop();
-            playerHand.push(drawnCard);
-            checkAndDiscardMatch();
-        }
-
-        /**
-         * Checks for a match after a card has been drawn and applies special effects.
-         */
-        function checkAndDiscardMatch() {
-            hasDrawn = true;
-            const drawnCard = playerHand[playerHand.length - 1];
-            const matchIndex = findMatchingCardIndex(drawnCard, playerHand.slice(0, playerHand.length - 1));
-            
-            // Re-render hand with new card to show the match
-            renderBoard();
-
-            if (matchIndex !== -1 && matchIndex !== playerHand.length - 1) {
-                const matchedCard = playerHand.splice(matchIndex, 1)[0];
-                playerHand.pop(); // Remove the newly drawn card
-                outOfPlayPile.push(drawnCard, matchedCard);
-
-                // Handle special card matches
-                if (drawnCard.value === 'A') {
-                    if (checkForWin()) return;
-                    if (opponentHand.length > 0) {
-                        isStealing = true;
-                        gameMessageEl.textContent = "You matched two Aces! Click on one of your opponent's cards to steal it.";
-                        renderBoard();
-                        return;
-                    } else {
-                        gameMessageEl.textContent = "You matched two Aces, but your opponent has no cards to steal! Your turn ends.";
-                    }
-                } else if (drawnCard.value === 'Q' && drawnCard.suit === '♥') {
-                    endGame("Incredible! You've found the matching Queen of Hearts! You win!");
-                    return;
-                } else if (drawnCard.value === 'Joker') {
-                    gameMessageEl.textContent = "You matched a Joker! You get to draw another card and take an extra turn!";
-                    hasDrawn = false; // Reset hasDrawn to allow another draw
-                    renderBoard();
-                    return;
-                } else if (drawnCard.value === 'Q' && drawnCard.suit === '♠') {
-                    gameMessageEl.textContent = "You matched the Queen of Spades! You must draw two cards from the deck.";
-                    for (let i = 0; i < 2; i++) {
-                        if (deck.length > 0) {
-                            playerHand.push(deck.pop());
-                        }
-                    }
-                } else if (drawnCard.value === 'Q' && drawnCard.suit === '♦') {
-                    gameMessageEl.textContent = "You matched the Queen of Diamonds! You can discard an extra card.";
-                    canDiscardExtra = true;
-                } else if (drawnCard.value === 'Q' && drawnCard.suit === '♣') {
-                    gameMessageEl.textContent = "You matched the Queen of Clubs! You lose your next turn.";
-                    opponentTurnSkipped = true;
-                }
-                
-                // End player's turn after a match (unless it's a Joker match)
-                if (drawnCard.value !== 'Joker' && !isStealing) {
-                    gameMessageEl.textContent += " Your turn ends. Waiting for opponent...";
-                    setTimeout(opponentTurn, 2000);
-                }
-            } else {
-                gameMessageEl.textContent = "No match found. Please discard a card from your hand to end your turn.";
-                // Highlight cards that can be discarded
-                playerHandEl.querySelectorAll('.card').forEach(cardEl => {
-                    cardEl.classList.add('can-discard');
-                });
-            }
-            renderBoard();
-        }
-
-        /**
-         * Handles the player's action of discarding a card.
-         * @param {Event} event The click event on the card.
-         */
-        function handlePlayerDiscard(event) {
-            if (!isPlayerTurn || !hasDrawn || isStealing) return;
-            
-            const cardEl = event.target.closest('.card');
-            if (!cardEl) return;
-            
-            const index = parseInt(cardEl.dataset.index);
-            const discardedCard = playerHand.splice(index, 1)[0];
-            discardPile.push(discardedCard);
-
-            renderBoard();
-
-            if (canDiscardExtra) {
-                canDiscardExtra = false;
-                gameMessageEl.textContent = "You can discard one more card. Click a card in your hand.";
-                playerHandEl.querySelectorAll('.card').forEach(cardEl => {
-                    cardEl.classList.add('can-discard');
-                });
-                return; // Wait for the extra discard
-            }
-
-            if (checkForWin()) return;
-
-            gameMessageEl.textContent = "You discarded a card. Waiting for opponent...";
-            isPlayerTurn = false;
-            hasDrawn = false;
-            setTimeout(opponentTurn, 2000);
-        }
-
-        /**
-         * Handles the player stealing a card from the opponent.
-         * @param {Event} event The click event on the opponent's card.
-         */
-        function handleOpponentCardClick(event) {
-            if (!isStealing) return;
-
-            const cardEl = event.target.closest('.card');
-            if (!cardEl) return;
-
-            const index = parseInt(cardEl.dataset.index);
-            const stolenCard = opponentHand.splice(index, 1)[0];
-            playerHand.push(stolenCard);
-
-            isStealing = false;
-            gameMessageEl.textContent = `You stole a card from your opponent! Your turn ends. Waiting for opponent...`;
-            renderBoard();
-
-            if (checkForWin()) return;
-            
-            isPlayerTurn = false;
-            hasDrawn = false;
-            setTimeout(opponentTurn, 2000);
-        }
-
-        /**
-         * The AI opponent's turn logic.
-         */
-        function opponentTurn() {
-            if (opponentTurnSkipped) {
-                gameMessageEl.textContent = "Opponent's turn is skipped!";
-                opponentTurnSkipped = false;
-                setTimeout(() => {
-                    gameMessageEl.textContent = "It's your turn, Angel Heart! Draw a card from the deck or discard pile.";
-                    isPlayerTurn = true;
-                }, 2000);
-                return;
-            }
-
-            gameMessageEl.textContent = "It's the opponent's turn. Please wait...";
-            setTimeout(() => {
-                // Opponent decides whether to draw from deck or discard pile
-                let drawnCard;
-                if (discardPile.length > 0 && Math.random() < 0.5) {
-                    // 50% chance to draw from discard pile if it's not empty
-                    drawnCard = discardPile.pop();
-                    opponentHand.push(drawnCard);
-                    gameMessageEl.textContent = "Opponent drew a card from the discard pile.";
-                } else {
-                    // Otherwise, draw from the deck
-                    if (deck.length === 0) {
-                        deck = shuffleDeck(discardPile.slice(0, discardPile.length - 1));
-                        discardPile = [discardPile[discardPile.length - 1]];
-                    }
-                    if (deck.length === 0) {
-                        endGame("The deck is empty! Restart the game.");
-                        return;
-                    }
-                    drawnCard = deck.pop();
-                    opponentHand.push(drawnCard);
-                    gameMessageEl.textContent = "Opponent drew a card from the deck.";
-                }
-
-                // Check for a match in opponent's hand
-                const matchIndex = findMatchingCardIndex(drawnCard, opponentHand.slice(0, opponentHand.length - 1));
-                let discardedCard;
-
-                if (matchIndex !== -1 && matchIndex !== opponentHand.length - 1) {
-                    const matchedCard = opponentHand.splice(matchIndex, 1)[0];
-                    opponentHand.pop(); // Remove the newly drawn card
-                    outOfPlayPile.push(drawnCard, matchedCard);
-                    gameMessageEl.textContent = "Opponent found a match and discarded a pair!";
-                    // Check for special card rules for opponent
-                    if (drawnCard.value === 'A') {
-                        if (playerHand.length > 0) {
-                            const stolenIndex = Math.floor(Math.random() * playerHand.length);
-                            const stolenCard = playerHand.splice(stolenIndex, 1)[0];
-                            opponentHand.push(stolenCard);
-                            gameMessageEl.textContent += " They stole one of your cards!";
-                        }
-                    } else if (drawnCard.value === 'Joker') {
-                        gameMessageEl.textContent += " They matched a Joker and get an extra turn!";
-                        renderBoard();
-                        setTimeout(opponentTurn, 2000);
-                        return;
-                    } else if (drawnCard.value === 'Q' && drawnCard.suit === '♠') {
-                        for (let i = 0; i < 2; i++) {
-                            if (deck.length > 0) {
-                                opponentHand.push(deck.pop());
-                            }
-                        }
-                        gameMessageEl.textContent += " They drew two extra cards!";
-                    } else if (drawnCard.value === 'Q' && drawnCard.suit === '♦') {
-                        discardedCard = opponentHand.pop();
-                        discardPile.push(discardedCard);
-                        gameMessageEl.textContent += " They discarded an extra card!";
-                    } else if (drawnCard.value === 'Q' && drawnCard.suit === '♣') {
-                        opponentTurnSkipped = true;
-                        gameMessageEl.textContent += " Your next turn is skipped!";
-                    }
-
-                } else {
-                    // No match, discard a random card
-                    const discardIndex = Math.floor(Math.random() * opponentHand.length);
-                    discardedCard = opponentHand.splice(discardIndex, 1)[0];
-                    discardPile.push(discardedCard);
-                    gameMessageEl.textContent = "Opponent discarded a card.";
-                }
-
-                renderBoard();
-
-                if (checkForWin()) return;
-
-                // End of opponent's turn, pass to player
-                setTimeout(() => {
-                    gameMessageEl.textContent = "It's your turn, Angel Heart! Draw a card from the deck or discard pile.";
-                    isPlayerTurn = true;
-                    hasDrawn = false;
-                    deckEl.style.cursor = 'pointer';
-                    discardPileEl.style.cursor = 'pointer';
-                }, 2000);
-            }, 2000);
-        }
-
-        /**
-         * Deals the initial cards to the players.
-         */
-        function dealInitialCards() {
-            if (isDealing) return;
-            isDealing = true;
-
-            gameMessageEl.textContent = "Dealing cards...";
-            deck = shuffleDeck(createDeck());
-            playerHand = [];
-            opponentHand = [];
-            discardPile = [];
-            outOfPlayPile = [];
-            
-            dealButton.classList.add('hidden');
-            deckEl.style.cursor = 'default';
-            discardPileEl.style.cursor = 'default';
-            
-            // Deal 5 cards to each player
-            for (let i = 0; i < 5; i++) {
-                playerHand.push(deck.pop());
-                opponentHand.push(deck.pop());
-            }
-
-            // Put one card on the discard pile to start
-            discardPile.push(deck.pop());
-
-            renderBoard();
-            isDealing = false;
-            isPlayerTurn = true;
-            gameMessageEl.textContent = "It's your turn, Angel Heart! Draw a card from the deck or discard pile.";
-            deckEl.style.cursor = 'pointer';
-            discardPileEl.style.cursor = 'pointer';
-        }
-
-        /**
-         * Initializes the game state.
-         */
-        function initGame() {
-            deck = [];
-            playerHand = [];
-            opponentHand = [];
-            discardPile = [];
-            outOfPlayPile = [];
-            isPlayerTurn = false;
-            hasDrawn = false;
-            canDiscardExtra = false;
-            isDealing = false;
-            isStealing = false;
-            opponentTurnSkipped = false;
-            renderBoard();
-            gameMessageEl.textContent = 'A new deck is ready. Click "Deal Cards" to begin.';
-            dealButton.classList.remove('hidden');
-            restartButton.classList.add('hidden');
-            deckEl.style.cursor = 'pointer';
-            discardPileEl.style.cursor = 'pointer';
-        }
-
-        // Event Listeners for rules modal
-        rulesButton.addEventListener('click', () => {
-            rulesModal.classList.remove('hidden');
+            // Call all initial functions
+            renderPoetry();
+            // Initial draw calls for the canvases
+            drawCanvas(navCanvas, 'Angel Hearts', 40);
+            drawCanvas(heroCanvas, 'Angel Hearts', 100);
         });
-
-        closeModalButton.addEventListener('click', () => {
-            rulesModal.classList.add('hidden');
-        });
-
-        // Close the modal if the user clicks outside of it
-        window.addEventListener('click', (event) => {
-            if (event.target === rulesModal) {
-                rulesModal.classList.add('hidden');
-            }
-        });
-
-        // Event Listeners for the game
-        dealButton.addEventListener('click', dealInitialCards);
-        restartButton.addEventListener('click', initGame);
-        deckEl.addEventListener('click', handleDeckDraw);
-        discardPileEl.addEventListener('click', handleDiscardPileDraw);
-
-        // Initialize the game when the page loads
-        document.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body>
 </html>
