@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My TikTok Videos</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for social media icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Use the Inter and Roboto Mono fonts from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-md">
+        <nav class="container max-w-7xl mx-auto p-4 flex justify-between items-center">
+            <!-- Link back to the main website -->
+            <a href="index.html" class="text-gray-200 hover:text-purple-400 transition-colors duration-300 font-bold text-lg">
+                &larr; Back to Main Site
+            </a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <!-- TikTok link -->
+                <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="text-gray-200 hover:text-purple-400 transition-colors duration-300" aria-label="Visit my TikTok page">TikTok</a>
+            </div>
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-gray-200 hover:text-purple-400 transition-colors duration-300" aria-label="Open mobile menu">
+                <i class="fas fa-bars fa-2x"></i>
+            </button>
+        </nav>
+    </header>
+
+    <!-- TikTok Videos Section -->
+    <main class="flex-grow">
+        <section id="tiktok-videos" class="py-20 bg-gray-800">
+            <div class="container max-w-7xl mx-auto px-4 text-center">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                    My TikTok Videos
+                </h2>
+                <p class="text-center text-gray-400 mb-8">
+                    Check out some of my favorite recent TikTok videos!
+                </p>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
+                    <!-- Example TikTok embed code -->
+                    <!-- You will need to get the embed code from your TikTok account -->
+                    <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@tiktok" data-video-id="7359960250550865185" style="max-width: 605px; min-width: 325px;" > <section> <a target="_blank" title="@tiktok" href="https://www.tiktok.com/@tiktok?refer=embed">@tiktok</a> <p></p> <a target="_blank" title="♬ original sound - TikTok" href="https://www.tiktok.com/music/original-sound-7359960250550865185?refer=embed">♬ original sound - TikTok</a> </section> </blockquote>
+                    <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@tiktok" data-video-id="7359960250550865185" style="max-width: 605px; min-width: 325px;" > <section> <a target="_blank" title="@tiktok" href="https://www.tiktok.com/@tiktok?refer=embed">@tiktok</a> <p></p> <a target="_blank" title="♬ original sound - TikTok" href="https://www.tiktok.com/music/original-sound-7359960250550865185?refer=embed">♬ original sound - TikTok</a> </section> </blockquote>
+                    <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@tiktok" data-video-id="7359960250550865185" style="max-width: 605px; min-width: 325px;" > <section> <a target="_blank" title="@tiktok" href="https://www.tiktok.com/@tiktok?refer=embed">@tiktok</a> <p></p> <a target="_blank" title="♬ original sound - TikTok" href="https://www.tiktok.com/music/original-sound-7359960250550865185?refer=embed">♬ original sound - TikTok</a> </section> </blockquote>
+                </div>
+                <!-- TikTok embed script -->
+                <script async src="https://www.tiktok.com/embed.js"></script>
+            </div>
+        </section>
+    </main>
+    
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-6 text-center text-gray-500">
+        <div class="container mx-auto px-4 flex justify-center space-x-6 mb-4">
+            <!-- TikTok icon in the footer -->
+            <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="text-gray-400 hover:text-purple-400 transition-colors duration-300" aria-label="Follow me on TikTok">
+                <i class="fa-brands fa-tiktok fa-2xl"></i>
+            </a>
+            <!-- Other social media icons can be added here -->
+            <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors duration-300" aria-label="Follow me on a social platform">
+                <i class="fa-brands fa-spotify fa-2xl"></i>
+            </a>
+        </div>
+        <p>&copy; 2024 Angel Hearts Music & Poetry. All Rights Reserved.</p>
+    </footer>
+
+    <!-- All JavaScript -->
+    <script>
+        // It's a good practice to wrap your code in a `DOMContentLoaded` listener
+        // to ensure the page has loaded before the script runs.
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Mobile Menu Toggle Logic ---
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Hide menu when a link is clicked
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
