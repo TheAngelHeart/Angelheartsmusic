@@ -31,7 +31,6 @@
             max-width: 600px;
             aspect-ratio: 4 / 1; /* Sets a 4:1 width-to-height ratio */
         }
-        
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
@@ -40,7 +39,6 @@
     <header class="sticky top-0 z-50 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-md">
         <nav class="container max-w-7xl mx-auto p-4 flex justify-between items-center">
             <!-- Canvas element for the title with a dynamic image effect -->
-            <!-- We've updated the canvas to use Tailwind classes for responsive sizing -->
             <a href="#" class="inline-block transition-transform transform hover:scale-105 duration-300" aria-label="Home">
                 <canvas id="navCanvas" class="w-[220px] h-10"></canvas>
             </a>
@@ -48,6 +46,7 @@
                 <a href="#music" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
                 <a href="#suno-song" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Suno Song</a>
                 <a href="#poetry" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
+                <a href="#friends-tiktok" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">My Friends TikTok</a>
                 <a href="#contact" class="text-gray-200 hover:text-purple-400 transition-colors duration-300">Contact Me</a>
                 <!-- TikTok link -->
                 <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="text-gray-200 hover:text-purple-400 transition-colors duration-300" aria-label="Visit my TikTok page">TikTok</a>
@@ -62,6 +61,7 @@
             <a href="#music" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Music</a>
             <a href="#suno-song" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Suno Song</a>
             <a href="#poetry" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Poetry</a>
+            <a href="#friends-tiktok" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">My Friends TikTok</a>
             <a href="#contact" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300">Contact Me</a>
             <!-- TikTok link -->
             <a href="https://www.tiktok.com/@theangelheartsmusic" target="_blank" class="block p-2 text-gray-200 hover:text-purple-400 transition-colors duration-300" aria-label="Visit my TikTok page">TikTok</a>
@@ -72,7 +72,6 @@
     <section class="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-gray-800">
         <div class="max-w-2xl w-full">
             <!-- Canvas element for the hero title -->
-            <!-- The aspect-ratio class helps the canvas maintain its shape while being responsive -->
             <div class="hero-canvas-container mx-auto">
                 <canvas id="heroCanvas" class="animate-pulse-slow w-full h-full"></canvas>
             </div>
@@ -159,8 +158,27 @@
             </h2>
             <!-- This container will be populated dynamically by JavaScript -->
             <div id="poetry-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Poetry cards will be inserted here -->
+                <!-- A simple loading spinner to show while the content is being rendered -->
+                <div id="loading-spinner" class="col-span-full flex justify-center items-center py-10">
+                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-purple-500 border-opacity-75"></div>
+                </div>
             </div>
+        </div>
+    </section>
+
+    <!-- My Friends TikTok Section -->
+    <section id="friends-tiktok" class="py-20 bg-gray-800">
+        <div class="container max-w-7xl mx-auto px-4 max-w-2xl text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                My Friends TikTok
+            </h2>
+            <p class="text-center text-gray-400 mb-8">
+                Check out the amazing content from my friend's TikTok page!
+            </p>
+            <!-- Call to action button linking to the friends TikTok page -->
+            <a href="https://www.tiktok.com/@the.chicken.geezer" target="_blank" class="inline-block px-8 py-4 rounded-full text-lg font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 shadow-lg transform hover:scale-105">
+                Visit The Chicken Geezer's Page
+            </a>
         </div>
     </section>
 
@@ -194,6 +212,8 @@
 
     <!-- All JavaScript -->
     <script>
+        // It's a good practice to wrap your code in a `DOMContentLoaded` listener
+        // to ensure the page has loaded before the script runs.
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- Mobile Menu Toggle Logic ---
@@ -398,7 +418,11 @@ The heart i needed most`
             // Function to generate and render poetry cards
             const renderPoetry = () => {
                 const poetryContainer = document.getElementById('poetry-container');
-                poetryContainer.innerHTML = ''; // Clear existing content
+                // First, remove the loading spinner before adding the poem cards
+                const spinner = document.getElementById('loading-spinner');
+                if (spinner) {
+                    spinner.remove();
+                }
 
                 poems.forEach(poem => {
                     const cardHtml = `
@@ -422,7 +446,7 @@ The heart i needed most`
             const navCanvas = document.getElementById('navCanvas');
             const heroCanvas = document.getElementById('heroCanvas');
             
-            // This function now draws text with a gradient, which is more reliable
+            // This function draws text with a gradient, making it responsive.
             function drawCanvas(canvas, text, baseFontSize) {
                 const ctx = canvas.getContext('2d');
                 // Use the canvas's actual size from the CSS to make the drawing responsive
